@@ -1,0 +1,11 @@
+{
+  "name": "auditai",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "regions": ["iad1"],
+  "github": {
+    "silent": true
+  }
+}
