@@ -1,4 +1,4 @@
-# Website Flow for AuditAI
+# Website Flow for Securithm
 
 ## 1. Core User Flows
 

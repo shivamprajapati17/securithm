@@ -5,17 +5,16 @@ import { cn } from "@/lib/utils";
 
 type WorkflowStatus = "success" | "failure" | "pending" | "unknown";
 
-// Update these with your actual GitHub repo info
 const REPO_OWNER = process.env.NEXT_PUBLIC_GITHUB_OWNER || "shivamprajapati17";
-const REPO_NAME = process.env.NEXT_PUBLIC_GITHUB_REPO || "auditai";
+const REPO_NAME = process.env.NEXT_PUBLIC_GITHUB_REPO || "securithm";
 
 const workflows = [
   {
-    label: "Frontend CI",
+    label: "frontend_ci",
     filename: "ci.yml",
   },
   {
-    label: "Backend CI",
+    label: "backend_ci",
     filename: "backend.yml",
   },
 ];
@@ -59,8 +58,6 @@ function WorkflowRow({
     }
 
     fetchStatus();
-
-    // Poll every 5 minutes (GitHub unauthenticated rate limit: 60 req/hr)
     const interval = setInterval(fetchStatus, 300_000);
     return () => {
       cancelled = true;
@@ -68,14 +65,14 @@ function WorkflowRow({
     };
   }, [filename]);
 
-  const colorDot =
+  const statusIndicator =
     status === "success"
-      ? "bg-green-500"
+      ? "text-[var(--color-term-fg)]"
       : status === "failure"
-      ? "bg-red-500"
+      ? "text-[var(--color-term-error)]"
       : status === "pending"
-      ? "bg-yellow-500"
-      : "bg-surface-400";
+      ? "text-[var(--color-term-warning)]"
+      : "text-[var(--color-term-muted)]";
 
   return (
     <a
@@ -83,43 +80,30 @@ function WorkflowRow({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors",
-        "text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-200",
-        "hover:bg-surface-100 dark:hover:bg-surface-800"
+        "flex items-center gap-2 px-2 py-1 text-xs font-mono transition-colors",
+        "text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)]"
       )}
     >
-      <span
-        className={cn(
-          "h-2 w-2 shrink-0 rounded-full",
-          loading ? "bg-surface-300 animate-pulse" : colorDot
-        )}
-      />
-      <span className="truncate">{label}</span>
-      {status === "failure" && (
-        <span className="ml-auto text-[10px] font-medium text-red-500">
-          FAIL
-        </span>
-      )}
-      {status === "success" && (
-        <span className="ml-auto text-[10px] font-medium text-green-500">
-          PASS
-        </span>
-      )}
+      <span className={cn("shrink-0", loading ? "animate-blink" : statusIndicator)}>
+        {loading ? "?" : status === "success" ? ">" : status === "failure" ? "!" : status === "pending" ? "~" : "-"}
+      </span>
+      <span className="truncate uppercase tracking-wider">{label}</span>
+      <span className={cn("ml-auto text-[9px]", statusIndicator)}>
+        [{status === "success" ? "OK" : status === "failure" ? "ERR" : status === "pending" ? "..." : "?"}]
+      </span>
     </a>
   );
 }
 
 export function CiStatusIndicator({ collapsed }: { collapsed: boolean }) {
-  if (collapsed) {
-    return null;
-  }
+  if (collapsed) return null;
 
   return (
-    <div className="border-t border-surface-200 dark:border-surface-800 px-2 py-2">
-      <div className="text-[10px] font-medium text-surface-400 uppercase tracking-wider px-3 pb-1">
-        CI Status
+    <div className="border-t border-[var(--color-term-border)] px-2 py-1.5">
+      <div className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider px-2 pb-1">
+        $ ci_status
       </div>
-      <div className="space-y-0.5">
+      <div className="space-y-0">
         {workflows.map((wf) => (
           <WorkflowRow key={wf.filename} {...wf} />
         ))}

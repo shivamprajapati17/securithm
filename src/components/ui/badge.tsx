@@ -3,27 +3,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2",
+  "inline-flex items-center text-xs font-mono tracking-wider transition-colors focus:outline-none border",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-brand-600 text-white",
+          "border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent uppercase",
         secondary:
-          "border-transparent bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100",
+          "border-[var(--color-term-border)] text-[var(--color-term-muted)] uppercase",
         destructive:
-          "border-transparent bg-red-600 text-white",
-        outline: "text-surface-900 dark:text-surface-100",
+          "border-[var(--color-term-error)] text-[var(--color-term-error)]",
+        outline:
+          "border-[var(--color-term-border)] text-[var(--color-term-fg)]",
         critical:
-          "border-transparent bg-red-500/15 text-red-600 dark:text-red-400",
+          "border-[var(--color-term-error)] text-[var(--color-term-error)]",
         high:
-          "border-transparent bg-orange-500/15 text-orange-600 dark:text-orange-400",
+          "border-[var(--color-term-warning)] text-[var(--color-term-warning)]",
         medium:
-          "border-transparent bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
+          "border-[var(--color-term-medium)] text-[var(--color-term-medium)]",
         low:
-          "border-transparent bg-blue-500/15 text-blue-600 dark:text-blue-400",
+          "border-[var(--color-severity-low)] text-[var(--color-severity-low)]",
         info:
-          "border-transparent bg-surface-500/15 text-surface-600 dark:text-surface-400",
+          "border-[var(--color-term-border)] text-[var(--color-term-muted)]",
       },
     },
     defaultVariants: {
@@ -38,7 +39,7 @@ export interface BadgeProps
 
 function Badge({ className, variant, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant }), "px-1.5 py-0.5", className)} {...props} />
   );
 }
 

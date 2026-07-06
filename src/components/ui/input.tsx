@@ -6,15 +6,24 @@ const Input = React.forwardRef<
   React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, type, ...props }, ref) => {
   return (
-    <input
-      type={type}
-      className={cn(
-        "flex h-10 w-full rounded-lg border border-surface-300 dark:border-surface-600 bg-white dark:bg-surface-900 px-3 py-2 text-sm ring-offset-white dark:ring-offset-surface-950 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-surface-400 dark:placeholder:text-surface-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
+    <div className="relative flex items-center">
+      <span className="text-[var(--color-term-muted)] text-sm select-none shrink-0">
+        $
+      </span>
+      <input
+        type={type}
+        className={cn(
+          "flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-sm px-2 py-1.5",
+          "placeholder:text-[var(--color-term-muted)] placeholder:opacity-60",
+          "caret-[var(--color-term-fg)]",
+          "focus-visible:outline-none focus-visible:ring-0",
+          "disabled:cursor-not-allowed disabled:opacity-40",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    </div>
   );
 });
 Input.displayName = "Input";

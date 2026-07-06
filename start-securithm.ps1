@@ -1,7 +1,7 @@
 <# 
-.AUDITAI Dev Startup Script
+.SECURITHM Dev Startup Script
 .SYNOPSIS
-    Starts the AuditAI development environment - database, backend API, and frontend.
+    Starts the Securithm development environment - database, backend API, and frontend.
 .DESCRIPTION
     This script:
     1. Starts Docker containers (PostgreSQL + Redis) if Docker is available
@@ -27,7 +27,7 @@ $ROOT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $VENV_DIR = Join-Path $ROOT_DIR ".venv"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  AuditAI - Development Environment" -ForegroundColor Cyan
+Write-Host "  Securithm - Development Environment" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -46,11 +46,11 @@ if (-not $NoDocker) {
         Write-Host "  OK Docker containers started" -ForegroundColor Green
     } else {
         Write-Host "  Docker not available - using SQLite instead" -ForegroundColor Yellow
-        $env:DATABASE_URL = "sqlite:///./auditai_dev.db"
+        $env:DATABASE_URL = "sqlite:///./securithm_dev.db"
     }
 } else {
     Write-Host "[1/4] Skipping Docker - using SQLite" -ForegroundColor Yellow
-    $env:DATABASE_URL = "sqlite:///./auditai_dev.db"
+    $env:DATABASE_URL = "sqlite:///./securithm_dev.db"
 }
 
 # ── 2. Install dependencies ───────────────────────────────────
@@ -152,7 +152,7 @@ if (-not $NoFrontend) {
 # ── Summary ───────────────────────────────────────────────────
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  AuditAI is running!" -ForegroundColor Cyan
+Write-Host "  Securithm is running!" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Frontend: http://localhost:3000" -ForegroundColor White

@@ -64,107 +64,113 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
     <div
       className={`w-full ${
         isHero
-          ? "rounded-2xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 shadow-xl"
+          ? "border border-[var(--color-term-border)] bg-[var(--color-term-bg)]"
           : ""
       }`}
     >
       {isHero && (
-        <div className="flex items-center gap-1 px-4 pt-4 pb-2 border-b border-surface-200 dark:border-surface-700">
+        <div className="flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)]">
           <div className="flex gap-1.5">
-            <div className="h-3 w-3 rounded-full bg-red-500" />
-            <div className="h-3 w-3 rounded-full bg-yellow-500" />
-            <div className="h-3 w-3 rounded-full bg-green-500" />
+            <span className="text-[9px] text-[var(--color-term-error)]">●</span>
+            <span className="text-[9px] text-[var(--color-term-warning)]">●</span>
+            <span className="text-[9px] text-[var(--color-term-fg)]">●</span>
           </div>
-          <span className="ml-3 text-xs font-mono text-surface-400">
-            scan.input — AuditAI Analysis
+          <span className="ml-2 text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
+            $ scan_input — SECURITHM_ANALYSIS
           </span>
         </div>
       )}
 
       <div className={isHero ? "p-4 space-y-4" : "space-y-4"}>
         {/* Input mode tabs */}
-        <div className="flex gap-1 p-1 rounded-lg bg-surface-100 dark:bg-surface-800 w-fit">
+        <div className="flex gap-0 border border-[var(--color-term-border)] w-fit">
           <button
             onClick={() => setInputMode("code")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors ${
               inputMode === "code"
-                ? "bg-white dark:bg-surface-900 shadow-sm"
-                : "text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+                ? "bg-[var(--color-term-fg)] text-[var(--color-term-bg)]"
+                : "text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)]"
             }`}
           >
-            <Terminal className="h-3.5 w-3.5" />
-            Paste Code
+            <Terminal className="h-3 w-3" />
+            CODE
           </button>
           <button
             onClick={() => setInputMode("address")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors border-l border-[var(--color-term-border)] ${
               inputMode === "address"
-                ? "bg-white dark:bg-surface-900 shadow-sm"
-                : "text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+                ? "bg-[var(--color-term-fg)] text-[var(--color-term-bg)]"
+                : "text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)]"
             }`}
           >
-            <Globe className="h-3.5 w-3.5" />
-            Contract Address
+            <Globe className="h-3 w-3" />
+            ADDRESS
           </button>
           <button
             onClick={() => setInputMode("github")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider transition-colors border-l border-[var(--color-term-border)] ${
               inputMode === "github"
-                ? "bg-white dark:bg-surface-900 shadow-sm"
-                : "text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+                ? "bg-[var(--color-term-fg)] text-[var(--color-term-bg)]"
+                : "text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)]"
             }`}
           >
-            <Github className="h-3.5 w-3.5" />
-            GitHub URL
+            <Github className="h-3 w-3" />
+            GITHUB
           </button>
         </div>
 
         {/* Input area */}
         {inputMode === "code" && (
           <div className="relative">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ cat contract.sol</span>
+              <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
+            </div>
             <Textarea
-              placeholder="Paste your Solidity or Rust contract here..."
+              placeholder="PASTE YOUR SOLIDITY OR RUST CONTRACT HERE..."
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="min-h-[220px] font-mono text-sm bg-surface-50 dark:bg-surface-950/50 border-surface-200 dark:border-surface-700"
+              className="min-h-[200px] text-xs"
             />
             {!code && (
               <button
                 onClick={() => setCode(SAMPLE_CONTRACT)}
-                className="absolute bottom-3 right-3 text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium bg-white dark:bg-surface-800 px-2.5 py-1 rounded-md border border-surface-200 dark:border-surface-700 shadow-sm transition-colors"
+                className="absolute bottom-2 right-2 text-[10px] text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] bg-[var(--color-term-bg)] px-2 py-1 border border-[var(--color-term-border)] font-mono uppercase tracking-wider"
               >
-                Try sample contract
+                $ load_sample
               </button>
             )}
           </div>
         )}
 
         {inputMode === "address" && (
-          <div className="relative">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ resolve</span>
+              <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
+            </div>
             <div className="flex gap-2">
-              <div className="flex-1">
-                <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="w-full h-11 pl-10 pr-3 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-950/50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                  />
-                </div>
+              <div className="flex-1 flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2">
+                <span className="text-[var(--color-term-muted)] text-xs mr-2">$</span>
+                <input
+                  type="text"
+                  placeholder="0x..."
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-sm py-2 placeholder:text-[var(--color-term-muted)]"
+                />
               </div>
               <Select value={chain} onValueChange={setChain}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Chain" />
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="CHAIN" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ethereum">Ethereum</SelectItem>
-                  <SelectItem value="base">Base</SelectItem>
-                  <SelectItem value="arbitrum">Arbitrum</SelectItem>
-                  <SelectItem value="polygon">Polygon</SelectItem>
+                  <SelectItem value="ethereum">ETHEREUM</SelectItem>
+                  <SelectItem value="base">BASE</SelectItem>
+                  <SelectItem value="arbitrum">ARBITRUM</SelectItem>
+                  <SelectItem value="polygon">POLYGON</SelectItem>
                   <SelectItem value="bsc">BSC</SelectItem>
-                  <SelectItem value="solana">Solana</SelectItem>
+                  <SelectItem value="solana">SOLANA</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -172,15 +178,21 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
         )}
 
         {inputMode === "github" && (
-          <div className="relative">
-            <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
-            <input
-              type="text"
-              placeholder="https://github.com/owner/repo/tree/main/contracts"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full h-11 pl-10 pr-3 rounded-lg border border-surface-300 dark:border-surface-600 bg-surface-50 dark:bg-surface-950/50 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ git_clone</span>
+              <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
+            </div>
+            <div className="flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2">
+              <span className="text-[var(--color-term-muted)] text-xs mr-2">$</span>
+              <input
+                type="text"
+                placeholder="https://github.com/owner/repo/tree/main/contracts"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-sm py-2 placeholder:text-[var(--color-term-muted)]"
+              />
+            </div>
           </div>
         )}
 
@@ -188,16 +200,16 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
         <div className="flex items-center justify-between">
           {inputMode === "code" && (
             <Select value={chain} onValueChange={setChain}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Chain" />
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="CHAIN" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ethereum">Ethereum</SelectItem>
-                <SelectItem value="base">Base</SelectItem>
-                <SelectItem value="arbitrum">Arbitrum</SelectItem>
-                <SelectItem value="polygon">Polygon</SelectItem>
+                <SelectItem value="ethereum">ETHEREUM</SelectItem>
+                <SelectItem value="base">BASE</SelectItem>
+                <SelectItem value="arbitrum">ARBITRUM</SelectItem>
+                <SelectItem value="polygon">POLYGON</SelectItem>
                 <SelectItem value="bsc">BSC</SelectItem>
-                <SelectItem value="solana">Solana</SelectItem>
+                <SelectItem value="solana">SOLANA</SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -206,18 +218,18 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
           <Button
             onClick={handleScan}
             disabled={!code.trim() || loading}
-            size="lg"
+            size="default"
             className="gap-2"
           >
             {loading ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Scanning...
+                <span className="animate-blink">▶</span>
+                SCANNING...
               </>
             ) : (
               <>
-                <Shield className="h-4 w-4" />
-                Scan Contract
+                <Shield className="h-3.5 w-3.5" />
+                [ SCAN_CONTRACT ]
               </>
             )}
           </Button>
@@ -225,12 +237,12 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
 
         {/* Upload option */}
         {inputMode === "code" && (
-          <div className="flex items-center gap-2 text-xs text-surface-400">
-            <Upload className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--color-term-muted)]">
+            <Upload className="h-3 w-3" />
             <span>
-              Or drag & drop .sol / .rs files here —{" "}
-              <button className="text-brand-600 hover:text-brand-700 dark:text-brand-400 font-medium">
-                browse files
+              $ DRAG_DROP .SOL / .RS FILES —{" "}
+              <button className="text-[var(--color-term-fg)] hover:underline font-medium">
+                [ BROWSE ]
               </button>
             </span>
           </div>

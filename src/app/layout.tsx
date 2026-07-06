@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "AuditAI — Smart Contract Security Audits",
-    template: "%s | AuditAI",
+    default: "SECURITHM — SMART CONTRACT SECURITY AUDITS",
+    template: "%s | SECURITHM",
   },
   description:
-    "Instant AI-powered smart contract security analysis. Ship secure contracts before the hackers find the bugs.",
+    "AI-POWERED SMART CONTRACT SECURITY ANALYSIS. SHIP SECURE CONTRACTS BEFORE THE HACKERS FIND THE BUGS.",
   keywords: [
     "smart contract audit",
     "solidity security",
     "web3 security",
     "smart contract scanner",
-    "audit ai",
+    "securithm",
   ],
 };
 
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -32,11 +33,14 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&display=swap"
           rel="stylesheet"
         />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
-      <body className="antialiased min-h-screen">{children}</body>
+      <body className="antialiased min-h-screen scanlines">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

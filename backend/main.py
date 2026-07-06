@@ -1,4 +1,4 @@
-"""AuditAI — Smart Contract Security Analysis API.
+"""Securithm — Smart Contract Security Analysis API.
 
 FastAPI application entry point.
 """
@@ -40,8 +40,8 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     contact={
-        "name": "AuditAI Team",
-        "url": "https://auditai.dev",
+        "name": "Securithm Team",
+        "url": "https://securithm.dev",
     },
     license_info={
         "name": "Proprietary",

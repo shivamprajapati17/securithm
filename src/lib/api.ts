@@ -1,5 +1,12 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+
+
 export interface Scan {
   id: string;
   org_id: string | null;
@@ -95,11 +102,20 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  if (options.headers) {
+    Object.assign(headers, options.headers);
+  }
+
   const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers,
     ...options,
   });
 
@@ -223,3 +239,162 @@ export async function addMonitoredContract(data: {
     body: JSON.stringify(data),
   });
 }
+
+// ─── NFT API ─────────────────────────────────────────────────
+
+export interface NFTSecurityFinding {
+  category: string;
+  severity: string;
+  description: string;
+  recommendation?: string;
+}
+
+export interface NFTCollectionAnalysis {
+  contract_address: string;
+  chain: string;
+  collection_name: string | null;
+  total_supply: number | null;
+  security_score: number;
+  risk_level: string;
+  findings: NFTSecurityFinding[];
+  is_verified: boolean;
+  has_royalty_enforcement: boolean;
+  has_allowlist: boolean;
+  has_mint_authority_risk: boolean;
+  analyzed_at: string;
+}
+
+export async function analyzeNFTCollection(
+  chain: string,
+  address: string
+): Promise<NFTCollectionAnalysis> {
+  return request<NFTCollectionAnalysis>(
+    `/api/v1/nft/analyze/${chain}/${address}`
+  );
+}
+
+// ─── Token API ───────────────────────────────────────────────
+
+export interface TokenRiskFinding {
+  category: string;
+  severity: string;
+  description: string;
+  recommendation?: string;
+}
+
+export interface TokenAnalysis {
+  contract_address: string;
+  chain: string;
+  token_name: string | null;
+  token_symbol: string | null;
+  token_type: string;
+  total_supply: string | null;
+  holder_count: number | null;
+  security_score: number;
+  risk_level: string;
+  findings: TokenRiskFinding[];
+  is_renounced: boolean | null;
+  has_honeypot_risk: boolean;
+  has_blacklist: boolean;
+  has_tax: boolean;
+  has_mint_function: boolean;
+  analyzed_at: string;
+}
+
+export async function analyzeToken(
+  chain: string,
+  address: string,
+  tokenType?: string
+): Promise<TokenAnalysis> {
+  const params = tokenType ? `?token_type=${tokenType}` : "";
+  return request<TokenAnalysis>(
+    `/api/v1/token/analyze/${chain}/${address}${params}`
+  );
+}
+
+// ─── Payments / Billing API ──────────────────────────────────
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  max_scans_per_month: number;
+  max_monitored_contracts: number;
+  price_usd: number;
+  features: string[];
+}
+
+export interface UsageMeter {
+  period: string;
+  scans_used: number;
+  scans_limit: number;
+  api_calls_used: number;
+  api_calls_limit: number;
+}
+
+export interface Invoice {
+  id: string;
+  amount_usd: number;
+  status: string;
+  issued_at: string;
+  paid_at: string | null;
+  description: string;
+  pdf_url: string | null;
+}
+
+export interface PaymentsDashboard {
+  plans: BillingPlan[];
+  current_plan: BillingPlan | null;
+  usage: UsageMeter | null;
+  payment_methods: unknown[];
+  invoices: Invoice[];
+}
+
+export async function listPlans(): Promise<BillingPlan[]> {
+  return request<BillingPlan[]>("/api/v1/payments/plans");
+}
+
+export async function getUsage(): Promise<UsageMeter> {
+  return request<UsageMeter>("/api/v1/payments/usage");
+}
+
+export async function getPaymentsDashboard(): Promise<PaymentsDashboard> {
+  return request<PaymentsDashboard>("/api/v1/payments/dashboard");
+}
+
+// ─── Auth ────────────────────────────────────────────────────
+
+export async function login(email: string, password: string): Promise<{
+  access_token: string;
+  token_type: string;
+  user_id: string;
+}> {
+  return request("/api/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function register(
+  email: string,
+  password: string,
+  display_name?: string
+): Promise<{ access_token: string; token_type: string; user_id: string }> {
+  return request("/api/v1/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ email, password, display_name }),
+  });
+}
+
+export async function getMe(): Promise<{
+  id: string;
+  email: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  last_login: string | null;
+  org_id: string | null;
+}> {
+  return request("/api/v1/auth/me");
+}
+
+export type AuthUser = Awaited<ReturnType<typeof getMe>>;

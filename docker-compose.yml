@@ -3,24 +3,24 @@ version: "3.9"
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: auditai-db
+    container_name: securithm-db
     environment:
-      POSTGRES_USER: auditai
-      POSTGRES_PASSWORD: auditai
-      POSTGRES_DB: auditai
+      POSTGRES_USER: securithm
+      POSTGRES_PASSWORD: securithm
+      POSTGRES_DB: securithm
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auditai"]
+      test: ["CMD-SHELL", "pg_isready -U securithm"]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: auditai-redis
+    container_name: securithm-redis
     ports:
       - "6379:6379"
     healthcheck:

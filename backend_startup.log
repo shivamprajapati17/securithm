@@ -1,0 +1,18 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\DELL\\Desktop\\Audit AI']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [12852] using WatchFiles
+INFO:     Started server process [16532]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'backend\core\config.py'. Reloading...
+==================================================
+  AuditAI - Development Setup
+==================================================
+OK Tables created (sqlite:///./auditai_v2.db)
+OK Database already seeded, skipping
+
+=> AuditAI API running at http://0.0.0.0:8000
+=> API docs at http://0.0.0.0:8000/docs
+=> Redoc at http://0.0.0.0:8000/redoc
+
+ 

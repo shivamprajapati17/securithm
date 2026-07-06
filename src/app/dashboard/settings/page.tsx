@@ -4,137 +4,132 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
-  Settings,
   CreditCard,
   Bell,
-  Shield,
-  Users,
-  Palette,
   Webhook,
   Download,
-  ExternalLink,
   ChevronRight,
 } from "lucide-react";
 
 const plans = [
   {
-    name: "Free",
+    name: "FREE",
     price: "$0",
-    description: "For solo developers exploring AuditAI",
+    description: "FOR SOLO DEVELOPERS EXPLORING SECURITHM",
     features: [
-      "50 scans/month",
-      "Basic monitoring (1 contract)",
-      "GitHub Action access",
-      "Community support",
+      "50 SCANS/MONTH",
+      "BASIC MONITOR (1 CONTRACT)",
+      "GITHUB ACTION ACCESS",
+      "COMMUNITY SUPPORT",
     ],
     current: true,
   },
   {
-    name: "Pro",
+    name: "PRO",
     price: "$29",
-    description: "For professional teams shipping weekly",
+    description: "FOR PROFESSIONAL TEAMS SHIPPING WEEKLY",
     features: [
-      "500 scans/month",
-      "10 monitored contracts",
-      "AI fix suggestions",
-      "Team seats (5 members)",
-      "Slack/Discord alerts",
-      "Email support",
+      "500 SCANS/MONTH",
+      "10 MONITORED CONTRACTS",
+      "AI FIX SUGGESTIONS",
+      "TEAM SEATS (5 MEMBERS)",
+      "SLACK/DISCORD ALERTS",
+      "EMAIL SUPPORT",
     ],
     current: false,
   },
   {
-    name: "Team",
+    name: "TEAM",
     price: "$99",
-    description: "For protocol teams needing full coverage",
+    description: "FOR PROTOCOL TEAMS NEEDING FULL COVERAGE",
     features: [
-      "2,000 scans/month",
-      "50 monitored contracts",
-      "Remediation workflow",
-      "Unlimited team seats",
-      "Custom severity thresholds",
-      "Priority support",
+      "2,000 SCANS/MONTH",
+      "50 MONITORED CONTRACTS",
+      "REMEDIATION WORKFLOW",
+      "UNLIMITED TEAM SEATS",
+      "CUSTOM THRESHOLDS",
+      "PRIORITY SUPPORT",
     ],
     current: false,
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    description: "For institutions and high-volume teams",
+    name: "ENTERPRISE",
+    price: "CUSTOM",
+    description: "FOR INSTITUTIONS AND HIGH-VOLUME TEAMS",
     features: [
-      "Unlimited scans",
-      "Unlimited monitoring",
-      "Risk Score API access",
-      "SOC 2 compliance docs",
-      "Dedicated SLAs",
-      "99.95% uptime guarantee",
-      "Dedicated support",
+      "UNLIMITED SCANS",
+      "UNLIMITED MONITORING",
+      "RISK SCORE API ACCESS",
+      "SOC 2 COMPLIANCE DOCS",
+      "DEDICATED SLAS",
+      "99.95% UPTIME GUARANTEE",
+      "DEDICATED SUPPORT",
     ],
     current: false,
   },
 ];
 
 const notificationSettings = [
-  { label: "Scan completed", description: "When a scan finishes processing", enabled: true },
-  { label: "Critical finding detected", description: "When a critical severity issue is found", enabled: true },
-  { label: "High finding detected", description: "When a high severity issue is found", enabled: true },
-  { label: "Monitoring alert", description: "When an on-chain anomaly is detected", enabled: true },
-  { label: "Weekly digest", description: "Weekly summary of all activity", enabled: false },
-  { label: "SLA breach warning", description: "When a remediation SLA is at risk", enabled: true },
+  { label: "SCAN_COMPLETED", description: "WHEN A SCAN FINISHES PROCESSING", enabled: true },
+  { label: "CRITICAL_FINDING", description: "WHEN A CRITICAL SEVERITY ISSUE IS FOUND", enabled: true },
+  { label: "HIGH_FINDING", description: "WHEN A HIGH SEVERITY ISSUE IS FOUND", enabled: true },
+  { label: "MONITOR_ALERT", description: "WHEN AN ON-CHAIN ANOMALY IS DETECTED", enabled: true },
+  { label: "WEEKLY_DIGEST", description: "WEEKLY SUMMARY OF ALL ACTIVITY", enabled: false },
+  { label: "SLA_BREACH", description: "WHEN A REMEDIATION SLA IS AT RISK", enabled: true },
 ];
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-        <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-          Manage your account, billing, and team settings
+        <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
+          $ SETTINGS --CONFIG
+        </h1>
+        <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
+          # MANAGE YOUR ACCOUNT, BILLING, AND TEAM SETTINGS
         </p>
       </div>
 
       {/* Plan & Billing */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Plan & Billing</CardTitle>
-          <Badge variant="secondary" className="gap-1">
-            <CreditCard className="h-3 w-3" />
-            Free Plan
+          <CardTitle>{">"} PLAN_BILLING</CardTitle>
+          <Badge variant="default" className="gap-1 text-[9px]">
+            <CreditCard className="h-2.5 w-2.5" />
+            [FREE]
           </Badge>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-4 gap-3">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`p-4 rounded-xl border ${
+                className={`p-3 border ${
                   plan.current
-                    ? "border-brand-500 bg-brand-50/50 dark:bg-brand-950/20"
-                    : "border-surface-200 dark:border-surface-700"
+                    ? "border-[var(--color-term-fg)] bg-[var(--color-term-dim)]"
+                    : "border-[var(--color-term-border)]"
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-sm">{plan.name}</h3>
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-[11px] font-bold text-[var(--color-term-fg)] font-mono">{plan.name}</h3>
                   {plan.current && (
-                    <Badge variant="default" className="text-[10px]">
-                      Current
+                    <Badge variant="default" className="text-[8px] px-1">
+                      [CURRENT]
                     </Badge>
                   )}
                 </div>
-                <div className="text-2xl font-bold mb-1">{plan.price}</div>
-                <p className="text-xs text-surface-500 mb-3">
+                <div className="text-sm font-bold text-[var(--color-term-fg)] term-glow mb-1">{plan.price}</div>
+                <p className="text-[9px] text-[var(--color-term-muted)] mb-2 font-mono">
                   {plan.description}
                 </p>
-                <ul className="space-y-1.5 mb-4">
+                <ul className="space-y-1 mb-3">
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="text-xs text-surface-600 dark:text-surface-400 flex items-center gap-1.5"
+                      className="text-[8px] text-[var(--color-term-muted)] font-mono flex items-center gap-1"
                     >
-                      <span className="text-green-500">✓</span>
+                      <span className="text-[var(--color-term-fg)]">+</span>
                       {feature}
                     </li>
                   ))}
@@ -142,10 +137,10 @@ export default function SettingsPage() {
                 <Button
                   variant={plan.current ? "outline" : "default"}
                   size="sm"
-                  className="w-full"
+                  className="w-full text-[9px] h-7"
                   disabled={plan.current}
                 >
-                  {plan.current ? "Current Plan" : "Upgrade"}
+                  {plan.current ? "[CURRENT]" : "[ UPGRADE ]"}
                 </Button>
               </div>
             ))}
@@ -156,18 +151,18 @@ export default function SettingsPage() {
       {/* Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Notifications</CardTitle>
+          <CardTitle>{">"} NOTIFICATIONS</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {notificationSettings.map((setting) => (
               <div
                 key={setting.label}
                 className="flex items-center justify-between"
               >
                 <div>
-                  <div className="text-sm font-medium">{setting.label}</div>
-                  <div className="text-xs text-surface-400">
+                  <div className="text-[11px] font-mono text-[var(--color-term-fg)] font-bold uppercase">{setting.label}</div>
+                  <div className="text-[9px] text-[var(--color-term-muted)] font-mono">
                     {setting.description}
                   </div>
                 </div>
@@ -181,62 +176,59 @@ export default function SettingsPage() {
       {/* Integrations */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Integrations</CardTitle>
+          <CardTitle>{">"} INTEGRATIONS</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {[
             {
               icon: Bell,
-              name: "Slack",
-              description: "Send alerts to a Slack channel",
+              name: "SLACK",
+              description: "SEND ALERTS TO A SLACK CHANNEL",
               connected: true,
             },
             {
               icon: Bell,
-              name: "Discord",
-              description: "Send alerts to a Discord webhook",
+              name: "DISCORD",
+              description: "SEND ALERTS TO A DISCORD WEBHOOK",
               connected: false,
             },
             {
               icon: Webhook,
-              name: "Webhooks",
-              description: "Send events to your own endpoints",
+              name: "WEBHOOKS",
+              description: "SEND EVENTS TO YOUR OWN ENDPOINTS",
               connected: false,
             },
             {
               icon: Download,
-              name: "n8n",
-              description: "Automate workflows with n8n",
+              name: "N8N",
+              description: "AUTOMATE WORKFLOWS WITH N8N",
               connected: false,
             },
           ].map((integration) => (
             <div
               key={integration.name}
-              className="flex items-center justify-between p-3 rounded-lg border border-surface-200 dark:border-surface-700"
+              className="flex items-center justify-between p-2.5 border border-[var(--color-term-border)]"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-100 dark:bg-surface-800">
-                  <integration.icon className="h-4.5 w-4.5 text-surface-600 dark:text-surface-400" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)]">
+                  <integration.icon className="h-3.5 w-3.5" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium">{integration.name}</div>
-                  <div className="text-xs text-surface-400">
+                  <div className="text-[10px] font-mono text-[var(--color-term-fg)] font-bold uppercase">{integration.name}</div>
+                  <div className="text-[8px] text-[var(--color-term-muted)] font-mono">
                     {integration.description}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {integration.connected && (
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] bg-green-500/10 text-green-600 dark:text-green-400"
-                  >
-                    Connected
+                  <Badge variant="default" className="text-[8px] px-1 bg-[var(--color-term-fg)] text-[var(--color-term-bg)]">
+                    [OK]
                   </Badge>
                 )}
-                <Button variant="ghost" size="sm">
-                  Configure
-                  <ChevronRight className="h-3.5 w-3.5" />
+                <Button variant="ghost" size="sm" className="text-[9px] h-6">
+                  $ CONFIG
+                  <ChevronRight className="h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -247,25 +239,38 @@ export default function SettingsPage() {
       {/* Profile Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Profile</CardTitle>
+          <CardTitle>{">"} PROFILE</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
+        <CardContent className="space-y-3">
+          <div className="grid sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-1.5 block">
-                Display Name
+              <label className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider mb-1 block">
+                $ DISPLAY_NAME
               </label>
-              <Input defaultValue="Solidity Dev" />
+              <div className="flex items-center border border-[var(--color-term-border)] px-2">
+                <span className="text-[var(--color-term-muted)] text-xs mr-1">$</span>
+                <input
+                  defaultValue="Solidity Dev"
+                  className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5"
+                />
+              </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-surface-500 uppercase tracking-wider mb-1.5 block">
-                Email
+              <label className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider mb-1 block">
+                $ EMAIL
               </label>
-              <Input defaultValue="dev@example.com" type="email" />
+              <div className="flex items-center border border-[var(--color-term-border)] px-2">
+                <span className="text-[var(--color-term-muted)] text-xs mr-1">$</span>
+                <input
+                  defaultValue="dev@example.com"
+                  type="email"
+                  className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5"
+                />
+              </div>
             </div>
           </div>
           <div className="flex justify-end">
-            <Button size="sm">Save Changes</Button>
+            <Button size="sm">[ SAVE ]</Button>
           </div>
         </CardContent>
       </Card>

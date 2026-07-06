@@ -1,10 +1,9 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { useScans } from "@/lib/hooks";
 import { formatRelativeTime } from "@/lib/utils";
 import {
@@ -29,44 +28,48 @@ export default function ReposPage() {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Repositories</h1>
-          <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-            Scanned contracts and CI/CD integration status
+          <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
+            $ REPOS --LIST
+          </h1>
+          <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
+            # SCANNED CONTRACTS AND CI/CD INTEGRATION STATUS
           </p>
         </div>
         <Button className="gap-2">
-          <Github className="h-4 w-4" />
-          Connect Repository
+          <Github className="h-3.5 w-3.5" />
+          [ CONNECT_REPO ]
         </Button>
       </div>
 
       {/* Setup Guide */}
-      <Card className="border-brand-500/30 bg-brand-50/50 dark:bg-brand-950/20">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
-              <BookOpen className="h-5 w-5" />
+      <Card className="border-[var(--color-term-fg)] bg-[var(--color-term-dim)]">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)]">
+              <BookOpen className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold mb-1">Quick Setup Guide</h3>
-              <p className="text-sm text-surface-600 dark:text-surface-400 mb-3">
-                AuditAI automatically scans every PR and push when you install the GitHub Action.
+              <h3 className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider mb-1">
+                $ QUICK_SETUP --GUIDE
+              </h3>
+              <p className="text-[10px] text-[var(--color-term-muted)] mb-2 font-mono">
+                SECURITHM AUTOMATICALLY SCANS EVERY PR AND PUSH WHEN YOU INSTALL THE GITHUB ACTION.
               </p>
-              <ol className="space-y-2 text-sm text-surface-600 dark:text-surface-400">
+              <ol className="space-y-1.5 text-[10px] text-[var(--color-term-muted)] font-mono">
                 <li className="flex items-start gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">1</span>
-                  <span>Click "Connect Repository" and select your repo from the GitHub OAuth flow</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">1</span>
+                  <span>$ CONNECT_REPO — SELECT FROM GITHUB OAUTH FLOW</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">2</span>
-                  <span>Configure severity threshold — PRs will fail CI if findings exceed this level</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">2</span>
+                  <span>$ CONFIG_THRESHOLD — PRs WILL FAIL CI IF EXCEEDED</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold">3</span>
-                  <span>Push code — AuditAI posts inline PR comments and publishes SARIF reports</span>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">3</span>
+                  <span>$ PUSH_CODE — SECURITHM POSTS INLINE COMMENTS + SARIF</span>
                 </li>
               </ol>
             </div>
@@ -75,33 +78,34 @@ export default function ReposPage() {
       </Card>
 
       {/* Connected Repos */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Scanned Contracts</h2>
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
+          {">"} SCANNED_CONTRACTS
+        </h2>
 
         {scansError && (
           <Card>
-            <CardContent className="p-6 text-center text-sm text-red-500">
-              Error loading scans: {scansError}
+            <CardContent className="p-4 text-center text-xs text-[var(--color-term-error)] font-mono">
+              [!] ERROR: {scansError}
             </CardContent>
           </Card>
         )}
 
         {scansLoading ? (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[1,2,3].map(i => (
-              <Card key={i}><CardContent className="p-6 h-24 animate-pulse bg-surface-100 dark:bg-surface-800 rounded-xl" /></Card>
+              <Card key={i}><CardContent className="p-4 h-20 animate-pulse bg-[var(--color-term-dim)]" /></Card>
             ))}
           </div>
         ) : Object.keys(scanGroups).length === 0 ? (
           <Card>
-            <CardContent className="p-12 text-center text-sm text-surface-400">
-              No scans yet. Connect a repo or scan a contract to see results here.
+            <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
+              $ NO_SCANS_YET
             </CardContent>
           </Card>
         ) : (
           Object.entries(scanGroups).map(([name, repoScans]) => {
             const completed = repoScans.filter(s => s.status === "completed");
-            const running = repoScans.filter(s => s.status === "running");
             const totalFindings = completed.reduce((sum, s) => sum + (s.findings?.length || 0), 0);
             const criticalCount = completed.reduce(
               (sum, s) => sum + (s.findings?.filter(f => f.severity === "critical").length || 0), 0
@@ -110,91 +114,81 @@ export default function ReposPage() {
 
             return (
               <Card key={name}>
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-100 dark:bg-surface-800">
-                        <Github className="h-5 w-5 text-surface-600 dark:text-surface-400" />
+                    <div className="flex items-start gap-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)]">
+                        <Github className="h-4 w-4" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-sm">{name}</h3>
-                          <Badge variant="default">active</Badge>
+                          <h3 className="text-xs font-bold text-[var(--color-term-fg)] uppercase">{name}</h3>
+                          <Badge variant="default" className="text-[9px]">[ACTIVE]</Badge>
                         </div>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-surface-500">
+                        <div className="flex items-center gap-3 mt-0.5 text-[9px] text-[var(--color-term-muted)] font-mono">
                           <span className="flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
-                            {repoScans.length} scans
+                            <FileText className="h-2.5 w-2.5" />
+                            {repoScans.length} SCANS
                           </span>
-                          <span>{totalFindings} findings</span>
+                          <span>{totalFindings} FINDINGS</span>
                           {criticalCount > 0 && (
-                            <span className="flex items-center gap-1 text-red-500">
-                              <AlertTriangle className="h-3 w-3" />
-                              {criticalCount} critical
+                            <span className="flex items-center gap-1 text-[var(--color-term-error)]">
+                              <AlertTriangle className="h-2.5 w-2.5" />
+                              {criticalCount} CRITICAL
                             </span>
                           )}
                           <span>
-                            Last: {lastScan ? formatRelativeTime(lastScan.created_at) : "N/A"}
+                            LAST: {lastScan ? formatRelativeTime(lastScan.created_at) : "N/A"}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm"><Settings className="h-3.5 w-3.5" /></Button>
-                      <Button variant="outline" size="sm">View Scans</Button>
+                    <div className="flex items-center gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Settings className="h-3 w-3" /></Button>
+                      <Button variant="outline" size="sm" className="text-[9px] h-7">[ VIEW ]</Button>
                     </div>
                   </div>
 
-                  <Separator className="my-4" />
+                  <hr className="border-t border-dashed border-[var(--color-term-border)] my-3" />
 
                   {/* Recent scans for this repo */}
-                  <div className="space-y-1 mb-4">
-                    <span className="text-[10px] font-medium text-surface-400 uppercase tracking-wider">Recent Activity</span>
+                  <div className="space-y-1 mb-3">
+                    <span className="text-[8px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">{">"} RECENT_ACTIVITY</span>
                     {repoScans.slice(0, 3).map(scan => (
-                      <div key={scan.id} className="flex items-center justify-between py-1 text-xs">
-                        <div className="flex items-center gap-2">
-                          <div className={`h-1.5 w-1.5 rounded-full ${
-                            scan.status === "completed" ? "bg-green-500" :
-                            scan.status === "running" ? "bg-blue-500 animate-pulse" : "bg-gray-500"
+                      <div key={scan.id} className="flex items-center justify-between py-0.5 text-[9px] font-mono">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`h-1.5 w-1.5 ${
+                            scan.status === "completed" ? "bg-[var(--color-term-fg)]" :
+                            scan.status === "running" ? "bg-[var(--color-term-warning)] animate-blink" : "bg-[var(--color-term-muted)]"
                           }`} />
-                          <span className="text-surface-600 dark:text-surface-400">
-                            {scan.status === "running" ? "Scan in progress..." : `Scan completed`}
+                          <span className="text-[var(--color-term-muted)]">
+                            {scan.status === "running" ? "SCANNING..." : "[COMPLETED]"}
                           </span>
                         </div>
-                        <span className="text-surface-400">
+                        <span className="text-[var(--color-term-muted)]">
                           {scan.created_at ? formatRelativeTime(scan.created_at) : ""}
-                          {scan.risk_score_overall && ` · Score: ${scan.risk_score_overall}`}
+                          {scan.risk_score_overall && ` · ${scan.risk_score_overall}`}
                         </span>
                       </div>
                     ))}
                   </div>
 
                   {/* CI Config Preview */}
-                  <div className="text-xs">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-surface-500 uppercase tracking-wider">CI Configuration</span>
-                      <Button variant="ghost" size="sm" className="gap-1 h-6 text-xs">
-                        <Copy className="h-3 w-3" />
-                        Copy YAML
+                  <div className="text-[10px] font-mono">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[8px] text-[var(--color-term-muted)] uppercase tracking-wider">{">"} CI_CONFIG</span>
+                      <Button variant="ghost" size="sm" className="gap-1 h-5 text-[8px]">
+                        <Copy className="h-2.5 w-2.5" />
+                        [ COPY ]
                       </Button>
                     </div>
-                    <pre className="rounded-lg bg-surface-950 dark:bg-surface-900 text-surface-50 p-3 overflow-x-auto text-xs leading-relaxed">
-                      <code>{`name: AuditAI Scan
-on: [push, pull_request]
-jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: auditai/action@v1
-        with:
-          severity-threshold: high
-          github-token: \${{ secrets.AUDITAI_TOKEN }}`}</code>
+                    <pre className="border border-[var(--color-term-border)] bg-[#050505] text-[var(--color-term-fg)] p-2 overflow-x-auto text-[9px] leading-relaxed">
+                      <code>{"name: SECURITHM_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: securithm/action@v1\n        with:\n          threshold: HIGH\n          token: ${{ secrets.SECURITHM_TOKEN }}"}</code>
                     </pre>
                   </div>
 
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
-                    <span className="text-xs text-surface-500">Auto-scanning is enabled</span>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed border-[var(--color-term-border)]">
+                    <span className="text-[9px] text-[var(--color-term-muted)] font-mono">$ AUTO_SCAN: ENABLED</span>
                     <Switch defaultChecked />
                   </div>
                 </CardContent>

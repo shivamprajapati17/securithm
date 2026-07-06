@@ -19,9 +19,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: auditai
-          POSTGRES_PASSWORD: auditai
-          POSTGRES_DB: auditai_ci
+          POSTGRES_USER: securithm
+          POSTGRES_PASSWORD: securithm
+          POSTGRES_DB: securithm_ci
         ports:
           - 5432:5432
         options: >-
@@ -49,6 +49,6 @@ jobs:
 
       - name: Test with pytest
         env:
-          DATABASE_URL: postgresql://auditai:auditai@localhost:5432/auditai_ci
+          DATABASE_URL: postgresql://securithm:securithm@localhost:5432/securithm_ci
           DEBUG: "true"
         run: pytest backend/ -v --tb=short --exitfirst

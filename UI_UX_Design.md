@@ -1,4 +1,4 @@
-# UI/UX Design for AuditAI
+# UI/UX Design for Securithm
 
 ## 1. Core User Flows
 

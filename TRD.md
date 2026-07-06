@@ -1,4 +1,4 @@
-# Technical Requirements Document (TRD) for AuditAI
+# Technical Requirements Document (TRD) for Securithm
 
 ## 1. Architecture Overview
 
@@ -65,6 +65,6 @@
 | Concurrency | 500 concurrent scan jobs at launch, horizontally scalable workers |
 
 ## 4. Security & Compliance Requirements
-- AuditAI itself must be securely built: signed GitHub App tokens, encrypted secrets (source code uploads), least-privilege OAuth scopes on repo access
+- Securithm itself must be securely built: signed GitHub App tokens, encrypted secrets (source code uploads), least-privilege OAuth scopes on repo access
 - SOC 2 Type II roadmap (blocking requirement to land institutional Risk Score API customers)
 - Clear ToS disclaimer: AI analysis is *preliminary*, not a substitute for a full manual audit — critical for liability management

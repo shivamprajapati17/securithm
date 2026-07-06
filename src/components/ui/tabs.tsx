@@ -13,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-lg bg-surface-100 dark:bg-surface-800 p-1 text-surface-500 dark:text-surface-400",
+      "inline-flex h-9 items-center border border-[var(--color-term-border)] bg-[var(--color-term-dim)] p-0",
       className
     )}
     {...props}
@@ -28,7 +28,12 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-white dark:ring-offset-surface-950 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-surface-900 data-[state=active]:text-surface-900 dark:data-[state=active]:text-surface-50 data-[state=active]:shadow-sm",
+      "inline-flex items-center justify-center whitespace-nowrap px-3 py-1.5 text-xs font-mono",
+      "text-[var(--color-term-muted)] data-[state=active]:text-[var(--color-term-fg)]",
+      "data-[state=active]:bg-[var(--color-term-bg)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--color-term-fg)]",
+      "transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40",
+      "hover:text-[var(--color-term-fg)]",
+      "uppercase tracking-wider",
       className
     )}
     {...props}
@@ -43,7 +48,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-white dark:ring-offset-surface-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2",
+      "mt-2 focus-visible:outline-none",
       className
     )}
     {...props}

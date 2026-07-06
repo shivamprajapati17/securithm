@@ -1,88 +1,347 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════
+   TERMINAL CLI DESIGN SYSTEM — Securithm
+   "Brutally functional, high-contrast, authentic"
+   ═══════════════════════════════════════════════ */
+
 @theme {
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
-  --color-brand-800: #3730a3;
-  --color-brand-900: #312e81;
-  --color-brand-950: #1e1b4b;
+  /* ── Terminal Color Palette (Dark Mode Only) ── */
+  --color-term-bg: #0a0a0a;
+  --color-term-fg: #33ff00;
+  --color-term-secondary: #ffb000;
+  --color-term-muted: #1f521f;
+  --color-term-accent: #33ff00;
+  --color-term-error: #ff3333;
+  --color-term-warning: #ffb000;
+  --color-term-medium: #e6c000;
+  --color-term-border: #1f521f;
+  --color-term-dim: #0d2e0d;
 
-  --color-surface-50: #f8fafc;
-  --color-surface-100: #f1f5f9;
-  --color-surface-200: #e2e8f0;
-  --color-surface-300: #cbd5e1;
-  --color-surface-400: #94a3b8;
-  --color-surface-500: #64748b;
-  --color-surface-600: #475569;
-  --color-surface-700: #334155;
-  --color-surface-800: #1e293b;
-  --color-surface-900: #0f172a;
-  --color-surface-950: #020617;
+  /* Severity (terminal-adapted) */
+  --color-severity-critical: #ff3333;
+  --color-severity-high: #ffb000;
+  --color-severity-medium: #e6c000;
+  --color-severity-low: #33aaff;
+  --color-severity-info: #1f521f;
 
-  --color-severity-critical: #ef4444;
-  --color-severity-high: #f97316;
-  --color-severity-medium: #eab308;
-  --color-severity-low: #3b82f6;
-  --color-severity-info: #6b7280;
+  /* Risk grades (terminal-adapted) */
+  --color-risk-a: #33ff00;
+  --color-risk-b: #66ff33;
+  --color-risk-c: #e6c000;
+  --color-risk-d: #ffb000;
+  --color-risk-e: #ff6600;
+  --color-risk-f: #ff3333;
 
-  --color-risk-a: #22c55e;
-  --color-risk-b: #86efac;
-  --color-risk-c: #eab308;
-  --color-risk-d: #f97316;
-  --color-risk-e: #ef4444;
-  --color-risk-f: #dc2626;
-
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  /* Monospace as the only font */
+  --font-mono: "JetBrains Mono", "Fira Code", "VT323", "Consolas", "Courier New", monospace;
+  --font-sans: "JetBrains Mono", "Fira Code", "VT323", "Consolas", "Courier New", monospace;
 }
+
+/* ── CRT Scanline Overlay ── */
+.scanlines::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+}
+
+/* ── CRT Phosphor Glow ── */
+.term-glow {
+  text-shadow: 0 0 5px rgba(51, 255, 0, 0.5), 0 0 10px rgba(51, 255, 0, 0.2);
+}
+
+.term-glow-amber {
+  text-shadow: 0 0 5px rgba(255, 176, 0, 0.5), 0 0 10px rgba(255, 176, 0, 0.2);
+}
+
+.term-glow-error {
+  text-shadow: 0 0 5px rgba(255, 51, 51, 0.5), 0 0 10px rgba(255, 51, 51, 0.2);
+}
+
+/* ── Animations ── */
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 1px); }
+  80% { transform: translate(1px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(51, 255, 0, 0.2); }
+  50% { box-shadow: 0 0 15px rgba(51, 255, 0, 0.5); }
+}
+
+@keyframes scanline-scroll {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+.animate-blink-cursor {
+  animation: blink-cursor 1s step-end infinite;
+}
+
+.animate-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter 2s steps(40) forwards;
+}
+
+.animate-glitch:hover {
+  animation: glitch 0.3s ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ── Base Styles ── */
 
 @layer base {
   * {
-    @apply border-surface-200 dark:border-surface-700;
+    /* No rounded corners — ever */
+    border-radius: 0 !important;
+    /* Monospace everywhere */
+    font-family: var(--font-mono);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-white text-surface-900 dark:bg-surface-950 dark:text-surface-50;
-    font-family: var(--font-sans);
+    background-color: var(--color-term-bg);
+    color: var(--color-term-fg);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.5;
+    text-shadow: 0 0 5px rgba(51, 255, 0, 0.3);
+    min-height: 100vh;
+  }
+
+  /* Selection highlight */
+  ::selection {
+    background: var(--color-term-fg);
+    color: var(--color-term-bg);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-term-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-term-muted);
+    border: 1px solid var(--color-term-border);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-term-fg);
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    outline: 1px solid var(--color-term-fg);
+    outline-offset: 2px;
+  }
+
+  /* All caps for headers */
+  h1, h2, h3, h4, h5, h6 {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* Links */
+  a {
+    color: var(--color-term-fg);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  a:hover {
+    color: var(--color-term-bg);
+    background: var(--color-term-fg);
+    text-decoration: none;
+  }
+
+  /* Code blocks */
+  pre, code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  pre {
+    background: #050505;
+    border: 1px solid var(--color-term-border);
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  code {
+    background: rgba(51, 255, 0, 0.08);
+    padding: 0.15em 0.3em;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid var(--color-term-border);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  th {
+    background: var(--color-term-dim);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Horizontal rule */
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-term-border);
+    margin: 1rem 0;
   }
 }
+
+/* ── Terminal-Specific Utilities ── */
 
 @layer utilities {
-  .glow-brand {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+  /* Terminal window pane */
+  .term-pane {
+    border: 1px solid var(--color-term-border);
+    background: var(--color-term-bg);
   }
 
-  .glow-critical {
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+  /* Inverted video (hover/active state) */
+  .term-invert {
+    background: var(--color-term-fg);
+    color: var(--color-term-bg);
+    text-shadow: none;
   }
 
-  .text-balance {
-    text-wrap: balance;
+  .term-invert-amber {
+    background: var(--color-term-secondary);
+    color: var(--color-term-bg);
+    text-shadow: none;
   }
-}
 
-/* Scan code input styling */
-.scan-input-area {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  line-height: 1.5;
-  tab-size: 2;
-}
+  /* Terminal progress bar fill */
+  .term-progress-fill {
+    background: var(--color-term-fg);
+  }
 
-/* Smooth transitions */
-.page-transition {
-  transition: opacity 0.2s ease-in-out;
-}
+  .term-progress-bg {
+    background: var(--color-term-dim);
+  }
 
-/* Risk Score Badge sizing */
-.risk-badge {
-  font-family: var(--font-mono);
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  /* Terminal separator */
+  .term-separator {
+    border: none;
+    border-top: 1px dashed var(--color-term-muted);
+  }
+
+  /* Grid border style */
+  .term-border {
+    border: 1px solid var(--color-term-border);
+  }
+
+  .term-border-dashed {
+    border: 1px dashed var(--color-term-muted);
+  }
+
+  /* Status dots */
+  .term-dot-ok {
+    background: var(--color-term-fg);
+    box-shadow: 0 0 4px rgba(51, 255, 0, 0.6);
+  }
+
+  .term-dot-warn {
+    background: var(--color-term-secondary);
+    box-shadow: 0 0 4px rgba(255, 176, 0, 0.6);
+  }
+
+  .term-dot-err {
+    background: var(--color-term-error);
+    box-shadow: 0 0 4px rgba(255, 51, 51, 0.6);
+  }
+
+  .term-dot-idle {
+    background: var(--color-term-muted);
+  }
+
+  /* Grade colors for risk score */
+  .term-grade-a { color: var(--color-term-fg); }
+  .term-grade-b { color: #66ff33; }
+  .term-grade-c { color: var(--color-severity-medium); }
+  .term-grade-d { color: var(--color-term-secondary); }
+  .term-grade-e { color: #ff6600; }
+  .term-grade-f { color: var(--color-term-error); }
+
+  /* Terminal row hover */
+  .term-row-hover:hover {
+    background: var(--color-term-dim);
+  }
+
+  /* Input-like terminal prompt */
+  .term-prompt::before {
+    content: "user@securithm:~$ ";
+    color: var(--color-term-muted);
+  }
 }

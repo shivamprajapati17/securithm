@@ -1,5 +1,5 @@
 {
-  "name": "auditai",
+  "name": "securithm",
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",

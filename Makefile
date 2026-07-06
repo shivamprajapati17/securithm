@@ -1,7 +1,7 @@
 .PHONY: help install dev db-start db-stop migrate migrate-auto shell check lint
 
 help:
-	@echo "AuditAI Backend — Available Commands"
+	@echo "Securithm Backend — Available Commands"
 	@echo "─────────────────────────────────────"
 	@echo "make install       Install Python dependencies"
 	@echo "make dev           Start the FastAPI dev server (hot-reload)"

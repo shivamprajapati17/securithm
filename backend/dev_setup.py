@@ -1,4 +1,4 @@
-"""AuditAI Development Setup — creates tables and starts the server.
+"""Securithm Development Setup — creates tables and starts the server.
 
 Usage:
     python -m backend.dev_setup
@@ -32,7 +32,7 @@ def setup_database(db_url: str | None = None) -> str:
 
     # Default to SQLite for easy local dev
     if "DATABASE_URL" not in os.environ:
-        os.environ["DATABASE_URL"] = "sqlite:///./auditai_dev.db"
+        os.environ["DATABASE_URL"] = "sqlite:///./securithm_dev.db"
 
     Base.metadata.create_all(bind=engine)
     print(f"OK Tables created ({os.environ['DATABASE_URL']})")
@@ -321,7 +321,7 @@ contract VulnerableVault {
 def start_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
     """Start the Uvicorn dev server."""
     import uvicorn
-    print(f"\n=> AuditAI API running at http://{host}:{port}")
+    print(f"\n=> Securithm API running at http://{host}:{port}")
     print(f"=> API docs at http://{host}:{port}/docs")
     print(f"=> Redoc at http://{host}:{port}/redoc")
     print()
@@ -334,8 +334,8 @@ def start_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="AuditAI Dev Setup")
-    parser.add_argument("--db", help="Database URL (default: sqlite:///./auditai_dev.db)")
+    parser = argparse.ArgumentParser(description="Securithm Dev Setup")
+    parser.add_argument("--db", help="Database URL (default: sqlite:///./securithm_dev.db)")
     parser.add_argument("--host", default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=8000, help="Server port")
     parser.add_argument("--no-seed", action="store_true", help="Skip seeding demo data")
@@ -344,7 +344,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 50)
-    print("  AuditAI - Development Setup")
+    print("  Securithm - Development Setup")
     print("=" * 50)
 
     db_url = setup_database(args.db)

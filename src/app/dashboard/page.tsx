@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScanInput } from "@/components/scan-input";
-import { Progress } from "@/components/ui/progress";
 import { useScans } from "@/lib/hooks";
 import { formatRelativeTime } from "@/lib/utils";
 import {
@@ -17,21 +16,21 @@ import {
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, string> = {
-    completed: "bg-green-500/10 text-green-600 dark:text-green-400",
-    running: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-    failed: "bg-red-500/10 text-red-600 dark:text-red-400",
-    pending: "bg-gray-500/10 text-gray-600 dark:text-gray-400",
+    completed: "text-[var(--color-term-fg)] border-[var(--color-term-fg)]",
+    running: "text-[var(--color-term-warning)] border-[var(--color-term-warning)]",
+    failed: "text-[var(--color-term-error)] border-[var(--color-term-error)]",
+    pending: "text-[var(--color-term-muted)] border-[var(--color-term-muted)]",
   };
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${variants[status] || variants.pending}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono border uppercase tracking-wider ${variants[status] || variants.pending}`}
     >
       {status === "running" && (
-        <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+        <span className="animate-blink">▶</span>
       )}
-      {status === "completed" && <CheckCircle2 className="h-3 w-3" />}
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {status === "completed" && <CheckCircle2 className="h-2.5 w-2.5" />}
+      [{status.charAt(0).toUpperCase() + status.slice(1)}]
     </span>
   );
 }
@@ -39,16 +38,16 @@ function StatusBadge({ status }: { status: string }) {
 function RiskBadge({ grade }: { grade: string | null }) {
   if (!grade) return null;
   const colors: Record<string, string> = {
-    A: "bg-green-500 text-white",
-    B: "bg-green-400 text-white",
-    C: "bg-yellow-500 text-white",
-    D: "bg-orange-500 text-white",
-    E: "bg-red-500 text-white",
-    F: "bg-red-600 text-white",
+    A: "text-[var(--color-term-fg)]",
+    B: "text-risk-b",
+    C: "text-[var(--color-term-warning)]",
+    D: "text-[var(--color-term-secondary)]",
+    E: "text-severity-high",
+    F: "text-[var(--color-term-error)]",
   };
   return (
     <span
-      className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-xs font-bold ${colors[grade] || "bg-gray-500 text-white"}`}
+      className={`inline-flex items-center justify-center w-6 h-6 border border-current text-[10px] font-bold font-mono ${colors[grade] || "text-[var(--color-term-muted)]"}`}
     >
       {grade}
     </span>
@@ -75,45 +74,47 @@ export default function DashboardPage() {
   const stats = [
     {
       icon: Shield,
-      label: "Scans",
+      label: "SCANS",
       value: String(scans.length),
-      sub: "Total scans",
+      sub: "TOTAL",
     },
     {
       icon: AlertTriangle,
-      label: "Critical Findings",
+      label: "CRITICAL",
       value: String(criticalCount),
-      sub: "Across all scans",
+      sub: "FINDINGS",
     },
     {
       icon: CheckCircle2,
-      label: "Resolved",
+      label: "RESOLVED",
       value: String(resolvedFindings),
-      sub: `${totalFindings > 0 ? Math.round((resolvedFindings / totalFindings) * 100) : 0}% resolution`,
+      sub: `${totalFindings > 0 ? Math.round((resolvedFindings / totalFindings) * 100) : 0}%`,
     },
     {
       icon: Clock,
-      label: "Contracts",
+      label: "CONTRACTS",
       value: String(completedScans.length),
-      sub: "Analyzed",
+      sub: "ANALYZED",
     },
   ];
 
   const recentScans = scans.slice(0, 5);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-surface-500 dark:text-surface-400 text-sm mt-1">
-          Live data from your security scans
+        <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
+          $ DASHBOARD --STATS
+        </h1>
+        <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
+          # LIVE DATA FROM YOUR SECURITY SCANS
         </p>
       </div>
 
       {/* Quick Scan */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Quick Scan</CardTitle>
+          <CardTitle>{">"} QUICK_SCAN</CardTitle>
         </CardHeader>
         <CardContent>
           <ScanInput variant="inline" />
@@ -121,28 +122,26 @@ export default function DashboardPage() {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => (
           <Card key={stat.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300">
-                  <stat.icon className="h-4.5 w-4.5" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex h-7 w-7 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)]">
+                  <stat.icon className="h-3.5 w-3.5" />
                 </div>
+                <span className="text-[9px] text-[var(--color-term-muted)] font-mono uppercase">{stat.sub}</span>
               </div>
-              <div className="text-2xl font-bold">
+              <div className="text-lg font-bold text-[var(--color-term-fg)] term-glow">
                 {scansLoading ? (
-                  <span className="text-surface-300 dark:text-surface-600 animate-pulse">
-                    --
-                  </span>
+                  <span className="animate-blink">_</span>
                 ) : (
                   stat.value
                 )}
               </div>
-              <div className="text-xs text-surface-500 dark:text-surface-400 mt-1">
-                {stat.label}
+              <div className="text-[9px] text-[var(--color-term-muted)] mt-0.5 font-mono uppercase tracking-wider">
+                [{stat.label}]
               </div>
-              <div className="text-[10px] text-surface-400">{stat.sub}</div>
             </CardContent>
           </Card>
         ))}
@@ -151,50 +150,50 @@ export default function DashboardPage() {
       {/* Recent Scans */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Recent Scans</CardTitle>
+          <CardTitle>{">"} RECENT_SCANS</CardTitle>
           <Button variant="ghost" size="sm" className="gap-1">
-            View All
-            <ArrowRight className="h-3.5 w-3.5" />
+            $ VIEW_ALL
+            <ArrowRight className="h-3 w-3" />
           </Button>
         </CardHeader>
         <CardContent>
           {scansLoading ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="h-12 rounded-lg bg-surface-100 dark:bg-surface-800 animate-pulse"
+                  className="h-8 border border-[var(--color-term-border)] bg-[var(--color-term-dim)] animate-pulse"
                 />
               ))}
             </div>
           ) : recentScans.length === 0 ? (
-            <div className="text-center py-8 text-sm text-surface-400">
-              No scans yet. Paste a contract to get started.
+            <div className="text-center py-6 text-xs text-[var(--color-term-muted)] font-mono">
+              $ NO_SCANS_FOUND
             </div>
           ) : (
-            <div className="divide-y divide-surface-200 dark:divide-surface-700">
+            <div className="divide-y divide-[var(--color-term-border)]">
               {recentScans.map((scan) => (
                 <a
                   key={scan.id}
                   href={`/dashboard/scans?id=${scan.id}`}
-                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-surface-50 dark:hover:bg-surface-800/50 px-2 -mx-2 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center justify-between py-2 first:pt-0 last:pb-0 hover:bg-[var(--color-term-dim)] px-1.5 -mx-1.5 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-4 w-4 text-surface-400" />
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-3.5 w-3.5 text-[var(--color-term-muted)] shrink-0" />
                     <div>
-                      <span className="text-sm font-medium">
-                        {scan.contract_name || "Unknown"}
+                      <span className="text-xs font-mono text-[var(--color-term-fg)]">
+                        {scan.contract_name || "UNKNOWN"}
                       </span>
-                      <div className="text-xs text-surface-400">
+                      <div className="text-[9px] text-[var(--color-term-muted)] font-mono">
                         {scan.created_at ? formatRelativeTime(scan.created_at) : "just now"}
                         {scan.chain && ` · ${scan.chain}`}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     {scan.findings && scan.findings.length > 0 && (
-                      <span className="text-xs text-surface-500">
-                        {scan.findings.length} findings
+                      <span className="text-[9px] text-[var(--color-term-muted)] font-mono">
+                        [{scan.findings.length}]
                       </span>
                     )}
                     {scan.risk_score_overall && (

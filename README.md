@@ -1,10 +1,10 @@
-# AuditAI 🔍
+# Securithm 🔍
 
 > Ship secure contracts. Before the hackers find the bugs.
 
-[![Frontend CI](https://github.com/shivamprajapati17/auditai/actions/workflows/ci.yml/badge.svg)](https://github.com/shivamprajapati17/auditai/actions/workflows/ci.yml)
-[![Backend CI](https://github.com/shivamprajapati17/auditai/actions/workflows/backend.yml/badge.svg)](https://github.com/shivamprajapati17/auditai/actions/workflows/backend.yml)
-[![Deploy](https://github.com/shivamprajapati17/auditai/actions/workflows/deploy.yml/badge.svg)](https://github.com/shivamprajapati17/auditai/actions/workflows/deploy.yml)
+[![Frontend CI](https://github.com/shivamprajapati17/securithm/actions/workflows/ci.yml/badge.svg)](https://github.com/shivamprajapati17/securithm/actions/workflows/ci.yml)
+[![Backend CI](https://github.com/shivamprajapati17/securithm/actions/workflows/backend.yml/badge.svg)](https://github.com/shivamprajapati17/securithm/actions/workflows/backend.yml)
+[![Deploy](https://github.com/shivamprajapati17/securithm/actions/workflows/deploy.yml/badge.svg)](https://github.com/shivamprajapati17/securithm/actions/workflows/deploy.yml)
 
 Instant AI + static analysis of Solidity and Rust smart contracts, continuous on-chain monitoring, and a compliance-style remediation workflow.
 

@@ -1,8 +1,8 @@
-# Product Requirements Document (PRD) for AuditAI
+# Product Requirements Document (PRD) for Securithm
 
 ## 1. Product Overview
 
-- **Name:** AuditAI
+- **Name:** Securithm
 - **Tagline:** "Ship secure contracts. Before the hackers find the bugs."
 - **Category:** Web3 dev-tool / security infrastructure
 - **Problem:** Smart contract audits cost $20–150K and take months; 95% of Web3 teams ship unaudited. $3.8B was lost to smart contract exploits in a single year.

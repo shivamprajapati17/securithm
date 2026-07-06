@@ -1,4 +1,4 @@
-# Implementation Plan for AuditAI
+# Implementation Plan for Securithm
 
 ## 1. Sprint Roadmap (16 weeks to public beta)
 

@@ -8,75 +8,87 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-surface-200 dark:border-surface-800 bg-white/80 dark:bg-surface-950/80 backdrop-blur-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--color-term-border)] bg-[var(--color-term-bg)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-              <Shield className="h-4 w-4 text-white" />
+        <div className="flex h-14 items-center justify-between">
+          <a href="/" className="flex items-center gap-2 group">
+            <div className="flex h-7 w-7 items-center justify-center border border-[var(--color-term-border)] group-hover:bg-[var(--color-term-fg)] group-hover:border-[var(--color-term-fg)] transition-colors">
+              <Shield className="h-4 w-4 text-[var(--color-term-fg)] group-hover:text-[var(--color-term-bg)]" />
             </div>
-            <span className="text-lg font-bold tracking-tight">AuditAI</span>
+            <span className="text-sm font-bold uppercase tracking-wider text-[var(--color-term-fg)] term-glow">
+              Securithm
+            </span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             <a
               href="#features"
-              className="text-sm font-medium text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
+              className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              Features
+              ~/features
             </a>
             <a
               href="#pricing"
-              className="text-sm font-medium text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
+              className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              Pricing
+              ~/pricing
             </a>
             <a
               href="#docs"
-              className="text-sm font-medium text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100 transition-colors"
+              className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              Docs
+              ~/docs
             </a>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm">Get Started</Button>
+          <div className="hidden md:flex items-center gap-2">
+            <a href="/auth/login">
+              <Button variant="ghost" size="sm">
+                $ sign_in
+              </Button>
+            </a>
+            <a href="/auth/register">
+              <Button size="sm">
+                [ start ]
+              </Button>
+            </a>
           </div>
 
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-[var(--color-term-fg)] border border-[var(--color-term-border)]"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? (
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             ) : (
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4" />
             )}
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-surface-200 dark:border-surface-800 bg-white dark:bg-surface-950 px-4 py-4 space-y-3">
-          <a href="#features" className="block text-sm font-medium">
-            Features
+        <div className="md:hidden border-t border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-4 py-4 space-y-3">
+          <a href="#features" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+            ~/features
           </a>
-          <a href="#pricing" className="block text-sm font-medium">
-            Pricing
+          <a href="#pricing" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+            ~/pricing
           </a>
-          <a href="#docs" className="block text-sm font-medium">
-            Docs
+          <a href="#docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+            ~/docs
           </a>
-          <div className="flex gap-3 pt-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              Sign In
-            </Button>
-            <Button size="sm" className="flex-1">
-              Get Started
-            </Button>
+          <div className="flex gap-2 pt-2">
+            <a href="/auth/login" className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                $ sign_in
+              </Button>
+            </a>
+            <a href="/auth/register" className="flex-1">
+              <Button size="sm" className="w-full">
+                [ start ]
+              </Button>
+            </a>
           </div>
         </div>
       )}

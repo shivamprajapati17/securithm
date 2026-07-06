@@ -37,7 +37,7 @@ describe("CiStatusIndicator", () => {
     );
 
     render(<CiStatusIndicator collapsed={false} />);
-    expect(screen.getByText("CI Status")).toBeInTheDocument();
+    expect(screen.getByText("$ ci_status")).toBeInTheDocument();
   });
 
   it("displays green dot and PASS when workflow succeeds", async () => {
@@ -46,9 +46,9 @@ describe("CiStatusIndicator", () => {
     render(<CiStatusIndicator collapsed={false} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Frontend CI")).toBeInTheDocument();
-      expect(screen.getByText("PASS")).toBeInTheDocument();
-      expect(screen.getByText("Backend CI")).toBeInTheDocument();
+      expect(screen.getByText("frontend_ci")).toBeInTheDocument();
+      expect(screen.getByText("[OK]")).toBeInTheDocument();
+      expect(screen.getByText("backend_ci")).toBeInTheDocument();
     });
   });
 
@@ -58,9 +58,9 @@ describe("CiStatusIndicator", () => {
     render(<CiStatusIndicator collapsed={false} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Frontend CI")).toBeInTheDocument();
-      expect(screen.getByText("FAIL")).toBeInTheDocument();
-      expect(screen.getByText("Backend CI")).toBeInTheDocument();
+      expect(screen.getByText("frontend_ci")).toBeInTheDocument();
+      expect(screen.getByText("[ERR]")).toBeInTheDocument();
+      expect(screen.getByText("backend_ci")).toBeInTheDocument();
     });
   });
 
@@ -70,7 +70,7 @@ describe("CiStatusIndicator", () => {
     render(<CiStatusIndicator collapsed={false} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Frontend CI")).toBeInTheDocument();
+      expect(screen.getByText("frontend_ci")).toBeInTheDocument();
     });
   });
 
@@ -84,10 +84,10 @@ describe("CiStatusIndicator", () => {
     render(<CiStatusIndicator collapsed={false} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Frontend CI")).toBeInTheDocument();
+      expect(screen.getByText("frontend_ci")).toBeInTheDocument();
     });
-    expect(screen.queryByText("PASS")).not.toBeInTheDocument();
-    expect(screen.queryByText("FAIL")).not.toBeInTheDocument();
+    expect(screen.queryByText("[OK]")).not.toBeInTheDocument();
+    expect(screen.queryByText("[ERR]")).not.toBeInTheDocument();
   });
 
   it("shows unknown state on API error", async () => {
@@ -96,14 +96,14 @@ describe("CiStatusIndicator", () => {
     render(<CiStatusIndicator collapsed={false} />);
 
     await waitFor(() => {
-      expect(screen.getByText("Frontend CI")).toBeInTheDocument();
-      expect(screen.getByText("Backend CI")).toBeInTheDocument();
+      expect(screen.getByText("frontend_ci")).toBeInTheDocument();
+      expect(screen.getByText("backend_ci")).toBeInTheDocument();
     });
   });
 
   it("renders nothing when collapsed", () => {
     render(<CiStatusIndicator collapsed={true} />);
-    expect(screen.queryByText("CI Status")).not.toBeInTheDocument();
+    expect(screen.queryByText("$ ci_status")).not.toBeInTheDocument();
   });
 
   it("links to the correct GitHub Actions page", async () => {

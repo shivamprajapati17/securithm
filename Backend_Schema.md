@@ -1,4 +1,4 @@
-# Backend Schema for AuditAI
+# Backend Schema for Securithm
 
 ## 1. Database Schema
 

@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-psql -U auditai -d postgres -c "CREATE DATABASE auditai_ci;" 2>/dev/null || echo "Database auditai_ci already exists"
+psql -U securithm -d postgres -c "CREATE DATABASE securithm_ci;" 2>/dev/null || echo "Database securithm_ci already exists"

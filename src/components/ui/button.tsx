@@ -4,28 +4,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 font-mono border",
   {
     variants: {
       variant: {
         default:
-          "bg-brand-600 text-white hover:bg-brand-700 shadow-sm hover:shadow-md active:scale-[0.97]",
+          "border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] active:opacity-80 uppercase tracking-wider",
         destructive:
-          "bg-red-600 text-white hover:bg-red-700 shadow-sm active:scale-[0.97]",
+          "border-[var(--color-term-error)] text-[var(--color-term-error)] bg-transparent hover:bg-[var(--color-term-error)] hover:text-[var(--color-term-bg)] uppercase tracking-wider",
         outline:
-          "border border-surface-300 dark:border-surface-600 bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800 active:scale-[0.97]",
+          "border-[var(--color-term-border)] text-[var(--color-term-fg)] bg-transparent hover:border-[var(--color-term-fg)] uppercase tracking-wider",
         secondary:
-          "bg-surface-100 dark:bg-surface-800 text-surface-900 dark:text-surface-100 hover:bg-surface-200 dark:hover:bg-surface-700 shadow-sm active:scale-[0.97]",
+          "border-[var(--color-term-border)] text-[var(--color-term-secondary)] bg-transparent hover:bg-[var(--color-term-secondary)] hover:text-[var(--color-term-bg)] uppercase tracking-wider",
         ghost:
-          "hover:bg-surface-100 dark:hover:bg-surface-800 active:scale-[0.97]",
-        link: "text-brand-600 dark:text-brand-400 underline-offset-4 hover:underline",
+          "border-transparent text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-dim)] hover:border-[var(--color-term-border)]",
+        link:
+          "border-none text-[var(--color-term-fg)] underline underline-offset-4 hover:bg-transparent hover:text-[var(--color-term-secondary)]",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3 text-xs",
-        lg: "h-11 rounded-lg px-8 text-base",
-        xl: "h-12 rounded-lg px-10 text-base",
-        icon: "h-10 w-10",
+        sm: "h-8 px-3 text-xs",
+        lg: "h-12 px-6 text-base",
+        xl: "h-14 px-8 text-lg",
+        icon: "h-10 w-10 p-0",
       },
     },
     defaultVariants: {

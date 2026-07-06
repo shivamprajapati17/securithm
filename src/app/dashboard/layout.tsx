@@ -8,10 +8,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-950">
+    <div className="min-h-screen bg-[var(--color-term-bg)]">
       <Sidebar />
-      <div className="pl-64">
-        <main className="p-8">{children}</main>
+      <div className="md:pl-56 pl-0">
+        <main className="p-6 pt-14 md:pt-6">{children}</main>
       </div>
     </div>
   );
