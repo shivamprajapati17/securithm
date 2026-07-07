@@ -34,7 +34,7 @@ export function Navbar() {
               pricing
             </a>
             <a
-              href="#docs"
+              href="/docs"
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
               docs
@@ -74,7 +74,7 @@ export function Navbar() {
           <a href="#pricing" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             pricing
           </a>
-          <a href="#docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+          <a href="/docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             docs
           </a>
           <div className="flex gap-2 pt-2">

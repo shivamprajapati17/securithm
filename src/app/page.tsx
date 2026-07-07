@@ -321,16 +321,24 @@ export default function Home() {
                 severity threshold.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button size="default" className="gap-2">
+                <a
+                  href="https://github.com/marketplace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"
+                >
                   <Github className="h-3.5 w-3.5" />
                   INSTALL APP
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-                <Button variant="outline" size="default" className="gap-2">
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                <a
+                  href="/docs"
+                  className="inline-flex items-center gap-2 border border-[var(--color-term-border)] text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:border-[var(--color-term-fg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"
+                >
                   <BookOpen className="h-3.5 w-3.5" />
                   READ DOCS
                   <ExternalLink className="h-3.5 w-3.5" />
-                </Button>
+                </a>
               </div>
             </div>
           </div>
@@ -353,10 +361,11 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-              <a href="#" className="hover:text-[var(--color-term-fg)]">TERMS</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">PRIVACY</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">SOC 2</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">STATUS</a>
+              <a href="/terms" className="hover:text-[var(--color-term-fg)]">TERMS</a>
+              <a href="/privacy" className="hover:text-[var(--color-term-fg)]">PRIVACY</a>
+              <a href="/soc2" className="hover:text-[var(--color-term-fg)]">SOC 2</a>
+              <a href="/status" className="hover:text-[var(--color-term-fg)]">STATUS</a>
+              <a href="/docs" className="hover:text-[var(--color-term-fg)]">DOCS</a>
               <span className="text-[var(--color-term-muted)]">&copy; 2026 SECURITHM</span>
             </div>
           </div>

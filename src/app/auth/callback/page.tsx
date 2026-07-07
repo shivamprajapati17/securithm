@@ -34,7 +34,7 @@ function CallbackHandler() {
       <div className="min-h-screen bg-[var(--color-term-bg)] flex items-center justify-center p-4">
         <div className="w-full max-w-sm border border-[var(--color-term-error)] p-4 text-center">
           <p className="text-xs text-[var(--color-term-error)] font-mono">[!] {error}</p>
-          <p className="text-[9px] text-[var(--color-term-muted)] font-mono mt-2">$ REDIRECTING...</p>
+          <p className="text-[9px] text-[var(--color-term-muted)] font-mono mt-2">REDIRECTING...</p>
         </div>
       </div>
     );
@@ -43,7 +43,7 @@ function CallbackHandler() {
   return (
     <div className="min-h-screen bg-[var(--color-term-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-sm border border-[var(--color-term-border)] p-4 text-center">
-        <p className="text-xs text-[var(--color-term-fg)] font-mono">$ AUTHENTICATING...</p>
+        <p className="text-xs text-[var(--color-term-fg)] font-mono">AUTHENTICATING...</p>
         <p className="text-[9px] text-[var(--color-term-muted)] font-mono mt-2 animate-blink">▌</p>
       </div>
     </div>
@@ -55,7 +55,7 @@ export default function AuthCallbackPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[var(--color-term-bg)] flex items-center justify-center p-4">
         <div className="w-full max-w-sm border border-[var(--color-term-border)] p-4 text-center">
-          <p className="text-xs text-[var(--color-term-fg)] font-mono">$ LOADING...</p>
+          <p className="text-xs text-[var(--color-term-fg)] font-mono">LOADING...</p>
         </div>
       </div>
     }>
