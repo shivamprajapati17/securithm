@@ -25,31 +25,30 @@ export function Navbar() {
               href="#features"
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              ~/features
+              features
             </a>
             <a
               href="#pricing"
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              ~/pricing
+              pricing
             </a>
             <a
               href="#docs"
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
-              ~/docs
+              docs
             </a>
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
             <a href="/auth/login">
-              <Button variant="ghost" size="sm">
-                $ sign_in
-              </Button>
-            </a>
-            <a href="/auth/register">
-              <Button size="sm">
-                [ start ]
+              <Button variant="ghost" size="sm">                    sign in
+                  </Button>
+                </a>
+                <a href="/auth/register">
+                  <Button size="sm">
+                    [ start ]
               </Button>
             </a>
           </div>
@@ -70,18 +69,18 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-4 py-4 space-y-3">
           <a href="#features" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
-            ~/features
+            features
           </a>
           <a href="#pricing" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
-            ~/pricing
+            pricing
           </a>
           <a href="#docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
-            ~/docs
+            docs
           </a>
           <div className="flex gap-2 pt-2">
             <a href="/auth/login" className="flex-1">
               <Button variant="outline" size="sm" className="w-full">
-                $ sign_in
+                sign in
               </Button>
             </a>
             <a href="/auth/register" className="flex-1">

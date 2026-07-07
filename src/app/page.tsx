@@ -5,11 +5,15 @@ import { Navbar } from "@/components/navbar";
 import { ScanInput } from "@/components/scan-input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FadeInSection, ScaleInSection, StaggerGrid } from "@/components/scroll-animations";
+import AsciiCta from "@/components/ascii-cta";
+import InstallCommand from "@/components/install-command";
 
 const ThreeBackground = dynamic(
   () => import("@/components/three-background"),
   { ssr: false },
 );
+
 import {
   ArrowRight,
   Shield,
@@ -28,71 +32,71 @@ import {
 } from "lucide-react";
 
 const stats = [
-  { label: "CONTRACTS_ANALYZED", value: "10,000+" },
-  { label: "BUGS_CAUGHT", value: "500+" },
-  { label: "DEV_SIGNUPS", value: "2,000+" },
-  { label: "CHAINS_SUPPORTED", value: "6" },
+  { label: "CONTRACTS ANALYZED", value: "10,000+" },
+  { label: "BUGS CAUGHT", value: "500+" },
+  { label: "DEV SIGNUPS", value: "2,000+" },
+  { label: "CHAINS SUPPORTED", value: "6" },
 ];
 
 const features = [
   {
     icon: Zap,
-    title: "INSTANT_ANALYSIS",
+    title: "INSTANT ANALYSIS",
     description:
       "AI-powered static, symbolic, and reasoning analysis returns results in under 30 seconds for contracts under 1,000 lines.",
   },
   {
     icon: GitBranch,
-    title: "CI/CD_INTEGRATION",
+    title: "CI/CD INTEGRATION",
     description:
       "GitHub Action runs on every push and PR. Inline comments, severity gating, and SARIF reports in your Security tab.",
   },
   {
     icon: Bell,
-    title: "CONTINUOUS_MONITOR",
+    title: "CONTINUOUS MONITOR",
     description:
-      "Watch deployed contracts for anomalous on-chain activity — large outflows, unknown callers, TVL drops — in real time.",
+      "Watch deployed contracts for anomalous on-chain activity including large outflows, unknown callers, and TVL drops in real time.",
   },
   {
     icon: FileText,
-    title: "FIX_SUGGESTIONS",
+    title: "FIX SUGGESTIONS",
     description:
       "AI-generated secure code replacements with plain-English explanations. Apply all fixes with one click.",
   },
   {
     icon: BarChart3,
-    title: "RISK_SCORE_API",
+    title: "RISK SCORE API",
     description:
       "Public risk scoring for any contract address. Used by exchanges for listing diligence and funds for portfolio risk.",
   },
   {
     icon: Shield,
-    title: "REMEDIATION_FLOW",
+    title: "REMEDIATION FLOW",
     description:
       "Assign findings, set SLA deadlines, track resolution. Export a Security Posture Report as PDF for auditors.",
   },
 ];
 
 const chains = [
-  { name: "Ethereum", color: "text-[var(--color-term-fg)]" },
-  { name: "Base", color: "text-[var(--color-term-fg)]" },
-  { name: "Arbitrum", color: "text-[var(--color-term-fg)]" },
-  { name: "Polygon", color: "text-[var(--color-term-fg)]" },
-  { name: "BSC", color: "text-[var(--color-term-fg)]" },
-  { name: "Solana", color: "text-[var(--color-term-fg)]" },
+  { name: "Ethereum" },
+  { name: "Base" },
+  { name: "Arbitrum" },
+  { name: "Polygon" },
+  { name: "BSC" },
+  { name: "Solana" },
 ];
 
 const personas = [
   {
     icon: Terminal,
-    title: "SOLO_DEV",
+    title: "SOLO DEV",
     description:
       "Free tier, instant feedback, plain-English fix guidance.",
     badge: "FREE",
   },
   {
     icon: Users,
-    title: "PROTOCOL_TEAM",
+    title: "PROTOCOL TEAM",
     description:
       "CI/CD gating, team seats, continuous monitoring, audit trail.",
     badge: "PRO",
@@ -126,7 +130,7 @@ export default function Home() {
 
             <div className="inline-flex items-center gap-2 px-2 py-1 border border-[var(--color-term-border)] mb-6">
               <span className="text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-                # STATUS: PUBLIC_BETA [OK]
+                STATUS: PUBLIC BETA [OK]
               </span>
             </div>
 
@@ -139,9 +143,9 @@ export default function Home() {
             </h1>
 
             <p className="text-sm sm:text-base text-[var(--color-term-muted)] max-w-2xl mx-auto">
-              AI-POWERED SMART CONTRACT SECURITY ANALYSIS. PASTE YOUR CODE,
-              A DEPLOYED ADDRESS, OR CONNECT YOUR REPO — GET SEVERITY-TAGGED
-              FINDINGS, FIX SUGGESTIONS, AND A RISK SCORE IN SECONDS.
+              AI-powered smart contract security analysis. Paste your code,
+              a deployed address, or connect your repo. Get severity-tagged
+              findings, fix suggestions, and a risk score in seconds.
             </p>
           </div>
 
@@ -161,56 +165,62 @@ export default function Home() {
       </section>
 
       {/* ── STATS SECTION ── */}
-      <section className="border-y border-[var(--color-term-border)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center border border-[var(--color-term-border)] p-4">
-                <div className="text-lg sm:text-xl font-bold text-[var(--color-term-fg)] term-glow">
-                  {stat.value}
+      <FadeInSection>
+        <section className="border-y border-[var(--color-term-border)]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {stats.map((stat) => (
+                <div key={stat.label} className="text-center border border-[var(--color-term-border)] p-4">
+                  <div className="text-lg sm:text-xl font-bold text-[var(--color-term-fg)] term-glow">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] font-mono text-[var(--color-term-muted)] mt-1 uppercase tracking-wider">
+                    {stat.label}
+                  </div>
                 </div>
-                <div className="text-[10px] font-mono text-[var(--color-term-muted)] mt-1 uppercase tracking-wider">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </FadeInSection>
 
       {/* ── CHAINS ── */}
-      <section className="py-8 border-b border-[var(--color-term-border)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-[10px] font-mono text-[var(--color-term-muted)] mb-4 uppercase tracking-wider">
-            # SUPPORTED_CHAINS
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {chains.map((chain) => (
-              <div
-                key={chain.name}
-                className="flex items-center gap-2 px-3 py-1.5 border border-[var(--color-term-border)]"
-              >
-                <span className="text-[11px] font-mono text-[var(--color-term-fg)] uppercase tracking-wider">{chain.name}</span>
-              </div>
-            ))}
+      <FadeInSection delay={0.1}>
+        <section className="py-8 border-b border-[var(--color-term-border)]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-[10px] font-mono text-[var(--color-term-muted)] mb-4 uppercase tracking-wider">
+              SUPPORTED CHAINS
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {chains.map((chain) => (
+                <div
+                  key={chain.name}
+                  className="flex items-center gap-2 px-3 py-1.5 border border-[var(--color-term-border)]"
+                >
+                  <span className="text-[11px] font-mono text-[var(--color-term-fg)] uppercase tracking-wider">{chain.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </FadeInSection>
 
       {/* ── FEATURES ── */}
       <section id="features" className="py-16 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
-              $ FEATURES --ALL
-            </h2>
-            <p className="text-xs text-[var(--color-term-muted)]">
-              FROM INSTANT PRE-DEPLOY CHECKS TO CONTINUOUS POST-DEPLOY
-              MONITORING — SECURITHM COVERS THE FULL SECURITY LIFECYCLE.
-            </p>
-          </div>
+          <FadeInSection>
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
+                FEATURES
+              </h2>
+              <p className="text-xs text-[var(--color-term-muted)]">
+                From instant pre-deploy checks to continuous post-deploy
+                monitoring. Securithm covers the full security lifecycle.
+              </p>
+            </div>
+          </FadeInSection>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <StaggerGrid className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerAmount={0.08}>
             {features.map((feature) => (
               <div
                 key={feature.title}
@@ -229,24 +239,44 @@ export default function Home() {
                 </p>
               </div>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
-      {/* ── PERSONAS ── */}
-      <section className="py-16 border-y border-[var(--color-term-border)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
-              $ TARGET_USERS --LIST
-            </h2>
-            <p className="text-xs text-[var(--color-term-muted)]">
-              FROM SOLO DEVELOPERS SHIPPING THEIR FIRST TOKEN TO INSTITUTIONS
-              EVALUATING COUNTERPARTY RISK.
-            </p>
+      {/* ── INSTALL COMMAND ── */}
+      <ScaleInSection>
+        <section className="py-16 border-y border-[var(--color-term-border)]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
+                QUICK INSTALL
+              </h2>
+              <p className="text-xs text-[var(--color-term-muted)]">
+                Install Securithm in your project with a single command.
+                The CLI scans your contracts and integrates with your CI/CD pipeline.
+              </p>
+            </div>
+            <InstallCommand />
           </div>
+        </section>
+      </ScaleInSection>
 
-          <div className="grid md:grid-cols-3 gap-4">
+      {/* ── PERSONAS ── */}
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <FadeInSection>
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
+                TARGET USERS
+              </h2>
+              <p className="text-xs text-[var(--color-term-muted)]">
+                From solo developers shipping their first token to institutions
+                evaluating counterparty risk.
+              </p>
+            </div>
+          </FadeInSection>
+
+          <StaggerGrid className="grid md:grid-cols-3 gap-4" staggerAmount={0.1}>
             {personas.map((persona) => (
               <div
                 key={persona.title}
@@ -270,59 +300,45 @@ export default function Home() {
                 </p>
               </div>
             ))}
-          </div>
+          </StaggerGrid>
         </div>
       </section>
 
       {/* ── GITHUB INTEGRATION ── */}
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex h-10 w-10 items-center justify-center border border-[var(--color-term-border)] mb-4">
-              <Github className="h-5 w-5 text-[var(--color-term-fg)]" />
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
-              $ GITHUB_INTEGRATION --SETUP
-            </h2>
-            <p className="text-xs text-[var(--color-term-muted)] mb-6 max-w-xl mx-auto">
-              INSTALL THE SECURITHM GITHUB ACTION. IT AUTOMATICALLY SCANS EVERY PR
-              AND PUSH, POSTS INLINE COMMENTS, AND FAILS CI ABOVE YOUR CONFIGURED
-              SEVERITY THRESHOLD.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Button size="default" className="gap-2">
-                <Github className="h-3.5 w-3.5" />
-                [ INSTALL_APP ]
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-              <Button variant="outline" size="default" className="gap-2">
-                <BookOpen className="h-3.5 w-3.5" />
-                $ READ_DOCS
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Button>
+      <FadeInSection>
+        <section className="py-16 border-t border-[var(--color-term-border)]">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center">
+              <div className="inline-flex h-10 w-10 items-center justify-center border border-[var(--color-term-border)] mb-4">
+                <Github className="h-5 w-5 text-[var(--color-term-fg)]" />
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
+                GITHUB INTEGRATION
+              </h2>
+              <p className="text-xs text-[var(--color-term-muted)] mb-6 max-w-xl mx-auto">
+                Install the Securithm GitHub Action. It automatically scans every PR
+                and push, posts inline comments, and fails CI above your configured
+                severity threshold.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Button size="default" className="gap-2">
+                  <Github className="h-3.5 w-3.5" />
+                  INSTALL APP
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="outline" size="default" className="gap-2">
+                  <BookOpen className="h-3.5 w-3.5" />
+                  READ DOCS
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </FadeInSection>
 
       {/* ── CTA ── */}
-      <section className="py-16 border-t border-[var(--color-term-border)]">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="border border-[var(--color-term-fg)] p-8 bg-[var(--color-term-dim)]">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 text-[var(--color-term-fg)] term-glow">
-              $ START_SECURING --NOW
-            </h2>
-            <p className="text-xs text-[var(--color-term-muted)] mb-6 max-w-xl mx-auto">
-              NO CREDIT CARD REQUIRED. FREE TIER INCLUDES 50 SCANS/MONTH AND
-              BASIC MONITORING.
-            </p>
-            <Button size="lg" variant="default">
-              [ SCAN_YOUR_FIRST_CONTRACT ]
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
+      <AsciiCta />
 
       {/* ── FOOTER ── */}
       <footer className="border-t border-[var(--color-term-border)] py-8">
@@ -337,17 +353,17 @@ export default function Home() {
               </span>
             </div>
             <div className="flex items-center gap-4 text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-              <a href="#" className="hover:text-[var(--color-term-fg)]">$ TERMS</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">$ PRIVACY</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">$ SOC2</a>
-              <a href="#" className="hover:text-[var(--color-term-fg)]">$ STATUS</a>
-              <span className="text-[var(--color-term-muted)]">© 2026 SECURITHM</span>
+              <a href="#" className="hover:text-[var(--color-term-fg)]">TERMS</a>
+              <a href="#" className="hover:text-[var(--color-term-fg)]">PRIVACY</a>
+              <a href="#" className="hover:text-[var(--color-term-fg)]">SOC 2</a>
+              <a href="#" className="hover:text-[var(--color-term-fg)]">STATUS</a>
+              <span className="text-[var(--color-term-muted)]">&copy; 2026 SECURITHM</span>
             </div>
           </div>
-          <p className="text-center text-[9px] text-[var(--color-term-dim)] mt-4 max-w-2xl mx-auto font-mono">
-            # DISCLAIMER: AI ANALYSIS PROVIDES PRELIMINARY FINDINGS AND IS NOT A
-            SUBSTITUTE FOR A FULL MANUAL AUDIT. ALWAYS ENGAGE A PROFESSIONAL
-            SECURITY FIRM FOR PRODUCTION DEPLOYMENTS.
+          <p className="text-center text-[9px] text-[var(--color-term-muted)] mt-4 max-w-2xl mx-auto font-mono">
+            DISCLAIMER: AI analysis provides preliminary findings and is not a
+            substitute for a full manual audit. Always engage a professional
+            security firm for production deployments.
           </p>
         </div>
       </footer>

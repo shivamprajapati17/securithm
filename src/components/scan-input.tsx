@@ -76,7 +76,7 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
             <span className="text-[9px] text-[var(--color-term-fg)]">●</span>
           </div>
           <span className="ml-2 text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-            $ scan_input — SECURITHM_ANALYSIS
+            scan input — SECURITHM ANALYSIS
           </span>
         </div>
       )}
@@ -123,7 +123,7 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
         {inputMode === "code" && (
           <div className="relative">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ cat contract.sol</span>
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">cat contract.sol</span>
               <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
             </div>
             <Textarea
@@ -137,7 +137,7 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
                 onClick={() => setCode(SAMPLE_CONTRACT)}
                 className="absolute bottom-2 right-2 text-[10px] text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] bg-[var(--color-term-bg)] px-2 py-1 border border-[var(--color-term-border)] font-mono uppercase tracking-wider"
               >
-                $ load_sample
+                load sample
               </button>
             )}
           </div>
@@ -146,12 +146,12 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
         {inputMode === "address" && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ resolve</span>
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">resolve</span>
               <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
             </div>
             <div className="flex gap-2">
               <div className="flex-1 flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2">
-                <span className="text-[var(--color-term-muted)] text-xs mr-2">$</span>
+                <span className="text-[var(--color-term-muted)] text-xs mr-2">&gt;</span>
                 <input
                   type="text"
                   placeholder="0x..."
@@ -180,7 +180,7 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
         {inputMode === "github" && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">$ git_clone</span>
+              <span className="text-[10px] text-[var(--color-term-muted)] font-mono">git clone</span>
               <span className="animate-blink text-[var(--color-term-fg)]">▌</span>
             </div>
             <div className="flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2">
@@ -229,7 +229,7 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
             ) : (
               <>
                 <Shield className="h-3.5 w-3.5" />
-                [ SCAN_CONTRACT ]
+                SCAN CONTRACT
               </>
             )}
           </Button>
@@ -240,9 +240,9 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
           <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--color-term-muted)]">
             <Upload className="h-3 w-3" />
             <span>
-              $ DRAG_DROP .SOL / .RS FILES —{" "}
+              DRAG DROP .SOL / .RS FILES —{" "}
               <button className="text-[var(--color-term-fg)] hover:underline font-medium">
-                [ BROWSE ]
+                BROWSE
               </button>
             </span>
           </div>
