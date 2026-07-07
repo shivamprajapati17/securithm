@@ -152,7 +152,7 @@ export default function ScansPage() {
           className="inline-flex items-center gap-1 text-xs text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] font-mono"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          $ BACK
+          BACK
         </button>
         <Card>
           <CardContent className="p-6 text-center text-xs text-[var(--color-term-error)] font-mono">
@@ -181,7 +181,7 @@ export default function ScansPage() {
           className="inline-flex items-center gap-1 text-xs text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] font-mono"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          $ BACK
+          BACK
         </button>
 
         {/* Header */}
@@ -257,7 +257,7 @@ export default function ScansPage() {
         ) : findings.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
-              $ NO_FINDINGS
+              NO FINDINGS DETECTED IN THIS SCAN. THE CONTRACT APPEARS CLEAN.
             </CardContent>
           </Card>
         ) : (
@@ -289,7 +289,7 @@ export default function ScansPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" className="text-[9px] h-6">$ ASSIGN</Button>
+                      <Button variant="ghost" size="sm" className="text-[9px] h-6">ASSIGN</Button>
                       <Button variant="outline" size="sm" className="text-[9px] h-6">[ FIX ]</Button>
                     </div>
                   </div>
@@ -331,15 +331,14 @@ export default function ScansPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-            $ SCANS --LIST
+            SCANS LIST
           </h1>
           <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-            # {allScans.length} TOTAL_SCANS
+            {allScans.length} TOTAL SCANS
           </p>
         </div>
         <div className="relative flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2 w-48">
           <Search className="h-3 w-3 text-[var(--color-term-muted)] mr-1" />
-          <span className="text-[var(--color-term-muted)] text-xs mr-1">$</span>
           <input
             placeholder="SEARCH..."
             value={searchQuery}
@@ -367,7 +366,7 @@ export default function ScansPage() {
             </div>
           ) : filteredScans.length === 0 ? (
             <div className="text-center py-6 text-xs text-[var(--color-term-muted)] font-mono">
-              {searchQuery ? "$ NO_MATCHING_SCANS" : "$ NO_SCANS_YET"}
+              {searchQuery ? "NO SCANS MATCH YOUR SEARCH. TRY A DIFFERENT QUERY." : "NO SCANS YET. USE THE SCAN INPUT ABOVE TO ANALYZE YOUR FIRST CONTRACT."}
             </div>
           ) : (
             <ScanList scans={filteredScans} onSelect={setSelectedScanId} />

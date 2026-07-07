@@ -104,10 +104,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-          $ DASHBOARD --STATS
+DASHBOARD OVERVIEW
         </h1>
         <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-          # LIVE DATA FROM YOUR SECURITY SCANS
+          LIVE DATA FROM YOUR SECURITY SCANS
         </p>
       </div>
 
@@ -152,7 +152,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{">"} RECENT_SCANS</CardTitle>
           <Button variant="ghost" size="sm" className="gap-1">
-            $ VIEW_ALL
+            VIEW ALL
             <ArrowRight className="h-3 w-3" />
           </Button>
         </CardHeader>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
             </div>
           ) : recentScans.length === 0 ? (
             <div className="text-center py-6 text-xs text-[var(--color-term-muted)] font-mono">
-              $ NO_SCANS_FOUND
+              NO SCANS FOUND. SUBMIT A CONTRACT FOR ANALYSIS ABOVE TO GET STARTED.
             </div>
           ) : (
             <div className="divide-y divide-[var(--color-term-border)]">

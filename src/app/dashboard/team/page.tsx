@@ -55,10 +55,10 @@ export default function TeamPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-            $ TEAM --BOARD
+            TEAM BOARD
           </h1>
           <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-            # REMEDIATION_WORKFLOW — {findings.length} TOTAL_FINDINGS
+            REMEDIATION WORKFLOW — {findings.length} TOTAL FINDINGS
           </p>
         </div>
         <div className="flex items-center gap-2">

@@ -142,10 +142,10 @@ export default function ApiConsolePage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-            $ RISK_API --CONSOLE
+            RISK API CONSOLE
           </h1>
           <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-            # INSTITUTIONAL RISK SCORING API — DUE DILIGENCE FOR EXCHANGES, INSURERS, AND FUNDS
+            INSTITUTIONAL RISK SCORING API FOR EXCHANGES, INSURERS, AND FUNDS
           </p>
         </div>
         <Badge variant="default" className="gap-1 text-[9px]">

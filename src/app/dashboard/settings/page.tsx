@@ -84,10 +84,10 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-          $ SETTINGS --CONFIG
+          SETTINGS CONFIGURATION
         </h1>
         <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-          # MANAGE YOUR ACCOUNT, BILLING, AND TEAM SETTINGS
+          MANAGE YOUR ACCOUNT, BILLING, AND TEAM SETTINGS
         </p>
       </div>
 
@@ -183,26 +183,50 @@ export default function SettingsPage() {
             {
               icon: Bell,
               name: "SLACK",
-              description: "SEND ALERTS TO A SLACK CHANNEL",
+              description: "SEND ALERTS TO A SLACK CHANNEL VIA INCOMING WEBHOOK",
               connected: true,
+              setupSteps: [
+                "CREATE A SLACK APP AT api.slack.com/apps",
+                "ENABLE INCOMING WEBHOOKS AND CREATE A WEBHOOK URL",
+                "PASTE THE WEBHOOK URL IN THE CONFIGURATION FIELD",
+                "SELECT THE CHANNEL FOR SECURITY ALERTS",
+              ],
             },
             {
               icon: Bell,
               name: "DISCORD",
-              description: "SEND ALERTS TO A DISCORD WEBHOOK",
+              description: "SEND ALERTS TO A DISCORD CHANNEL VIA WEBHOOK",
               connected: false,
+              setupSteps: [
+                "GO TO DISCORD SERVER SETTINGS > INTEGRATIONS",
+                "CREATE A NEW WEBHOOK AND COPY THE URL",
+                "PASTE THE WEBHOOK URL IN THE CONFIGURATION FIELD",
+                "SELECT THE SEVERITY THRESHOLD FOR NOTIFICATIONS",
+              ],
             },
             {
               icon: Webhook,
               name: "WEBHOOKS",
-              description: "SEND EVENTS TO YOUR OWN ENDPOINTS",
+              description: "SEND EVENTS TO YOUR OWN CUSTOM ENDPOINTS",
               connected: false,
+              setupSteps: [
+                "PROVIDE YOUR HTTPS ENDPOINT URL",
+                "SELECT WHICH EVENT TYPES TO RECEIVE",
+                "SECURITHM WILL POST JSON PAYLOADS",
+                "TEST THE WEBHOOK WITH A SAMPLE EVENT",
+              ],
             },
             {
               icon: Download,
               name: "N8N",
-              description: "AUTOMATE WORKFLOWS WITH N8N",
+              description: "AUTOMATE WORKFLOWS WITH N8N.IO",
               connected: false,
+              setupSteps: [
+                "INSTALL N8N WORKFLOW AUTOMATION",
+                "ADD THE SECURITHM WEBHOOK NODE",
+                "CONFIGURE TRIGGER EVENTS FOR SCANS AND ALERTS",
+                "AUTOMATE TICKETING, NOTIFICATIONS, AND REPORTING",
+              ],
             },
           ].map((integration) => (
             <div
@@ -218,18 +242,31 @@ export default function SettingsPage() {
                   <div className="text-[8px] text-[var(--color-term-muted)] font-mono">
                     {integration.description}
                   </div>
+                  <div className="mt-1.5 space-y-0.5">
+                    {integration.setupSteps.map((step, i) => (
+                      <div key={i} className="flex items-start gap-1 text-[8px] text-[var(--color-term-muted)] font-mono">
+                        <span className="text-[var(--color-term-fg)] shrink-0">{i + 1}.</span>
+                        {step}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-col items-end gap-1.5">
                 {integration.connected && (
                   <Badge variant="default" className="text-[8px] px-1 bg-[var(--color-term-fg)] text-[var(--color-term-bg)]">
                     [OK]
                   </Badge>
                 )}
                 <Button variant="ghost" size="sm" className="text-[9px] h-6">
-                  $ CONFIG
+                  CONFIG
                   <ChevronRight className="h-3 w-3" />
                 </Button>
+                {!integration.connected && (
+                  <Button variant="outline" size="sm" className="text-[8px] h-5">
+                    [ SETUP GUIDE ]
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -245,23 +282,25 @@ export default function SettingsPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider mb-1 block">
-                $ DISPLAY_NAME
+                DISPLAY NAME
               </label>
               <div className="flex items-center border border-[var(--color-term-border)] px-2">
-                <span className="text-[var(--color-term-muted)] text-xs mr-1">$</span>
                 <input
+                  id="settings-display-name"
+                  name="display_name"
                   defaultValue="Solidity Dev"
                   className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5"
                 />
               </div>
             </div>
             <div>
-              <label className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider mb-1 block">
-                $ EMAIL
+              <label className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider mb-1 block" htmlFor="settings-email">
+                EMAIL
               </label>
               <div className="flex items-center border border-[var(--color-term-border)] px-2">
-                <span className="text-[var(--color-term-muted)] text-xs mr-1">$</span>
                 <input
+                  id="settings-email"
+                  name="email"
                   defaultValue="dev@example.com"
                   type="email"
                   className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5"

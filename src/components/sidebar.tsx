@@ -69,7 +69,7 @@ export function Sidebar() {
           onClick={handleNavClick}
         >
           <span className="text-xs font-bold text-[var(--color-term-fg)] term-glow">
-            {collapsed ? "AI" : "$_SECURITHM"}
+            {collapsed ? "AI" : "SECURITHM"}
           </span>
         </a>
         {/* Desktop collapse button */}
@@ -140,7 +140,7 @@ export function Sidebar() {
                 {user ? (user.display_name || user.email.split("@")[0]) : "guest"}
               </div>
               <div className="text-[9px] font-mono text-[var(--color-term-muted)] truncate uppercase">
-                {isAuthenticated ? "$ logged_in" : "$ not_signed_in"}
+                {isAuthenticated ? "LOGGED IN" : "NOT SIGNED IN"}
               </div>
             </div>
           )}

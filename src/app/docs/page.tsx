@@ -177,8 +177,8 @@ export default function DocsPage() {
                 SYSTEM STATUS
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
-              <a href="https://github.com/securithm" className="text-[10px] text-[var(--color-term-muted)] font-mono hover:text-[var(--color-term-fg)] flex items-center gap-1">
-                GITHUB
+              <a href="https://github.com/shivamprajapati17/securithm" className="text-[10px] text-[var(--color-term-muted)] font-mono hover:text-[var(--color-term-fg)] flex items-center gap-1">
+                GITHUB REPO
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
             </div>

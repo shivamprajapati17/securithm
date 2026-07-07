@@ -32,10 +32,10 @@ export default function ReposPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-            $ REPOS --LIST
+            REPOS CONNECTED
           </h1>
           <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-            # SCANNED CONTRACTS AND CI/CD INTEGRATION STATUS
+            SCANNED CONTRACTS AND CI/CD INTEGRATION STATUS
           </p>
         </div>
         <Button className="gap-2">
@@ -100,7 +100,7 @@ export default function ReposPage() {
         ) : Object.keys(scanGroups).length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
-              $ NO_SCANS_YET
+              NO SCANS YET. CONNECT A GITHUB REPO TO AUTO-SCAN EVERY PR AND PUSH.
             </CardContent>
           </Card>
         ) : (

@@ -25,10 +25,10 @@ export default function MonitoringPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-base font-bold text-[var(--color-term-fg)] term-glow">
-            $ MONITORING --STATUS
+            MONITORING STATUS
           </h1>
           <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-            # REAL-TIME ON-CHAIN MONITORING FOR DEPLOYED CONTRACTS
+            REAL-TIME ON-CHAIN MONITORING FOR DEPLOYED CONTRACTS
           </p>
         </div>
         <Button className="gap-2">
@@ -84,7 +84,7 @@ export default function MonitoringPage() {
             <Card>
               <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
                 <Radio className="h-6 w-6 mx-auto mb-2 text-[var(--color-term-muted)]" />
-                $ NO_CONTRACTS_MONITORED
+                NO CONTRACTS BEING MONITORED. CLICK MONITOR TO ADD A CONTRACT ADDRESS FOR REAL-TIME SURVEILLANCE.
               </CardContent>
             </Card>
           ) : (
@@ -142,7 +142,7 @@ export default function MonitoringPage() {
                     )}
 
                     <Button variant="ghost" size="sm" className="w-full mt-2 gap-1 text-[9px] h-6">
-                      $ DETAILS
+                      DETAILS
                       <ArrowUpRight className="h-2.5 w-2.5" />
                     </Button>
                   </CardContent>
@@ -156,7 +156,7 @@ export default function MonitoringPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{">"} ACTIVITY_FEED</CardTitle>
-                <Button variant="ghost" size="sm" className="text-[9px]">$ CONFIG</Button>
+                <Button variant="ghost" size="sm" className="text-[9px]">CONFIG</Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">

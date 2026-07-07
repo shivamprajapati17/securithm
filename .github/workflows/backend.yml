@@ -42,13 +42,16 @@ jobs:
       - name: Install backend dependencies
         run: |
           pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio ruff httpx
+          pip install pytest pytest-asyncio pytest-cov httpx ruff
 
       - name: Lint with ruff
-        run: ruff check backend/
+        run: ruff check backend/ --fix
+
+      - name: Check format with ruff
+        run: ruff format backend/ --check
 
       - name: Test with pytest
         env:
           DATABASE_URL: postgresql://securithm:securithm@localhost:5432/securithm_ci
           DEBUG: "true"
-        run: pytest backend/ -v --tb=short --exitfirst
+        run: python -m pytest backend/ -v --tb=short --exitfirst
