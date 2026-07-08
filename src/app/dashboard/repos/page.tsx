@@ -88,7 +88,7 @@ export default function ReposPage() {
         {scansError && (
           <Card>
             <CardContent className="p-4 text-center text-xs text-[var(--color-term-error)] font-mono">
-              [!] ERROR: {scansError}
+              [!] API CONNECTION ERROR: {scansError}. MAKE SURE THE BACKEND IS RUNNING ON PORT 8000.
             </CardContent>
           </Card>
         )}
@@ -99,10 +99,15 @@ export default function ReposPage() {
               <Card key={i}><CardContent className="p-4 h-20 animate-pulse bg-[var(--color-term-dim)]" /></Card>
             ))}
           </div>
-        ) : Object.keys(scanGroups).length === 0 ? (
+        ) : !scansError && Object.keys(scanGroups).length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
-              NO SCANS YET. CONNECT A GITHUB REPO TO AUTO-SCAN EVERY PR AND PUSH.
+              NO REPOS CONNECTED YET. CLICK 'CONNECT REPO' ABOVE TO INTEGRATE WITH GITHUB AND AUTO-SCAN EVERY PR AND PUSH.
+              <div className="mt-3 space-y-1 text-[9px] text-[var(--color-term-muted)]">
+                <div>1. INSTALL THE SECURITHM GITHUB APP FROM THE MARKETPLACE</div>
+                <div>2. SELECT WHICH REPOS TO MONITOR</div>
+                <div>3. SECURITHM WILL AUTO-SCAN EVERY PR AND PUSH</div>
+              </div>
             </CardContent>
           </Card>
         ) : (

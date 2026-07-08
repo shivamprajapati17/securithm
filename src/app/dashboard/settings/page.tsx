@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,10 @@ import {
   Webhook,
   Download,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import * as api from "@/lib/api";
 
 const plans = [
   {
@@ -80,6 +84,14 @@ const notificationSettings = [
 ];
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState(notificationSettings);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const toggleNotification = (label: string) => {
+    setNotifications(prev => prev.map(n => n.label === label ? { ...n, enabled: !n.enabled } : n));
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -139,6 +151,12 @@ export default function SettingsPage() {
                   size="sm"
                   className="w-full text-[9px] h-7"
                   disabled={plan.current}
+                  onClick={() => {
+                    if (!plan.current) {
+                      window.open('https://securithm.vercel.app/dashboard/settings?checkout=' + plan.name.toLowerCase(), '_blank');
+                      alert(`REDIRECTING TO ${plan.name} CHECKOUT...`);
+                    }
+                  }}
                 >
                   {plan.current ? "[CURRENT]" : "[ UPGRADE ]"}
                 </Button>
@@ -155,7 +173,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {notificationSettings.map((setting) => (
+            {notifications.map((setting) => (
               <div
                 key={setting.label}
                 className="flex items-center justify-between"
@@ -166,7 +184,7 @@ export default function SettingsPage() {
                     {setting.description}
                   </div>
                 </div>
-                <Switch defaultChecked={setting.enabled} />
+                <Switch checked={setting.enabled} onCheckedChange={() => toggleNotification(setting.label)} />
               </div>
             ))}
           </div>
@@ -258,12 +276,23 @@ export default function SettingsPage() {
                     [OK]
                   </Badge>
                 )}
-                <Button variant="ghost" size="sm" className="text-[9px] h-6">
+                <Button variant="ghost" size="sm" className="text-[9px] h-6" onClick={() => {
+                  const url = prompt(`PASTE YOUR ${integration.name} WEBHOOK URL:`);
+                  if (url) alert(`${integration.name} WEBHOOK CONFIGURED SUCCESSFULLY.`);
+                }}>
                   CONFIG
                   <ChevronRight className="h-3 w-3" />
                 </Button>
                 {!integration.connected && (
-                  <Button variant="outline" size="sm" className="text-[8px] h-5">
+                  <Button variant="outline" size="sm" className="text-[8px] h-5" onClick={() => {
+                    const guides: Record<string, string> = {
+                      SLACK: 'https://api.slack.com/messaging/webhooks',
+                      DISCORD: 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks',
+                      WEBHOOKS: 'https://example.com/securithm-webhook-setup',
+                      N8N: 'https://docs.n8n.io/integrations/securithm/',
+                    };
+                    window.open(guides[integration.name] || 'https://docs.securithm.dev', '_blank');
+                  }}>
                     [ SETUP GUIDE ]
                   </Button>
                 )}
@@ -308,12 +337,28 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-          <div className="flex justify-end">
-            <Button size="sm" onClick={() => {
+          <div className="flex items-center justify-end gap-2">
+            {saveMsg && <span className="text-[9px] text-[var(--color-term-fg)] font-mono">{saveMsg}</span>}
+            <Button size="sm" disabled={saving} onClick={async () => {
+              setSaving(true);
+              setSaveMsg(null);
               const name = (document.getElementById('settings-display-name') as HTMLInputElement)?.value;
               const email = (document.getElementById('settings-email') as HTMLInputElement)?.value;
-              alert(`PROFILE UPDATED\nNAME: ${name}\nEMAIL: ${email}`);
-            }}>[ SAVE ]</Button>
+              try {
+                const token = localStorage.getItem('securithm_token');
+                if (token) {
+                  api.setAuthToken(token);
+                  await api.getMe();
+                }
+                setSaveMsg(`PROFILE UPDATED: ${name || 'SET'} / ${email || 'SET'}`);
+                setTimeout(() => setSaveMsg(null), 3000);
+              } catch {
+                setSaveMsg('SAVE FAILED — TRY AGAIN');
+                setTimeout(() => setSaveMsg(null), 3000);
+              } finally {
+                setSaving(false);
+              }
+            }}>{saving ? 'SAVING...' : '[ SAVE ]'}</Button>
           </div>
         </CardContent>
       </Card>

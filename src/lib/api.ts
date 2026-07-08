@@ -97,7 +97,7 @@ export interface MonitoringEvent {
   acknowledged: boolean;
 }
 
-async function request<T>(
+export async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
