@@ -55,9 +55,13 @@ async def list_monitored_contracts(
     db: Session = Depends(get_db),
 ):
     """List all monitored contracts."""
-    contracts = db.execute(
-        select(MonitoredContract).order_by(MonitoredContract.created_at.desc())
-    ).scalars().all()
+    contracts = (
+        db.execute(
+            select(MonitoredContract).order_by(MonitoredContract.created_at.desc())
+        )
+        .scalars()
+        .all()
+    )
     return [MonitoredContractResponse.model_validate(c) for c in contracts]
 
 
@@ -83,12 +87,16 @@ async def get_contract_events(
     if not contract:
         raise HTTPException(status_code=404, detail="Monitored contract not found")
 
-    events = db.execute(
-        select(MonitoringEvent)
-        .where(MonitoringEvent.monitored_contract_id == contract_id)
-        .order_by(MonitoringEvent.timestamp.desc())
-        .limit(100)
-    ).scalars().all()
+    events = (
+        db.execute(
+            select(MonitoringEvent)
+            .where(MonitoringEvent.monitored_contract_id == contract_id)
+            .order_by(MonitoringEvent.timestamp.desc())
+            .limit(100)
+        )
+        .scalars()
+        .all()
+    )
 
     return [MonitoringEventResponse.model_validate(e) for e in events]
 

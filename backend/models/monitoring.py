@@ -1,7 +1,15 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Boolean, ForeignKey, DateTime, Text, Enum as SAEnum, JSON, Uuid
+    Column,
+    String,
+    Boolean,
+    ForeignKey,
+    DateTime,
+    Text,
+    Enum as SAEnum,
+    JSON,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 from ..core.database import Base
@@ -34,12 +42,15 @@ class MonitoredContract(Base):
         SAEnum(ContractStatus, name="contract_status"),
         default=ContractStatus.HEALTHY,
     )
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     last_checked = Column(DateTime(timezone=True), nullable=True)
 
     organization = relationship("Organization", back_populates="monitored_contracts")
     events = relationship(
-        "MonitoringEvent", back_populates="monitored_contract",
+        "MonitoringEvent",
+        back_populates="monitored_contract",
         cascade="all, delete-orphan",
         order_by="MonitoringEvent.timestamp.desc()",
     )
@@ -57,7 +68,9 @@ class MonitoringEvent(Base):
     message = Column(Text, nullable=False)
     event_data = Column(JSON, nullable=True)
     tx_hash = Column(String(255), nullable=True)
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    timestamp = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     acknowledged = Column(Boolean, default=False)
 
     monitored_contract = relationship("MonitoredContract", back_populates="events")

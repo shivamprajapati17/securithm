@@ -75,6 +75,7 @@ async def update_finding(
         finding.status = finding_in.status
         if finding_in.status == FindingStatus.RESOLVED:
             from datetime import datetime, timezone
+
             finding.resolved_at = datetime.now(timezone.utc)
 
     if finding_in.assigned_to is not None:

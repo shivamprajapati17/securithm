@@ -6,7 +6,9 @@ from ..models.scan import ScanStatus, FindingSeverity, FindingStatus
 
 
 class ScanCreate(BaseModel):
-    contract_source: str = Field(..., description="Solidity/Rust code, contract address, or GitHub URL")
+    contract_source: str = Field(
+        ..., description="Solidity/Rust code, contract address, or GitHub URL"
+    )
     chain: str = Field(default="ethereum", description="Blockchain to analyze against")
     contract_name: Optional[str] = None
     input_mode: str = Field(default="code", description="code, address, or github")

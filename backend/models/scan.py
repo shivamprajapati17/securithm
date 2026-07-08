@@ -1,7 +1,14 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Integer, ForeignKey, DateTime, Text, Enum as SAEnum, Uuid
+    Column,
+    String,
+    Integer,
+    ForeignKey,
+    DateTime,
+    Text,
+    Enum as SAEnum,
+    Uuid,
 )
 from sqlalchemy.orm import relationship
 from ..core.database import Base
@@ -46,13 +53,16 @@ class ScanJob(Base):
     risk_score_overall = Column(String(1), nullable=True)
     contract_name = Column(String(255), nullable=True)
     error_message = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
     organization = relationship("Organization", back_populates="scan_jobs")
     user = relationship("User", back_populates="scan_jobs")
     findings = relationship(
-        "Finding", back_populates="scan_job",
+        "Finding",
+        back_populates="scan_job",
         cascade="all, delete-orphan",
         order_by="Finding.severity_order",
     )
@@ -78,7 +88,11 @@ class Finding(Base):
     )
     remediation_sla = Column(DateTime(timezone=True), nullable=True)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
     scan_job = relationship("ScanJob", back_populates="findings")
-    assignee = relationship("User", back_populates="assigned_findings", foreign_keys=[assigned_to])
+    assignee = relationship(
+        "User", back_populates="assigned_findings", foreign_keys=[assigned_to]
+    )

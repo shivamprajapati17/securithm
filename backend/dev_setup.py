@@ -12,7 +12,6 @@ Supports both SQLite (no Docker needed) and PostgreSQL.
 """
 
 import os
-import sys
 import uuid
 import argparse
 from datetime import datetime, timezone, timedelta
@@ -43,9 +42,18 @@ def seed_data():
     """Seed the database with demo data for development."""
     from backend.core.database import SessionLocal
     from backend.models import (
-        Organization, Plan, User, ScanJob, Finding,
-        ScanStatus, FindingSeverity, FindingStatus,
-        MonitoredContract, MonitoringEvent, ContractStatus, EventType,
+        Organization,
+        Plan,
+        User,
+        ScanJob,
+        Finding,
+        ScanStatus,
+        FindingSeverity,
+        FindingStatus,
+        MonitoredContract,
+        MonitoringEvent,
+        ContractStatus,
+        EventType,
     )
     from backend.core.security import get_password_hash
 
@@ -182,8 +190,8 @@ contract VulnerableVault {
                 "severity": FindingSeverity.CRITICAL,
                 "line": 45,
                 "description": "Unchecked external call in withdraw() allows reentrancy attack. The contract updates balance after the call, enabling an attacker to recursively call withdraw() before balance is deducted.",
-                "snippet": "function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    (bool success, ) = msg.sender.call{value: _amount}(\"\");\n    require(success);\n    balances[msg.sender] -= _amount; // ❌ Updated AFTER call\n}",
-                "fix": "function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    balances[msg.sender] -= _amount; // ✅ Updated BEFORE call\n    (bool success, ) = msg.sender.call{value: _amount}(\"\");\n    require(success);\n}",
+                "snippet": 'function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    (bool success, ) = msg.sender.call{value: _amount}("");\n    require(success);\n    balances[msg.sender] -= _amount; // ❌ Updated AFTER call\n}',
+                "fix": 'function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    balances[msg.sender] -= _amount; // ✅ Updated BEFORE call\n    (bool success, ) = msg.sender.call{value: _amount}("");\n    require(success);\n}',
                 "status": FindingStatus.OPEN,
                 "sla_days": 3,
             },
@@ -192,8 +200,8 @@ contract VulnerableVault {
                 "severity": FindingSeverity.HIGH,
                 "line": 12,
                 "description": "Owner variable is publicly readable but not restricted. Critical admin functions lack modifier protection.",
-                "snippet": "address public owner;\n// Missing: modifier onlyOwner() {\n//     require(msg.sender == owner, \"Not owner\");\n//     _;\n// }",
-                "fix": "address public owner;\nmodifier onlyOwner() {\n    require(msg.sender == owner, \"Not owner\");\n    _;\n}",
+                "snippet": 'address public owner;\n// Missing: modifier onlyOwner() {\n//     require(msg.sender == owner, "Not owner");\n//     _;\n// }',
+                "fix": 'address public owner;\nmodifier onlyOwner() {\n    require(msg.sender == owner, "Not owner");\n    _;\n}',
                 "status": FindingStatus.OPEN,
                 "sla_days": 5,
             },
@@ -203,7 +211,7 @@ contract VulnerableVault {
                 "line": 78,
                 "description": "Potential underflow in transfer() function. Balance subtraction occurs before addition, which could cause underflow if balance is insufficient.",
                 "snippet": "function transfer(address _to, uint256 _amount) public {\n    balances[msg.sender] -= _amount; // ⚠️ Potential underflow\n    balances[_to] += _amount;\n}",
-                "fix": "function transfer(address _to, uint256 _amount) public {\n    require(balances[msg.sender] >= _amount, \"Insufficient balance\");\n    balances[msg.sender] -= _amount;\n    balances[_to] += _amount;\n}",
+                "fix": 'function transfer(address _to, uint256 _amount) public {\n    require(balances[msg.sender] >= _amount, "Insufficient balance");\n    balances[msg.sender] -= _amount;\n    balances[_to] += _amount;\n}',
                 "status": FindingStatus.IN_PROGRESS,
                 "assigned_to": user.id,
                 "sla_days": 7,
@@ -214,7 +222,7 @@ contract VulnerableVault {
                 "line": 33,
                 "description": "Return value of external call is not checked. If the call fails, the contract continues execution as if it succeeded.",
                 "snippet": "token.transfer(to, amount); // ❌ Return value not checked",
-                "fix": "bool success = token.transfer(to, amount);\nrequire(success, \"Transfer failed\");",
+                "fix": 'bool success = token.transfer(to, amount);\nrequire(success, "Transfer failed");',
                 "status": FindingStatus.RESOLVED,
                 "sla_days": None,
             },
@@ -292,6 +300,7 @@ contract VulnerableVault {
 
         # Usage meter
         from backend.models.billing import UsageMeter
+
         current_period = datetime.now(timezone.utc).strftime("%Y-%m")
         meter = UsageMeter(
             id=uuid.uuid4(),
@@ -305,10 +314,12 @@ contract VulnerableVault {
         db.commit()
         print("OK Demo data seeded")
         print(f"  Org: {org.name}")
-        print(f"  User: dev@example.com / password123")
-        print(f"  Scans: VulnerableVault (F), UniswapV3Router (B), LendingPool (D), TokenStaking (running)")
-        print(f"  Findings: 4 (1 critical, 1 high, 1 medium, 1 low)")
-        print(f"  Monitored Contracts: USDC Vault, Lending Pool")
+        print("  User: dev@example.com / password123")
+        print(
+            "  Scans: VulnerableVault (F), UniswapV3Router (B), LendingPool (D), TokenStaking (running)"
+        )
+        print("  Findings: 4 (1 critical, 1 high, 1 medium, 1 low)")
+        print("  Monitored Contracts: USDC Vault, Lending Pool")
 
     except Exception as e:
         db.rollback()
@@ -321,6 +332,7 @@ contract VulnerableVault {
 def start_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
     """Start the Uvicorn dev server."""
     import uvicorn
+
     print(f"\n=> Securithm API running at http://{host}:{port}")
     print(f"=> API docs at http://{host}:{port}/docs")
     print(f"=> Redoc at http://{host}:{port}/redoc")
@@ -335,7 +347,9 @@ def start_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
 
 def main():
     parser = argparse.ArgumentParser(description="Securithm Dev Setup")
-    parser.add_argument("--db", help="Database URL (default: sqlite:///./securithm_dev.db)")
+    parser.add_argument(
+        "--db", help="Database URL (default: sqlite:///./securithm_dev.db)"
+    )
     parser.add_argument("--host", default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=8000, help="Server port")
     parser.add_argument("--no-seed", action="store_true", help="Skip seeding demo data")
@@ -347,7 +361,7 @@ def main():
     print("  Securithm - Development Setup")
     print("=" * 50)
 
-    db_url = setup_database(args.db)
+    setup_database(args.db)
 
     if not args.no_seed:
         seed_data()

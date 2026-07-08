@@ -1,8 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import (
-    Column, String, Integer, Float, ForeignKey, DateTime, Text, Uuid
-)
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, DateTime, Text, Uuid
 from sqlalchemy.orm import relationship
 from ..core.database import Base
 
@@ -14,13 +12,17 @@ class Organization(Base):
     name = Column(String(255), nullable=False)
     plan_id = Column(Uuid(), ForeignKey("plans.id"), nullable=True)
     stripe_customer_id = Column(String(255), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
 
     plan = relationship("Plan", back_populates="organizations")
     users = relationship("User", back_populates="organization")
     scan_jobs = relationship("ScanJob", back_populates="organization")
     usage_meters = relationship("UsageMeter", back_populates="organization")
-    monitored_contracts = relationship("MonitoredContract", back_populates="organization")
+    monitored_contracts = relationship(
+        "MonitoredContract", back_populates="organization"
+    )
 
 
 class Plan(Base):
@@ -44,13 +46,14 @@ class User(Base):
     display_name = Column(String(255), nullable=True)
     github_id = Column(String(255), nullable=True)
     avatar_url = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     last_login = Column(DateTime(timezone=True), nullable=True)
     org_id = Column(Uuid(), ForeignKey("organizations.id"), nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     scan_jobs = relationship("ScanJob", back_populates="user")
     assigned_findings = relationship(
-        "Finding", back_populates="assignee",
-        foreign_keys="Finding.assigned_to"
+        "Finding", back_populates="assignee", foreign_keys="Finding.assigned_to"
     )

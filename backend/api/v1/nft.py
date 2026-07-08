@@ -34,7 +34,7 @@ async def analyze_nft_collection(
 
     # For now, return analysis based on available scan data
     # Full implementation will perform dedicated NFT-specific analysis
-    from ...models.scan import ScanJob, ScanStatus, Finding
+    from ...models.scan import ScanJob, ScanStatus
     from sqlalchemy import select
 
     latest_scan = db.execute(
@@ -57,17 +57,33 @@ async def analyze_nft_collection(
         findings = [
             NFTSecurityFinding(
                 category=f.category,
-                severity=f.severity.value if hasattr(f.severity, 'value') else str(f.severity),
+                severity=f.severity.value
+                if hasattr(f.severity, "value")
+                else str(f.severity),
                 description=f.description[:200],
                 recommendation=f.suggested_fix,
             )
             for f in scan_findings[:10]
         ]
         # Calculate score from findings
-        severity_weights = {"critical": 25, "high": 12, "medium": 6, "low": 3, "informational": 1}
+        severity_weights = {
+            "critical": 25,
+            "high": 12,
+            "medium": 6,
+            "low": 3,
+            "informational": 1,
+        }
         penalty = sum(severity_weights.get(f.severity.lower(), 0) for f in findings)
         security_score = max(10, min(100, 100 - penalty))
-        risk_level = "low" if security_score >= 70 else "medium" if security_score >= 40 else "high" if security_score >= 20 else "critical"
+        risk_level = (
+            "low"
+            if security_score >= 70
+            else "medium"
+            if security_score >= 40
+            else "high"
+            if security_score >= 20
+            else "critical"
+        )
 
     from datetime import datetime, timezone
 
@@ -98,10 +114,14 @@ async def list_nft_analyses(
     from ...models.scan import ScanJob, ScanStatus
     from sqlalchemy import select, func
 
-    query = select(ScanJob).where(
-        ScanJob.contract_source.isnot(None),
-        ScanJob.status == ScanStatus.COMPLETED,
-    ).order_by(ScanJob.created_at.desc())
+    query = (
+        select(ScanJob)
+        .where(
+            ScanJob.contract_source.isnot(None),
+            ScanJob.status == ScanStatus.COMPLETED,
+        )
+        .order_by(ScanJob.created_at.desc())
+    )
 
     if chain:
         query = query.where(ScanJob.chain == chain)
@@ -113,21 +133,28 @@ async def list_nft_analyses(
     scans = db.execute(query.offset(offset).limit(page_size)).scalars().all()
 
     from datetime import datetime, timezone
+
     items = []
     for scan in scans:
-        items.append(NFTCollectionAnalysisResponse(
-            contract_address=scan.contract_source or "",
-            chain=scan.chain or "",
-            collection_name=scan.contract_name,
-            total_supply=None,
-            security_score=50,
-            risk_level="medium",
-            findings=[],
-            is_verified=False,
-            has_royalty_enforcement=False,
-            has_allowlist=False,
-            has_mint_authority_risk=False,
-            analyzed_at=scan.completed_at.isoformat() if scan.completed_at else datetime.now(timezone.utc).isoformat(),
-        ))
+        items.append(
+            NFTCollectionAnalysisResponse(
+                contract_address=scan.contract_source or "",
+                chain=scan.chain or "",
+                collection_name=scan.contract_name,
+                total_supply=None,
+                security_score=50,
+                risk_level="medium",
+                findings=[],
+                is_verified=False,
+                has_royalty_enforcement=False,
+                has_allowlist=False,
+                has_mint_authority_risk=False,
+                analyzed_at=scan.completed_at.isoformat()
+                if scan.completed_at
+                else datetime.now(timezone.utc).isoformat(),
+            )
+        )
 
-    return NFTCollectionListResponse(items=items, total=total, page=page, page_size=page_size)
+    return NFTCollectionListResponse(
+        items=items, total=total, page=page, page_size=page_size
+    )

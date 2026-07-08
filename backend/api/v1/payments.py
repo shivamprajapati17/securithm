@@ -36,14 +36,16 @@ async def list_plans(db: Session = Depends(get_db)):
 
     result = []
     for plan in plans:
-        result.append(BillingPlanResponse(
-            id=plan.id,
-            name=plan.name,
-            max_scans_per_month=plan.max_scans_per_month,
-            max_monitored_contracts=plan.max_monitored_contracts,
-            price_usd=plan.price_usd,
-            features=features_map.get(plan.name, []),
-        ))
+        result.append(
+            BillingPlanResponse(
+                id=plan.id,
+                name=plan.name,
+                max_scans_per_month=plan.max_scans_per_month,
+                max_monitored_contracts=plan.max_monitored_contracts,
+                price_usd=plan.price_usd,
+                features=features_map.get(plan.name, []),
+            )
+        )
 
     return result
 
@@ -55,9 +57,7 @@ async def get_usage(db: Session = Depends(get_db)):
     from datetime import datetime, timezone
 
     current_period = datetime.now(timezone.utc).strftime("%Y-%m")
-    meter = db.query(UsageMeter).filter(
-        UsageMeter.period == current_period
-    ).first()
+    meter = db.query(UsageMeter).filter(UsageMeter.period == current_period).first()
 
     if not meter:
         return UsageMeterResponse(
@@ -69,7 +69,6 @@ async def get_usage(db: Session = Depends(get_db)):
         )
 
     # Find the plan for limits
-    from ...models.user import Organization, Plan
     org = meter.organization
     limit = 50
     if org and org.plan:
@@ -94,7 +93,7 @@ async def list_invoices(db: Session = Depends(get_db)):
 @router.get("/dashboard", response_model=PaymentsListResponse)
 async def get_payment_dashboard(db: Session = Depends(get_db)):
     """Get full payment dashboard: current plan, usage, invoices, and payment methods."""
-    from ...models.user import Plan, Organization
+    from ...models.user import Plan
     from ...models.billing import UsageMeter
     from datetime import datetime, timezone
 
@@ -117,21 +116,21 @@ async def get_payment_dashboard(db: Session = Depends(get_db)):
 
     plan_responses = []
     for plan in plans:
-        plan_responses.append(BillingPlanResponse(
-            id=plan.id,
-            name=plan.name,
-            max_scans_per_month=plan.max_scans_per_month,
-            max_monitored_contracts=plan.max_monitored_contracts,
-            price_usd=plan.price_usd,
-            features=features_map.get(plan.name, []),
-        ))
+        plan_responses.append(
+            BillingPlanResponse(
+                id=plan.id,
+                name=plan.name,
+                max_scans_per_month=plan.max_scans_per_month,
+                max_monitored_contracts=plan.max_monitored_contracts,
+                price_usd=plan.price_usd,
+                features=features_map.get(plan.name, []),
+            )
+        )
 
     current_plan = plan_responses[0] if plan_responses else None
 
     current_period = datetime.now(timezone.utc).strftime("%Y-%m")
-    meter = db.query(UsageMeter).filter(
-        UsageMeter.period == current_period
-    ).first()
+    meter = db.query(UsageMeter).filter(UsageMeter.period == current_period).first()
 
     usage = None
     if meter:
@@ -140,7 +139,8 @@ async def get_payment_dashboard(db: Session = Depends(get_db)):
             scans_used=meter.scans_used,
             scans_limit=current_plan.max_scans_per_month if current_plan else 50,
             api_calls_used=meter.api_calls_used,
-            api_calls_limit=(current_plan.max_scans_per_month if current_plan else 50) * 20,
+            api_calls_limit=(current_plan.max_scans_per_month if current_plan else 50)
+            * 20,
         )
     else:
         usage = UsageMeterResponse(

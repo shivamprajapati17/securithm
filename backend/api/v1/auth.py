@@ -7,7 +7,12 @@ from httpx import AsyncClient
 
 from ...core.database import get_db
 from ...core.config import get_settings
-from ...core.security import get_password_hash, verify_password, create_access_token, verify_token
+from ...core.security import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    verify_token,
+)
 from ...models.user import User, Organization, Plan
 from ...schemas.auth import LoginRequest, TokenResponse
 from ...schemas.user import UserCreate, UserResponse
@@ -119,7 +124,9 @@ async def oauth_login(provider: str, db: Session) -> str:
     so the redirect_uri stays clean and matches exactly what's registered
     in the provider's console.
     """
-    redirect_uri = settings.oauth_redirect_url  # No query params — exact match for provider console
+    redirect_uri = (
+        settings.oauth_redirect_url
+    )  # No query params — exact match for provider console
 
     if provider == "google":
         if not settings.google_client_id:
@@ -173,7 +180,9 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
                 },
             )
             if token_resp.status_code != 200:
-                raise HTTPException(status_code=400, detail="Failed to exchange Google auth code")
+                raise HTTPException(
+                    status_code=400, detail="Failed to exchange Google auth code"
+                )
 
             tokens = token_resp.json()
             # Fetch user info
@@ -182,7 +191,9 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
                 headers={"Authorization": f"Bearer {tokens['access_token']}"},
             )
             if userinfo_resp.status_code != 200:
-                raise HTTPException(status_code=400, detail="Failed to fetch Google user info")
+                raise HTTPException(
+                    status_code=400, detail="Failed to fetch Google user info"
+                )
 
             userinfo = userinfo_resp.json()
             email = userinfo.get("email", "")
@@ -201,7 +212,9 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
                 headers={"Accept": "application/json"},
             )
             if token_resp.status_code != 200:
-                raise HTTPException(status_code=400, detail="Failed to exchange GitHub auth code")
+                raise HTTPException(
+                    status_code=400, detail="Failed to exchange GitHub auth code"
+                )
 
             tokens = token_resp.json()
             # Fetch user info
@@ -213,7 +226,9 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
                 },
             )
             if userinfo_resp.status_code != 200:
-                raise HTTPException(status_code=400, detail="Failed to fetch GitHub user info")
+                raise HTTPException(
+                    status_code=400, detail="Failed to fetch GitHub user info"
+                )
 
             userinfo = userinfo_resp.json()
             email = userinfo.get("email", "") or ""
@@ -237,10 +252,14 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
                     elif emails:
                         email = emails[0]["email"]
         else:
-            raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
+            raise HTTPException(
+                status_code=400, detail=f"Unsupported provider: {provider}"
+            )
 
     if not email:
-        raise HTTPException(status_code=400, detail="Could not retrieve email from provider")
+        raise HTTPException(
+            status_code=400, detail="Could not retrieve email from provider"
+        )
 
     # Find or create user
     user = db.query(User).filter(User.email == email).first()
@@ -311,12 +330,20 @@ async def callback_oauth(
     try:
         result = await oauth_callback(state, code, db)
         # Redirect to frontend with token
-        frontend_url = settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
+        frontend_url = (
+            settings.cors_origins[0]
+            if settings.cors_origins
+            else "http://localhost:3000"
+        )
         redirect = f"{frontend_url}/auth/callback?token={result.access_token}"
         return RedirectResponse(url=redirect)
     except HTTPException as e:
         # Use the first CORS origin as the frontend URL, fallback to localhost
-        frontend_url = settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
+        frontend_url = (
+            settings.cors_origins[0]
+            if settings.cors_origins
+            else "http://localhost:3000"
+        )
         return RedirectResponse(url=f"{frontend_url}/auth/login?error={e.detail}")
 
 
@@ -327,5 +354,11 @@ async def callback_oauth(
 async def list_github_repos(current_user: User = Depends(get_current_user)):
     """List the user's connected GitHub repos (stub for now)."""
     if not current_user.github_id:
-        return {"repos": [], "message": "No GitHub account connected. Use GitHub OAuth to connect."}
-    return {"repos": [], "message": "GitHub integration pending - connect via GitHub OAuth first"}
+        return {
+            "repos": [],
+            "message": "No GitHub account connected. Use GitHub OAuth to connect.",
+        }
+    return {
+        "repos": [],
+        "message": "GitHub integration pending - connect via GitHub OAuth first",
+    }

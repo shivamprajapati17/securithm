@@ -1,7 +1,5 @@
 import uuid
-from sqlalchemy import (
-    Column, String, Integer, ForeignKey, Uuid
-)
+from sqlalchemy import Column, String, Integer, ForeignKey, Uuid
 from sqlalchemy.orm import relationship
 from ..core.database import Base
 

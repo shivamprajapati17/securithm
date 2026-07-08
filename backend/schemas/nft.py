@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from datetime import datetime
 from typing import Optional
 
 
@@ -29,29 +28,31 @@ class NFTCollectionAnalysisResponse(BaseModel):
     has_mint_authority_risk: bool = False
     analyzed_at: str
 
-    model_config = {"json_schema_extra": {
-        "example": {
-            "contract_address": "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
-            "chain": "ethereum",
-            "collection_name": "BoredApeYachtClub",
-            "total_supply": 10000,
-            "security_score": 85,
-            "risk_level": "low",
-            "findings": [
-                {
-                    "category": "Royalty Enforcement",
-                    "severity": "medium",
-                    "description": "Royalties are enforced off-chain via marketplace filter, not in contract",
-                    "recommendation": "Consider using on-chain royalty enforcement (ERC-2981 with registry)"
-                }
-            ],
-            "is_verified": True,
-            "has_royalty_enforcement": True,
-            "has_allowlist": True,
-            "has_mint_authority_risk": False,
-            "analyzed_at": "2026-07-06T12:00:00Z"
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "contract_address": "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D",
+                "chain": "ethereum",
+                "collection_name": "BoredApeYachtClub",
+                "total_supply": 10000,
+                "security_score": 85,
+                "risk_level": "low",
+                "findings": [
+                    {
+                        "category": "Royalty Enforcement",
+                        "severity": "medium",
+                        "description": "Royalties are enforced off-chain via marketplace filter, not in contract",
+                        "recommendation": "Consider using on-chain royalty enforcement (ERC-2981 with registry)",
+                    }
+                ],
+                "is_verified": True,
+                "has_royalty_enforcement": True,
+                "has_allowlist": True,
+                "has_mint_authority_risk": False,
+                "analyzed_at": "2026-07-06T12:00:00Z",
+            }
         }
-    }}
+    }
 
 
 class NFTCollectionListResponse(BaseModel):

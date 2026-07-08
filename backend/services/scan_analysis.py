@@ -4,7 +4,11 @@ import re
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from ..models.scan import (
-    ScanJob, Finding, ScanStatus, FindingSeverity, FindingStatus,
+    ScanJob,
+    Finding,
+    ScanStatus,
+    FindingSeverity,
+    FindingStatus,
 )
 from sqlalchemy.orm import Session
 
@@ -36,8 +40,8 @@ class ScanAnalysisService:
                 "updated after the external call, enabling an attacker to recursively call "
                 "the function before the state change is committed."
             ),
-            "snippet": "function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    (bool success, ) = msg.sender.call{value: _amount}(\"\");\n    require(success);\n    balances[msg.sender] -= _amount; // ❌ Updated AFTER call\n}",
-            "fix": "function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    balances[msg.sender] -= _amount; // ✅ Updated BEFORE call\n    (bool success, ) = msg.sender.call{value: _amount}(\"\");\n    require(success);\n}",
+            "snippet": 'function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    (bool success, ) = msg.sender.call{value: _amount}("");\n    require(success);\n    balances[msg.sender] -= _amount; // ❌ Updated AFTER call\n}',
+            "fix": 'function withdraw(uint256 _amount) public {\n    require(balances[msg.sender] >= _amount);\n    balances[msg.sender] -= _amount; // ✅ Updated BEFORE call\n    (bool success, ) = msg.sender.call{value: _amount}("");\n    require(success);\n}',
         },
         {
             "category": "Access Control",
@@ -47,8 +51,8 @@ class ScanAnalysisService:
                 "functions lack modifier protection, allowing unauthorized access to "
                 "privileged operations."
             ),
-            "snippet": "address public owner;\n// Missing: modifier onlyOwner() {\n//     require(msg.sender == owner, \"Not owner\");\n//     _;\n// }",
-            "fix": "address public owner;\nmodifier onlyOwner() {\n    require(msg.sender == owner, \"Not owner\");\n    _;\n}",
+            "snippet": 'address public owner;\n// Missing: modifier onlyOwner() {\n//     require(msg.sender == owner, "Not owner");\n//     _;\n// }',
+            "fix": 'address public owner;\nmodifier onlyOwner() {\n    require(msg.sender == owner, "Not owner");\n    _;\n}',
         },
         {
             "category": "Integer Overflow/Underflow",
@@ -59,7 +63,7 @@ class ScanAnalysisService:
                 "current implementation does not validate inputs."
             ),
             "snippet": "function transfer(address _to, uint256 _amount) public {\n    balances[msg.sender] -= _amount; // ⚠️ Potential underflow\n    balances[_to] += _amount;\n}",
-            "fix": "function transfer(address _to, uint256 _amount) public {\n    require(balances[msg.sender] >= _amount, \"Insufficient balance\");\n    balances[msg.sender] -= _amount;\n    balances[_to] += _amount;\n}",
+            "fix": 'function transfer(address _to, uint256 _amount) public {\n    require(balances[msg.sender] >= _amount, "Insufficient balance");\n    balances[msg.sender] -= _amount;\n    balances[_to] += _amount;\n}',
         },
         {
             "category": "Oracle Manipulation",
@@ -69,7 +73,7 @@ class ScanAnalysisService:
                 "A manipulated oracle can lead to incorrect asset pricing and financial loss."
             ),
             "snippet": "uint256 price = oracle.getPrice(token); // ❌ Single oracle source\nuint256 value = amount * price / 1e18;",
-            "fix": "uint256 priceA = oracleA.getPrice(token);\nuint256 priceB = oracleB.getPrice(token);\nrequire(abs(priceA - priceB) / priceA < 0.05e18, \"Oracle deviation\");\nuint256 price = (priceA + priceB) / 2;",
+            "fix": 'uint256 priceA = oracleA.getPrice(token);\nuint256 priceB = oracleB.getPrice(token);\nrequire(abs(priceA - priceB) / priceA < 0.05e18, "Oracle deviation");\nuint256 price = (priceA + priceB) / 2;',
         },
         {
             "category": "Unchecked Return Value",
@@ -80,7 +84,7 @@ class ScanAnalysisService:
                 "inconsistent state."
             ),
             "snippet": "token.transfer(to, amount); // ❌ Return value not checked",
-            "fix": "bool success = token.transfer(to, amount);\nrequire(success, \"Transfer failed\");",
+            "fix": 'bool success = token.transfer(to, amount);\nrequire(success, "Transfer failed");',
         },
         {
             "category": "Timestamp Dependence",
@@ -110,7 +114,7 @@ class ScanAnalysisService:
                 "or multi-sig to reduce centralization risk."
             ),
             "snippet": "function emergencyWithdraw() public onlyOwner {\n    payable(owner).transfer(address(this).balance); // ❌ Single point of failure\n}",
-            "fix": "function emergencyWithdraw() public onlyOwner {\n    require(timelock.expired(), \"Timelock active\");\n    payable(owner).transfer(address(this).balance);\n}",
+            "fix": 'function emergencyWithdraw() public onlyOwner {\n    require(timelock.expired(), "Timelock active");\n    payable(owner).transfer(address(this).balance);\n}',
         },
     ]
 
@@ -228,9 +232,7 @@ class ScanAnalysisService:
             FindingSeverity.INFORMATIONAL: 1,
         }
 
-        total_score = sum(
-            severity_weights.get(f.severity, 0) for f in findings
-        )
+        total_score = sum(severity_weights.get(f.severity, 0) for f in findings)
 
         if total_score >= 60:
             return "F"
