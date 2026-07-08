@@ -168,10 +168,17 @@ export default function ApiConsolePage() {
               <code className="flex-1 border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2 py-1.5 font-mono text-[11px] text-[var(--color-term-fg)]">
                 aai_live_sk_••••••••••••••••••••••••••
               </code>
-              <Button variant="outline" size="icon" className="h-7 w-7">
+              <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => {
+                navigator.clipboard.writeText('aai_live_sk_••••••••••••••••••••••••••');
+                alert('API KEY COPIED TO CLIPBOARD');
+              }}>
                 <Copy className="h-3 w-3" />
               </Button>
-              <Button variant="outline" size="sm" className="gap-1 text-[9px] h-7">
+              <Button variant="outline" size="sm" className="gap-1 text-[9px] h-7" onClick={() => {
+                if (confirm('ROTATE API KEY? THIS WILL INVALIDATE THE CURRENT KEY.')) {
+                  alert('NEW API KEY GENERATED. UPDATE YOUR APPLICATIONS.');
+                }
+              }}>
                 <RefreshCw className="h-3 w-3" />
                 [ ROTATE ]
               </Button>

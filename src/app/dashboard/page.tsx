@@ -124,7 +124,8 @@ DASHBOARD OVERVIEW
       {/* Stats Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => (
-          <Card key={stat.label}>
+          <a key={stat.label} href={stat.label === "SCANS" ? "/dashboard/scans" : stat.label === "CRITICAL" ? "/dashboard/scans" : stat.label === "CONTRACTS" ? "/dashboard/monitoring" : "/dashboard/team"} className="block">
+          <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex h-7 w-7 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)]">
@@ -144,6 +145,7 @@ DASHBOARD OVERVIEW
               </div>
             </CardContent>
           </Card>
+          </a>
         ))}
       </div>
 
@@ -151,10 +153,12 @@ DASHBOARD OVERVIEW
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{">"} RECENT_SCANS</CardTitle>
-          <Button variant="ghost" size="sm" className="gap-1">
-            VIEW ALL
-            <ArrowRight className="h-3 w-3" />
-          </Button>
+          <a href="/dashboard/scans">
+            <Button variant="ghost" size="sm" className="gap-1">
+              VIEW ALL
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </a>
         </CardHeader>
         <CardContent>
           {scansLoading ? (

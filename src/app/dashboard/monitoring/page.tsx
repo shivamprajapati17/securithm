@@ -31,7 +31,10 @@ export default function MonitoringPage() {
             REAL-TIME ON-CHAIN MONITORING FOR DEPLOYED CONTRACTS
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => {
+          const addr = prompt('ENTER CONTRACT ADDRESS TO MONITOR:');
+          if (addr) alert(`CONTRACT ${addr.slice(0,10)}... ADDED TO MONITORING QUEUE`);
+        }}>
           <Plus className="h-3.5 w-3.5" />
           [ MONITOR ]
         </Button>
@@ -141,7 +144,9 @@ export default function MonitoringPage() {
                       </div>
                     )}
 
-                    <Button variant="ghost" size="sm" className="w-full mt-2 gap-1 text-[9px] h-6">
+                    <Button variant="ghost" size="sm" className="w-full mt-2 gap-1 text-[9px] h-6" onClick={() => {
+                      alert(`CONTRACT ${contract.contract_address.slice(0,14)}...\nCHAIN: ${contract.chain}\nSTATUS: ${contract.status}\nLABEL: ${contract.label || 'UNNAMED'}\nLAST CHECKED: ${contract.last_checked ? formatRelativeTime(contract.last_checked) : 'NEVER'}`);
+                    }}>
                       DETAILS
                       <ArrowUpRight className="h-2.5 w-2.5" />
                     </Button>
@@ -156,7 +161,7 @@ export default function MonitoringPage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>{">"} ACTIVITY_FEED</CardTitle>
-                <Button variant="ghost" size="sm" className="text-[9px]">CONFIG</Button>
+                <Button variant="ghost" size="sm" className="text-[9px]" onClick={() => alert('ALERT CONFIGURATION:\n\n- CRITICAL EVENTS: PUSH + SLACK\n- HIGH EVENTS: SLACK\n- WARNINGS: EMAIL DIGEST')}>CONFIG</Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">

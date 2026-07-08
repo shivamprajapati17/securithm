@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -11,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Shield, Upload, Github, Globe, Terminal } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import * as api from "@/lib/api";
 
 const SAMPLE_CONTRACT = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -48,14 +51,42 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
     "code"
   );
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if (!code.trim()) return;
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+    try {
+      if (inputMode === "code") {
+        const result = await api.createScan({
+          contract_source: code.trim(),
+          chain,
+          contract_name: undefined,
+          input_mode: "code",
+        });
+        onScan?.(code, chain);
+        router.push(`/dashboard/scans?id=${result.id}`);
+      } else if (inputMode === "address") {
+        const hexAddr = code.trim().startsWith("0x") ? code.trim() : `0x${code.trim()}`;
+        const result = await api.createScan({
+          contract_source: hexAddr,
+          chain,
+          input_mode: "address",
+        });
+        onScan?.(code, chain);
+        router.push(`/dashboard/scans?id=${result.id}`);
+      } else {
+        // GitHub mode - just navigate to repos page
+        router.push("/dashboard/repos");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "SCAN FAILED");
+    } finally {
       setLoading(false);
-      onScan?.(code, chain);
-    }, 2000);
+    }
   };
 
   const isHero = variant === "hero";
@@ -234,6 +265,13 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
             )}
           </Button>
         </div>
+
+        {/* Error message */}
+        {error && (
+          <div className="p-2 border border-[var(--color-term-error)] text-[10px] text-[var(--color-term-error)] font-mono">
+            [!] SCAN ERROR: {error}
+          </div>
+        )}
 
         {/* Upload option */}
         {inputMode === "code" && (

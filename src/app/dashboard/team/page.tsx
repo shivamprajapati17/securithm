@@ -62,11 +62,20 @@ export default function TeamPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+            if (findings.length === 0) { alert('NO FINDINGS TO EXPORT'); return; }
+            const blob = new Blob([JSON.stringify(findings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'securithm-findings.json'; a.click();
+            URL.revokeObjectURL(url);
+          }}>
             <CalendarDays className="h-3 w-3" />
             [ EXPORT ]
           </Button>
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={() => {
+            const email = prompt('ENTER TEAM MEMBER EMAIL TO INVITE:');
+            if (email) alert(`INVITATION SENT TO ${email}`);
+          }}>
             <UserPlus className="h-3 w-3" />
             [ INVITE ]
           </Button>

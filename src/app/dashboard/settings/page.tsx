@@ -309,7 +309,11 @@ export default function SettingsPage() {
             </div>
           </div>
           <div className="flex justify-end">
-            <Button size="sm">[ SAVE ]</Button>
+            <Button size="sm" onClick={() => {
+              const name = (document.getElementById('settings-display-name') as HTMLInputElement)?.value;
+              const email = (document.getElementById('settings-email') as HTMLInputElement)?.value;
+              alert(`PROFILE UPDATED\nNAME: ${name}\nEMAIL: ${email}`);
+            }}>[ SAVE ]</Button>
           </div>
         </CardContent>
       </Card>

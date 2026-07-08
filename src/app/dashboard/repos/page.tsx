@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { useRouter } from "next/navigation";
 import { useScans } from "@/lib/hooks";
 import { formatRelativeTime } from "@/lib/utils";
 import {
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 export default function ReposPage() {
+  const router = useRouter();
   const { data: scansData, loading: scansLoading, error: scansError } = useScans({ page_size: 100 });
   const scans = scansData?.items || [];
 
@@ -38,7 +40,7 @@ export default function ReposPage() {
             SCANNED CONTRACTS AND CI/CD INTEGRATION STATUS
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => window.open('https://github.com/apps/securithm', '_blank')}>
           <Github className="h-3.5 w-3.5" />
           [ CONNECT_REPO ]
         </Button>
@@ -145,7 +147,10 @@ export default function ReposPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Settings className="h-3 w-3" /></Button>
-                      <Button variant="outline" size="sm" className="text-[9px] h-7">[ VIEW ]</Button>
+                      <Button variant="outline" size="sm" className="text-[9px] h-7" onClick={() => {
+                        const firstScan = repoScans[0];
+                        if (firstScan) router.push(`/dashboard/scans?id=${firstScan.id}`);
+                      }}>[ VIEW ]</Button>
                     </div>
                   </div>
 
@@ -177,7 +182,11 @@ export default function ReposPage() {
                   <div className="text-[10px] font-mono">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[8px] text-[var(--color-term-muted)] uppercase tracking-wider">{">"} CI_CONFIG</span>
-                      <Button variant="ghost" size="sm" className="gap-1 h-5 text-[8px]">
+                      <Button variant="ghost" size="sm" className="gap-1 h-5 text-[8px]" onClick={() => {
+                        const config = `name: SECURITHM_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: securithm/action@v1\n        with:\n          threshold: HIGH\n          token: \${{ secrets.SECURITHM_TOKEN }}`;
+                        navigator.clipboard.writeText(config);
+                        alert('CI CONFIG COPIED TO CLIPBOARD');
+                      }}>
                         <Copy className="h-2.5 w-2.5" />
                         [ COPY ]
                       </Button>

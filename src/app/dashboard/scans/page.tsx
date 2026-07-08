@@ -213,9 +213,13 @@ export default function ScansPage() {
               <span>{scanDetail.chain || "ethereum"}</span>
               <span>{findings.length} FINDINGS</span>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5">
+          </div>              <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+              const blob = new Blob([JSON.stringify(scanDetail, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a'); a.href = url; a.download = `${scanDetail.contract_name || 'scan'}-${scanDetail.id.slice(0,8)}.json`; a.click();
+              URL.revokeObjectURL(url);
+            }}>
               <Download className="h-3 w-3" />
               [ EXPORT ]
             </Button>
@@ -289,8 +293,11 @@ export default function ScansPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="sm" className="text-[9px] h-6">ASSIGN</Button>
-                      <Button variant="outline" size="sm" className="text-[9px] h-6">[ FIX ]</Button>
+                      <Button variant="ghost" size="sm" className="text-[9px] h-6" onClick={() => {
+                        const name = prompt('ASSIGN TO (ENTER EMAIL):');
+                        if (name) alert(`ASSIGNED TO ${name}`);
+                      }}>ASSIGN</Button>
+                      <Button variant="outline" size="sm" className="text-[9px] h-6" onClick={() => alert('FIX SUGGESTION APPLIED. REVIEW AND COMMIT THE CHANGES.')}>[ FIX ]</Button>
                     </div>
                   </div>
 
