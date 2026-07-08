@@ -45,7 +45,7 @@ jobs:
           pip install pytest pytest-asyncio pytest-cov httpx ruff
 
       - name: Lint with ruff
-        run: ruff check backend/ --fix
+        run: ruff check backend/ --fix --exit-non-zero-on-unfix
 
       - name: Check format with ruff
         run: ruff format backend/ --check
