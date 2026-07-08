@@ -1,5 +1,4 @@
 {
-  "name": "securithm",
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
@@ -9,16 +8,5 @@
   ],
   "github": {
     "silent": true
-  },
-  "experimentalServices": {
-    "frontend": {
-      "routePrefix": "/",
-      "framework": "nextjs"
-    },
-    "backend": {
-      "root": "backend",
-      "entrypoint": "main:app",
-      "routePrefix": "/_/backend"
-    }
   }
 }
