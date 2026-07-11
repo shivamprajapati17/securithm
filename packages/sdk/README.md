@@ -2,7 +2,7 @@
 
 > **Ship secure contracts.** Analyze Solidity/Rust code, get risk scores, monitor deployed contracts, and manage security findings.
 
-[![npm version](https://img.shields.io/npm/v/@securithm/sdk)](https://www.npmjs.com/package/@securithm/sdk)
+[![npm version](https://img.shields.io/npm/v/@shivamprajapati17/securithm-sdk)](https://npm.pkg.github.com/shivamprajapati17/securithm-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-shivamprajapati17%2Fsecurithm-blue)](https://github.com/shivamprajapati17/securithm)
 
@@ -11,17 +11,21 @@
 ## Installation
 
 ```bash
-npm install @securithm/sdk
+npm install @shivamprajapati17/securithm-sdk
 # or
-yarn add @securithm/sdk
+yarn add @shivamprajapati17/securithm-sdk
 # or
-pnpm add @securithm/sdk
+pnpm add @shivamprajapati17/securithm-sdk
+
+> **Note:** This package is published to GitHub Packages. You'll need to
+> [authenticate with GitHub](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-to-github-packages)
+> by adding a `.npmrc` file with your GitHub Personal Access Token.
 ```
 
 ## Quick Start
 
 ```typescript
-import { Securithm } from "@securithm/sdk";
+import { Securithm } from "@shivamprajapati17/securithm-sdk";
 
 // Initialize the client
 const client = new Securithm({
@@ -233,7 +237,7 @@ const usage = await client.apiKeys.getUsage();
 All API errors throw a typed `SecurithmError`:
 
 ```typescript
-import { SecurithmError } from "@securithm/sdk";
+import { SecurithmError } from "@shivamprajapati17/securithm-sdk";
 
 try {
   await client.scans.get("invalid-id");
