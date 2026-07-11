@@ -1,5 +1,5 @@
 {
-  "name": "@shivamprajapati17/securithm-sdk",
+  "name": "securithm-sdk",
   "version": "1.0.0",
   "description": "Securithm SDK — Ship secure contracts. Analyze Solidity/Rust code, get risk scores, monitor deployed contracts, and manage security findings.",
   "keywords": [

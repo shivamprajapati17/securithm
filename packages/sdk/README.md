@@ -11,21 +11,19 @@
 ## Installation
 
 ```bash
-npm install @shivamprajapati17/securithm-sdk
+npm install securithm-sdk
 # or
-yarn add @shivamprajapati17/securithm-sdk
+yarn add securithm-sdk
 # or
-pnpm add @shivamprajapati17/securithm-sdk
+pnpm add securithm-sdk
 
-> **Note:** This package is published to GitHub Packages. You'll need to
-> [authenticate with GitHub](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-to-github-packages)
-> by adding a `.npmrc` file with your GitHub Personal Access Token.
+> **Note:** Also available on GitHub Packages as `@shivamprajapati17/securithm-sdk`.
 ```
 
 ## Quick Start
 
 ```typescript
-import { Securithm } from "@shivamprajapati17/securithm-sdk";
+import { Securithm } from "securithm-sdk";
 
 // Initialize the client
 const client = new Securithm({
@@ -237,7 +235,7 @@ const usage = await client.apiKeys.getUsage();
 All API errors throw a typed `SecurithmError`:
 
 ```typescript
-import { SecurithmError } from "@shivamprajapati17/securithm-sdk";
+import { SecurithmError } from "securithm-sdk";
 
 try {
   await client.scans.get("invalid-id");

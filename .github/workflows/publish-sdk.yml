@@ -1,4 +1,4 @@
-name: Publish SDK to GitHub Packages
+name: Publish SDK
 
 on:
   push:
@@ -17,11 +17,11 @@ env:
 
 jobs:
   publish:
-    name: Build & Publish @shivamprajapati17/securithm-sdk
+    name: Build & Publish securithm-sdk
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # Required for GitHub Packages publishing
+      packages: write  # Required for GitHub Packages
 
     steps:
       - uses: actions/checkout@v7
@@ -30,8 +30,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          registry-url: "https://npm.pkg.github.com/"
-          scope: "@shivamprajapati17"
 
       - name: Install SDK dependencies
         run: npm ci
@@ -45,8 +43,17 @@ jobs:
         run: npm run build
         working-directory: ${{ env.SDK_DIR }}
 
+      # ── Publish to npmjs.com ──
+      - name: Publish to npmjs.com
+        run: npm publish --access public
+        working-directory: ${{ env.SDK_DIR }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Publish to GitHub Packages ──
       - name: Publish to GitHub Packages
-        run: npm publish
+        run: |
+          npm publish --registry=https://npm.pkg.github.com/ --access public
         working-directory: ${{ env.SDK_DIR }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
