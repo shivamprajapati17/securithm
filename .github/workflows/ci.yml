@@ -85,3 +85,4 @@ jobs:
           python -m pytest backend/tests/ -v --tb=short
         env:
           DATABASE_URL: postgresql://securithm:securithm@localhost:5432/securithm
+          DEBUG: "true"
