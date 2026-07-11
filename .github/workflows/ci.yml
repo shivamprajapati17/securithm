@@ -49,6 +49,21 @@ jobs:
     name: Backend (Lint, Test)
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: securithm
+          POSTGRES_PASSWORD: securithm
+          POSTGRES_DB: securithm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v7
 
@@ -69,4 +84,4 @@ jobs:
         run: |
           python -m pytest backend/tests/ -v --tb=short
         env:
-          DATABASE_URL: sqlite:///./test_securithm.db
+          DATABASE_URL: postgresql://securithm:securithm@localhost:5432/securithm
