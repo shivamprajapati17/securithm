@@ -53,7 +53,9 @@ jobs:
         working-directory: ${{ env.SDK_DIR }}
 
       # ── Publish to GitHub Packages ──
+      # Run even if npmjs publish fails — GitHub Packages doesn't need npmjs auth
       - name: Publish to GitHub Packages
+        if: always()
         run: |
           # Add auth for GitHub Packages registry inline
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
