@@ -1,0 +1,45 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\DELL\\Desktop\\Audit AI']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [10936] using WatchFiles
+INFO:     Started server process [12392]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:56116 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56187 - "GET /api/v1/auth/login/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56191 - "GET /api/v1/auth/callback?state=google&iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AdkVLPz7u_qzjqV9WDkkFfV9VQogqvhY0wpnXdFxUrMF3Oz6qpxvzIMQz7ZxQehmkLWh8g&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:56188 - "GET /api/v1/auth/login/google HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56192 - "GET /api/v1/auth/callback?state=google&iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AdkVLPz_a5Oq4r1c7EO-EH87WRe7IgFqcy6iLYuO60LclDfaLZHe8jVYa9IO4YlgmLIo5A&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:56214 - "OPTIONS /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56214 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56214 - "OPTIONS /api/v1/scans?page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56214 - "OPTIONS /api/v1/scans?page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56214 - "GET /api/v1/scans?page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56216 - "GET /api/v1/scans?page_size=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "OPTIONS /api/v1/scans?page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56234 - "OPTIONS /api/v1/auth/github/repos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56234 - "GET /api/v1/scans?page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56234 - "GET /api/v1/scans?page_size=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "GET /api/v1/auth/github/repos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "OPTIONS /api/v1/findings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56238 - "OPTIONS /api/v1/findings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56238 - "GET /api/v1/findings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "GET /api/v1/findings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "OPTIONS /api/v1/team/invite HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56233 - "POST /api/v1/team/invite HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:56240 - "POST /api/v1/team/invite HTTP/1.1" 201 Created
+INFO:     127.0.0.1:56382 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56382 - "OPTIONS /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56383 - "OPTIONS /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56383 - "GET /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56382 - "GET /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56450 - "POST /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56456 - "POST /api/v1/team/invite HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:56470 - "POST /api/v1/team/invite HTTP/1.1" 201 Created
+INFO:     127.0.0.1:56569 - "OPTIONS /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "OPTIONS /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "OPTIONS /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/v1/monitored-contracts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56569 - "GET /api/v1/monitored-contracts HTTP/1.1" 200 OK

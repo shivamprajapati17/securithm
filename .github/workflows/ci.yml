@@ -1,4 +1,4 @@
-name: Frontend CI
+name: CI — Frontend + Backend
 
 on:
   push:
@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-lint:
-    name: Build & Lint
+  frontend:
+    name: Frontend (Build, Lint, Test)
     runs-on: ubuntu-latest
 
     steps:
@@ -42,5 +42,31 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
+      - name: Run frontend tests
         run: npm test
+
+  backend:
+    name: Backend (Lint, Test)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install backend dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest httpx ruff
+
+      - name: Lint backend
+        run: ruff check backend/
+
+      - name: Run backend tests (API key management & auth)
+        run: |
+          python -m pytest backend/tests/ -v --tb=short
+        env:
+          DATABASE_URL: sqlite:///./test_securithm.db

@@ -1,0 +1,11 @@
+src/
+tsconfig.json
+tsup.config.ts
+node_modules/
+.vite/
+vitest.config.ts
+**/*.test.ts
+**/*.test.js
+coverage/
+.git/
+.github/

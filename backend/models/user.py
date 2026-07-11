@@ -23,6 +23,7 @@ class Organization(Base):
     monitored_contracts = relationship(
         "MonitoredContract", back_populates="organization"
     )
+    team_invites = relationship("TeamInvite", back_populates="organization")
 
 
 class Plan(Base):
@@ -50,10 +51,17 @@ class User(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     last_login = Column(DateTime(timezone=True), nullable=True)
+    wallet_address = Column(String(255), nullable=True)
+    github_repo_token = Column(String(512), nullable=True)
+    role = Column(String(20), default="member")  # admin, member, viewer
     org_id = Column(Uuid(), ForeignKey("organizations.id"), nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     scan_jobs = relationship("ScanJob", back_populates="user")
     assigned_findings = relationship(
         "Finding", back_populates="assignee", foreign_keys="Finding.assigned_to"
+    )
+    api_keys = relationship("ApiKey", back_populates="user", cascade="all, delete-orphan")
+    sent_invites = relationship(
+        "TeamInvite", back_populates="inviter", foreign_keys="TeamInvite.invited_by"
     )

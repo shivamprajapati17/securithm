@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     github_client_secret: str = ""
     oauth_redirect_url: str = "http://localhost:8000/api/v1/auth/callback"
 
+    # Email (Resend)
+    resend_api_key: str = ""
+    resend_from_email: str = "Securithm <onboarding@resend.dev>"
+
     # Sentry
     sentry_dsn: str = ""
 

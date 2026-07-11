@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { Navbar } from "@/components/navbar";
 import { ScanInput } from "@/components/scan-input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FadeInSection, ScaleInSection, StaggerGrid } from "@/components/scroll-animations";
 import AsciiCta from "@/components/ascii-cta";
@@ -15,7 +14,6 @@ const ThreeBackground = dynamic(
 );
 
 import {
-  ArrowRight,
   Shield,
   Zap,
   GitBranch,

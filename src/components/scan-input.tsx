@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Shield, Upload, Github, Globe, Terminal } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 import * as api from "@/lib/api";
 
 const SAMPLE_CONTRACT = `// SPDX-License-Identifier: MIT
@@ -53,7 +52,6 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
 
   const handleScan = async () => {
     if (!code.trim()) return;

@@ -7,12 +7,66 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from .core.config import get_settings
-from .core.database import engine, Base
+from .core.database import engine, Base, SessionLocal
 from .api.v1 import v1_router
+from .api.v1.api_keys import get_api_key_from_header, check_api_key_rate_limit, record_api_key_usage
+from .models.api_key import ApiKey
+
+import hashlib
+from datetime import datetime, timezone
 
 settings = get_settings()
+
+
+class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
+    """Middleware that enforces rate limits for API key-authenticated requests.
+    
+    Requests using a JWT (regular user sessions) are not rate limited.
+    Requests using an API key (sk_...) are checked against the key's
+    configured rate_limit_per_hour.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        # Only apply to /api/v1/ routes
+        if not request.url.path.startswith("/api/v1/"):
+            return await call_next(request)
+
+        auth = request.headers.get("authorization")
+        key_token = get_api_key_from_header(auth)
+
+        if key_token:
+            key_hash = hashlib.sha256(key_token.encode()).hexdigest()
+            db = SessionLocal()
+            try:
+                api_key = db.query(ApiKey).filter(
+                    ApiKey.key_hash == key_hash,
+                    ApiKey.is_active == True,
+                ).first()
+
+                if not api_key:
+                    return JSONResponse(
+                        status_code=401,
+                        content={"detail": "Invalid API key"},
+                    )
+
+                if not check_api_key_rate_limit(key_hash, api_key.rate_limit_per_hour):
+                    return JSONResponse(
+                        status_code=429,
+                        content={
+                            "detail": f"Rate limit exceeded. Maximum {api_key.rate_limit_per_hour} requests per hour."
+                        },
+                    )
+
+                record_api_key_usage(key_hash)
+                api_key.last_used_at = datetime.now(timezone.utc)
+                db.commit()
+            finally:
+                db.close()
+
+        return await call_next(request)
 
 
 @asynccontextmanager
@@ -56,6 +110,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# API Key rate limiting middleware
+app.add_middleware(ApiKeyRateLimitMiddleware)
 
 
 # Health check endpoint

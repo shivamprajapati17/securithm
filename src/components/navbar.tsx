@@ -43,12 +43,13 @@ export function Navbar() {
 
           <div className="hidden md:flex items-center gap-2">
             <a href="/auth/login">
-              <Button variant="ghost" size="sm">                    sign in
-                  </Button>
-                </a>
-                <a href="/auth/register">
-                  <Button size="sm">
-                    [ start ]
+              <Button variant="ghost" size="sm">
+                sign in
+              </Button>
+            </a>
+            <a href="/auth/register">
+              <Button size="sm">
+                [ start ]
               </Button>
             </a>
           </div>

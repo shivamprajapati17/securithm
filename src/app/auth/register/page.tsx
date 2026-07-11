@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Shield } from "lucide-react";
@@ -13,8 +13,21 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [inviteId, setInviteId] = useState<string | null>(null);
+  const [inviteOrg, setInviteOrg] = useState<string | null>(null);
   const { register } = useAuth();
   const router = useRouter();
+
+  // Detect invite token from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const invite = params.get("invite");
+    const inviteEmail = params.get("email");
+    if (invite) {
+      setInviteId(invite);
+      if (inviteEmail) setEmail(inviteEmail);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +35,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(email, password, displayName || undefined);
+      await register(email, password, displayName || undefined, inviteId || undefined);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
@@ -31,16 +44,13 @@ export default function RegisterPage() {
     }
   };
 
-  const handleOAuth = async (provider: "google" | "github") => {
+  const handleOAuth = async (provider: "google") => {
     setError(null);
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/v1/auth/login/${provider}`);
       if (!res.ok) {
-        const msg = provider === "google"
-          ? "Google OAuth not configured. Add GOOGLE_CLIENT_ID to .env"
-          : "GitHub OAuth not configured. Add GITHUB_CLIENT_ID to .env";
-        throw new Error(msg);
+        throw new Error("Google OAuth not configured. Add GOOGLE_CLIENT_ID to .env");
       }
       const data = await res.json();
       window.location.href = data.authorization_url;
@@ -86,17 +96,7 @@ export default function RegisterPage() {
               </svg>
               GOOGLE SIGNUP
             </button>
-            <button
-              type="button"
-              onClick={() => handleOAuth("github")}
-              disabled={loading}
-              className="w-full border border-[var(--color-term-border)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-4 py-2 text-sm font-mono uppercase tracking-wider transition-all disabled:opacity-40 flex items-center justify-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-              </svg>
-              GITHUB SIGNUP
-            </button>
+
           </div>
 
           {/* Separator */}

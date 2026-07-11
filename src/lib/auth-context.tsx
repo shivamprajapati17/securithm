@@ -8,6 +8,9 @@ interface User {
   email: string;
   display_name: string | null;
   avatar_url: string | null;
+  role?: string | null;
+  org_name?: string | null;
+  org_id?: string | null;
 }
 
 interface AuthContextType {
@@ -15,7 +18,7 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, display_name?: string) => Promise<void>;
+  register: (email: string, password: string, display_name?: string, invite_id?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -71,8 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
   }, []);
 
-  const register = useCallback(async (email: string, password: string, display_name?: string) => {
-    const result = await api.register(email, password, display_name);
+  const register = useCallback(async (email: string, password: string, display_name?: string, invite_id?: string) => {
+    const result = await api.register(email, password, display_name, invite_id);
     setStoredToken(result.access_token);
     setToken(result.access_token);
     api.setAuthToken(result.access_token);

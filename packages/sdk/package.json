@@ -1,0 +1,73 @@
+{
+  "name": "@securithm/sdk",
+  "version": "1.0.0",
+  "description": "Securithm SDK — Ship secure contracts. Analyze Solidity/Rust code, get risk scores, monitor deployed contracts, and manage security findings.",
+  "keywords": [
+    "securithm",
+    "smart-contract",
+    "security",
+    "solidity",
+    "audit",
+    "blockchain",
+    "ethereum",
+    "solana",
+    "web3",
+    "smart-contract-audit",
+    "smart-contract-security"
+  ],
+  "homepage": "https://github.com/shivamprajapati17/securithm#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivamprajapati17/securithm.git",
+    "directory": "packages/sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/shivamprajapati17/securithm/issues"
+  },
+  "license": "MIT",
+  "author": "Shivam Prajapati <shivamprajapati17>",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "prepublishOnly": "npm run build",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "sideEffects": false
+}

@@ -59,27 +59,6 @@ export function useScan(id: string | null) {
   return { data, loading, error, refetch: fetch };
 }
 
-export function useCreateScan() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const create = async (contract_source: string, chain: string = "ethereum", contract_name?: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await api.createScan({ contract_source, chain, contract_name });
-      return result;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create scan");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { create, loading, error };
-}
-
 export function useMonitoredContracts() {
   const [data, setData] = useState<api.MonitoredContract[]>([]);
   const [loading, setLoading] = useState(true);
