@@ -2,7 +2,7 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install && pip install -r requirements.txt",
+  "installCommand": "npm install && python3 -m pip install -r requirements.txt",
   "regions": [
     "iad1"
   ],
