@@ -46,11 +46,11 @@ jobs:
         working-directory: ${{ env.SDK_DIR }}
 
       # ── Publish to npmjs.com via OIDC Trusted Publishing ──
+      # No NODE_AUTH_TOKEN needed — setup-node + id-token:write + --provenance
+      # handles OIDC token exchange with npm registry automatically.
       - name: Publish to npmjs.com
         run: npm publish --access public --provenance
         working-directory: ${{ env.SDK_DIR }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # ── Publish to GitHub Packages ──
       - name: Publish to GitHub Packages
