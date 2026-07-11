@@ -1,0 +1,52 @@
+name: Publish SDK to GitHub Packages
+
+on:
+  push:
+    tags:
+      - "sdk-v*"  # e.g. sdk-v1.0.0, sdk-v1.1.0
+  release:
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20
+  SDK_DIR: packages/sdk
+
+jobs:
+  publish:
+    name: Build & Publish @shivamprajapati17/securithm-sdk
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # Required for GitHub Packages publishing
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          registry-url: "https://npm.pkg.github.com/"
+          scope: "@shivamprajapati17"
+
+      - name: Install SDK dependencies
+        run: npm ci
+        working-directory: ${{ env.SDK_DIR }}
+
+      - name: TypeScript typecheck
+        run: npm run typecheck
+        working-directory: ${{ env.SDK_DIR }}
+
+      - name: Build SDK
+        run: npm run build
+        working-directory: ${{ env.SDK_DIR }}
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        working-directory: ${{ env.SDK_DIR }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
