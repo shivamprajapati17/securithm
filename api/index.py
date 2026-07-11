@@ -1,36 +1,40 @@
 """Vercel serverless entry point for the Securithm FastAPI backend.
 
-This file wraps the FastAPI application using Mangum to make it compatible
-with Vercel's serverless Python runtime.
+Wraps the FastAPI application using Mangum for Vercel's Python serverless runtime.
+The backend is accessible at /api/v1/* via vercel.json rewrites.
 
-Usage:
-    Deploy via: vercel --prod
-    The backend will be available at:
-      https://<project>.vercel.app/api/backend/*
+On Vercel:
+  - DATABASE_URL must be set to a managed PostgreSQL connection string
+  - OAUTH_REDIRECT_URL should be set to https://<project>.vercel.app/api/index.py
+  - DEBUG=true enables auto table creation on cold start
 """
 
 import os
 import sys
 from pathlib import Path
 
-# Add the project root to sys.path so imports from backend/ work
-project_root = str(Path(__file__).resolve().parent.parent)
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# Add project root to Python path
+_project_root = str(Path(__file__).resolve().parent.parent)
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
-# ── Database ──
-# On Vercel, DATABASE_URL must be set via environment variables.
-# Production: postgresql://user:pass@host:5432/db
-# For local dev: sqlite:///./securithm_dev.db
-if "DATABASE_URL" not in os.environ:
-    os.environ["DATABASE_URL"] = "sqlite:///./securithm_dev.db"
-
-# ── Debug ──
-# Enable debug to auto-create tables on startup
+# ── Environment defaults ──
+# These can be overridden by Vercel Environment Variables
 os.environ.setdefault("DEBUG", "true")
 
+# ── Create database tables on cold start if DEBUG ──
+# (Vercel serverless functions are stateless, so we need to ensure
+#  tables exist on each cold start. In production, use Alembic migrations.)
+if os.environ.get("DEBUG", "").lower() in ("true", "1", "yes"):
+    from backend.core.database import engine, Base
+    from backend.models import *  # noqa: F401, F403 — register all models
+
+    Base.metadata.create_all(bind=engine)
+
+# ── Import the FastAPI app ──
 from backend.main import app  # noqa: E402
 from mangum import Mangum  # noqa: E402
 
-# Create the Mangum ASGI handler for Vercel
+# Create the Vercel ASGI handler
+# lifespan="off" because we handle table creation above
 handler = Mangum(app, lifespan="off")
