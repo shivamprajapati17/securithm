@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write  # Required for OIDC trusted publishing
       packages: write  # Required for GitHub Packages
 
     steps:
@@ -44,9 +45,9 @@ jobs:
         run: npm run build
         working-directory: ${{ env.SDK_DIR }}
 
-      # ── Publish to npmjs.com ──
+      # ── Publish to npmjs.com via OIDC Trusted Publishing ──
       - name: Publish to npmjs.com
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         working-directory: ${{ env.SDK_DIR }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
