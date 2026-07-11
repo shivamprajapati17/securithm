@@ -35,6 +35,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 # ─── Fixtures ─────────────────────────────────────────────
 
+
 @pytest.fixture(autouse=True)
 def setup_database():
     Base.metadata.create_all(bind=engine)
@@ -99,7 +100,6 @@ def client():
 
 
 class TestWalletPersistence:
-
     def test_update_wallet_address(self, client, auth_headers):
         """Test setting a wallet address via PATCH /me."""
         response = client.patch(
@@ -170,7 +170,6 @@ class TestWalletPersistence:
 
 
 class TestApiKeyUsage:
-
     def test_usage_empty_no_keys(self, client, auth_headers):
         """Test usage endpoint returns empty dict when no keys exist."""
         response = client.get(

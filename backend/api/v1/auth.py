@@ -66,11 +66,15 @@ async def register(
 
     # ── Handle invite-based registration ──
     if user_in.invite_id:
-        invite = db.query(TeamInvite).filter(
-            TeamInvite.id == user_in.invite_id,
-            TeamInvite.email == user_in.email,
-            TeamInvite.status == "pending",
-        ).first()
+        invite = (
+            db.query(TeamInvite)
+            .filter(
+                TeamInvite.id == user_in.invite_id,
+                TeamInvite.email == user_in.email,
+                TeamInvite.status == "pending",
+            )
+            .first()
+        )
 
         if not invite:
             raise HTTPException(
@@ -98,7 +102,9 @@ async def register(
         db.refresh(user)
 
         token = create_access_token(data={"sub": str(user.id)})
-        return TokenResponse(access_token=token, token_type="bearer", user_id=str(user.id))
+        return TokenResponse(
+            access_token=token, token_type="bearer", user_id=str(user.id)
+        )
 
     # ── Normal registration ──
     free_plan = db.query(Plan).filter(Plan.name == "Free").first()
@@ -174,7 +180,9 @@ async def update_me(
     if "email" in data.model_fields_set:
         current_user.email = data.email
     if "wallet_address" in data.model_fields_set:
-        current_user.wallet_address = data.wallet_address if data.wallet_address else None
+        current_user.wallet_address = (
+            data.wallet_address if data.wallet_address else None
+        )
 
     db.commit()
     db.refresh(current_user)
@@ -398,9 +406,7 @@ async def callback_oauth(
         return RedirectResponse(url="/auth/login?error=missing_code")
 
     frontend_url = (
-        settings.cors_origins[0]
-        if settings.cors_origins
-        else "http://localhost:3000"
+        settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
     )
 
     # ── Handle GitHub repo connection callback ──
@@ -408,10 +414,16 @@ async def callback_oauth(
         # Extract the connection_id from state: "github_repo_{connection_id}"
         parts = state.split("_", 2)
         connection_id = parts[2] if len(parts) >= 3 else ""
-        redirect_url = await _handle_github_repo_callback(code, connection_id, db) if connection_id else None
+        redirect_url = (
+            await _handle_github_repo_callback(code, connection_id, db)
+            if connection_id
+            else None
+        )
         if redirect_url:
             return RedirectResponse(url=redirect_url)
-        return RedirectResponse(url=f"{frontend_url}/dashboard/repos?error=github_connection_failed")
+        return RedirectResponse(
+            url=f"{frontend_url}/dashboard/repos?error=github_connection_failed"
+        )
 
     # ── Handle identity login callbacks ──
     try:
@@ -441,14 +453,17 @@ def _cleanup_stale_connections():
     """Remove pending connections that have expired (older than 10 minutes)."""
     now = datetime.now(timezone.utc)
     stale = [
-        cid for cid, (_, created_at) in _pending_github_connections.items()
+        cid
+        for cid, (_, created_at) in _pending_github_connections.items()
         if now - created_at > _PENDING_CONNECTION_TTL
     ]
     for cid in stale:
         del _pending_github_connections[cid]
 
 
-async def _handle_github_repo_callback(code: str, connection_id: str, db: Session) -> str | None:
+async def _handle_github_repo_callback(
+    code: str, connection_id: str, db: Session
+) -> str | None:
     """Exchange the OAuth code for a GitHub access token, then look up the
     local user via the connection_id stored in memory, and save the token.
     Returns the frontend redirect URL or None on failure."""
@@ -513,9 +528,7 @@ async def _handle_github_repo_callback(code: str, connection_id: str, db: Sessio
     db.commit()
 
     frontend_url = (
-        settings.cors_origins[0]
-        if settings.cors_origins
-        else "http://localhost:3000"
+        settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
     )
     return f"{frontend_url}/dashboard/repos?github_connected={github_login}"
 
@@ -537,7 +550,10 @@ async def github_connect(
 
     # Generate a random connection ID and store the user mapping with timestamp
     connection_id = secrets.token_hex(16)
-    _pending_github_connections[connection_id] = (str(current_user.id), datetime.now(timezone.utc))
+    _pending_github_connections[connection_id] = (
+        str(current_user.id),
+        datetime.now(timezone.utc),
+    )
 
     url = (
         "https://github.com/login/oauth/authorize"
@@ -580,7 +596,11 @@ async def list_github_repos(
                 "Authorization": f"Bearer {current_user.github_repo_token}",
                 "Accept": "application/json",
             },
-            params={"per_page": 50, "sort": "updated", "affiliation": "owner,collaborator"},
+            params={
+                "per_page": 50,
+                "sort": "updated",
+                "affiliation": "owner,collaborator",
+            },
         )
 
         if resp.status_code == 401:
@@ -602,16 +622,18 @@ async def list_github_repos(
         repos = resp.json()
         result = []
         for r in repos:
-            result.append({
-                "id": r["id"],
-                "name": r["name"],
-                "full_name": r["full_name"],
-                "description": r.get("description") or "",
-                "private": r["private"],
-                "html_url": r["html_url"],
-                "language": r.get("language") or "",
-                "updated_at": r.get("updated_at", ""),
-                "default_branch": r.get("default_branch", "main"),
-            })
+            result.append(
+                {
+                    "id": r["id"],
+                    "name": r["name"],
+                    "full_name": r["full_name"],
+                    "description": r.get("description") or "",
+                    "private": r["private"],
+                    "html_url": r["html_url"],
+                    "language": r.get("language") or "",
+                    "updated_at": r.get("updated_at", ""),
+                    "default_branch": r.get("default_branch", "main"),
+                }
+            )
 
         return {"repos": result, "connected": True, "message": ""}

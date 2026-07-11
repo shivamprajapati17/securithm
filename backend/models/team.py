@@ -12,7 +12,9 @@ class TeamInvite(Base):
     org_id = Column(Uuid(), ForeignKey("organizations.id"), nullable=False)
     invited_by = Column(Uuid(), ForeignKey("users.id"), nullable=False)
     email = Column(String(255), nullable=False, index=True)
-    status = Column(String(20), default="pending")  # pending, accepted, declined, expired
+    status = Column(
+        String(20), default="pending"
+    )  # pending, accepted, declined, expired
     message = Column(Text, nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(

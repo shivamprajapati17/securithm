@@ -36,6 +36,7 @@ app.dependency_overrides[get_db] = override_get_db
 
 # ─── Fixtures ─────────────────────────────────────────────
 
+
 @pytest.fixture(autouse=True)
 def setup_database():
     """Create tables and seed test data before each test, clean up after."""
@@ -296,7 +297,7 @@ class TestApiKeyAuth:
 
     def test_api_key_authenticated_request(self, client, test_user, auth_headers):
         """Test that a valid API key is properly created and stored.
-        
+
         Verifies the full lifecycle: create a key via JWT auth, verify it
         appears in the list, then revoke it.
         """
@@ -331,6 +332,7 @@ class TestApiKeyAuth:
 
 
 # ─── Client fixture that depends on dependency override ──
+
 
 @pytest.fixture
 def client():

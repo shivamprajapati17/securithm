@@ -12,7 +12,11 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .core.config import get_settings
 from .core.database import engine, Base, SessionLocal
 from .api.v1 import v1_router
-from .api.v1.api_keys import get_api_key_from_header, check_api_key_rate_limit, record_api_key_usage
+from .api.v1.api_keys import (
+    get_api_key_from_header,
+    check_api_key_rate_limit,
+    record_api_key_usage,
+)
 from .models.api_key import ApiKey
 
 import hashlib
@@ -23,7 +27,7 @@ settings = get_settings()
 
 class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
     """Middleware that enforces rate limits for API key-authenticated requests.
-    
+
     Requests using a JWT (regular user sessions) are not rate limited.
     Requests using an API key (sk_...) are checked against the key's
     configured rate_limit_per_hour.
@@ -41,10 +45,14 @@ class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
             key_hash = hashlib.sha256(key_token.encode()).hexdigest()
             db = SessionLocal()
             try:
-                api_key = db.query(ApiKey).filter(
-                    ApiKey.key_hash == key_hash,
-                    ApiKey.is_active,
-                ).first()
+                api_key = (
+                    db.query(ApiKey)
+                    .filter(
+                        ApiKey.key_hash == key_hash,
+                        ApiKey.is_active,
+                    )
+                    .first()
+                )
 
                 if not api_key:
                     return JSONResponse(

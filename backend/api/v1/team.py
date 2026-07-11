@@ -65,11 +65,15 @@ async def invite_team_member(
         raise HTTPException(status_code=400, detail="Invalid email address")
 
     # Check if already invited
-    existing = db.query(TeamInvite).filter(
-        TeamInvite.email == data.email,
-        TeamInvite.org_id == current_user.org_id,
-        TeamInvite.status == "pending",
-    ).first()
+    existing = (
+        db.query(TeamInvite)
+        .filter(
+            TeamInvite.email == data.email,
+            TeamInvite.org_id == current_user.org_id,
+            TeamInvite.status == "pending",
+        )
+        .first()
+    )
     if existing:
         raise HTTPException(
             status_code=409,
@@ -77,10 +81,14 @@ async def invite_team_member(
         )
 
     # Check if user with this email is already in the organization
-    existing_user = db.query(User).filter(
-        User.email == data.email,
-        User.org_id == current_user.org_id,
-    ).first()
+    existing_user = (
+        db.query(User)
+        .filter(
+            User.email == data.email,
+            User.org_id == current_user.org_id,
+        )
+        .first()
+    )
     if existing_user:
         raise HTTPException(
             status_code=409,
@@ -104,9 +112,7 @@ async def invite_team_member(
     # Send invitation email via Resend
     settings = get_settings()
     frontend_url = (
-        settings.cors_origins[0]
-        if settings.cors_origins
-        else "http://localhost:3000"
+        settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
     )
     invite_link = f"{frontend_url}/auth/register?invite={invite.id}&email={data.email}"
     org_name = current_user.organization.name if current_user.organization else "a team"
@@ -131,9 +137,14 @@ async def list_team_invites(
     """List all invitations for the current user's organization."""
     org_id = require_org_membership(current_user)
 
-    invites = db.query(TeamInvite).filter(
-        TeamInvite.org_id == org_id,
-    ).order_by(TeamInvite.created_at.desc()).all()
+    invites = (
+        db.query(TeamInvite)
+        .filter(
+            TeamInvite.org_id == org_id,
+        )
+        .order_by(TeamInvite.created_at.desc())
+        .all()
+    )
 
     return [TeamInviteResponse.model_validate(i) for i in invites]
 
@@ -149,11 +160,15 @@ async def accept_team_invite(
     The invite must be for the current user's email and still pending.
     On acceptance, the user joins the inviting organization with role 'member'.
     """
-    invite = db.query(TeamInvite).filter(
-        TeamInvite.id == invite_id,
-        TeamInvite.email == current_user.email,
-        TeamInvite.status == "pending",
-    ).first()
+    invite = (
+        db.query(TeamInvite)
+        .filter(
+            TeamInvite.id == invite_id,
+            TeamInvite.email == current_user.email,
+            TeamInvite.status == "pending",
+        )
+        .first()
+    )
 
     if not invite:
         raise HTTPException(
@@ -192,11 +207,15 @@ async def decline_team_invite(
     db: Session = Depends(get_db),
 ):
     """Decline a pending team invitation."""
-    invite = db.query(TeamInvite).filter(
-        TeamInvite.id == invite_id,
-        TeamInvite.email == current_user.email,
-        TeamInvite.status == "pending",
-    ).first()
+    invite = (
+        db.query(TeamInvite)
+        .filter(
+            TeamInvite.id == invite_id,
+            TeamInvite.email == current_user.email,
+            TeamInvite.status == "pending",
+        )
+        .first()
+    )
 
     if not invite:
         raise HTTPException(
@@ -220,11 +239,15 @@ async def cancel_invite(
     """Cancel a pending invitation (admin only)."""
     org_id = require_admin(current_user)
 
-    invite = db.query(TeamInvite).filter(
-        TeamInvite.id == invite_id,
-        TeamInvite.org_id == org_id,
-        TeamInvite.status == "pending",
-    ).first()
+    invite = (
+        db.query(TeamInvite)
+        .filter(
+            TeamInvite.id == invite_id,
+            TeamInvite.org_id == org_id,
+            TeamInvite.status == "pending",
+        )
+        .first()
+    )
 
     if not invite:
         raise HTTPException(
@@ -247,13 +270,18 @@ async def list_team_members(
     """List all members of the current user's organization."""
     org_id = require_org_membership(current_user)
 
-    members = db.query(User).filter(
-        User.org_id == org_id,
-    ).order_by(
-        # Admins first, then by creation date
-        User.role.desc().nullslast(),
-        User.created_at.asc(),
-    ).all()
+    members = (
+        db.query(User)
+        .filter(
+            User.org_id == org_id,
+        )
+        .order_by(
+            # Admins first, then by creation date
+            User.role.desc().nullslast(),
+            User.created_at.asc(),
+        )
+        .all()
+    )
 
     return [TeamMemberResponse.model_validate(m) for m in members]
 
@@ -268,10 +296,14 @@ async def change_member_role(
     """Change a member's role (admin only)."""
     org_id = require_admin(current_user)
 
-    member = db.query(User).filter(
-        User.id == user_id,
-        User.org_id == org_id,
-    ).first()
+    member = (
+        db.query(User)
+        .filter(
+            User.id == user_id,
+            User.org_id == org_id,
+        )
+        .first()
+    )
 
     if not member:
         raise HTTPException(
@@ -308,10 +340,14 @@ async def remove_member(
             detail="You cannot remove yourself. Ask another admin to remove you.",
         )
 
-    member = db.query(User).filter(
-        User.id == user_id,
-        User.org_id == org_id,
-    ).first()
+    member = (
+        db.query(User)
+        .filter(
+            User.id == user_id,
+            User.org_id == org_id,
+        )
+        .first()
+    )
 
     if not member:
         raise HTTPException(

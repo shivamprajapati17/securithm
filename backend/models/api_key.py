@@ -11,9 +11,13 @@ class ApiKey(Base):
     id = Column(Uuid(), primary_key=True, default=uuid.uuid4)
     user_id = Column(Uuid(), ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
-    key_prefix = Column(String(8), nullable=False)  # First 8 chars for display (e.g. "sk_live_")
+    key_prefix = Column(
+        String(8), nullable=False
+    )  # First 8 chars for display (e.g. "sk_live_")
     key_hash = Column(String(255), nullable=False)  # Hashed full key
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     last_used_at = Column(DateTime(timezone=True), nullable=True)
     expires_at = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, default=True)

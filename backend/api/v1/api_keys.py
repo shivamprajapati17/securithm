@@ -81,18 +81,28 @@ async def create_api_key(
 ):
     """Create a new API key for the authenticated user."""
     # Enforce max keys per user
-    existing_count = db.query(ApiKey).filter(
-        ApiKey.user_id == current_user.id,
-        ApiKey.is_active,
-    ).count()
+    existing_count = (
+        db.query(ApiKey)
+        .filter(
+            ApiKey.user_id == current_user.id,
+            ApiKey.is_active,
+        )
+        .count()
+    )
     if existing_count >= 10:
-        raise HTTPException(status_code=400, detail="Maximum of 10 active API keys allowed")
+        raise HTTPException(
+            status_code=400, detail="Maximum of 10 active API keys allowed"
+        )
 
     # Validate rate limit input
     if data.rate_limit_per_hour < 1:
-        raise HTTPException(status_code=400, detail="Rate limit must be at least 1 request per hour")
+        raise HTTPException(
+            status_code=400, detail="Rate limit must be at least 1 request per hour"
+        )
     if data.rate_limit_per_hour > 10000:
-        raise HTTPException(status_code=400, detail="Rate limit cannot exceed 10,000 requests per hour")
+        raise HTTPException(
+            status_code=400, detail="Rate limit cannot exceed 10,000 requests per hour"
+        )
 
     full_key, prefix, key_hash = generate_api_key()
 
@@ -127,9 +137,12 @@ async def list_api_keys(
     db: Session = Depends(get_db),
 ):
     """List all API keys for the authenticated user."""
-    keys = db.query(ApiKey).filter(ApiKey.user_id == current_user.id).order_by(
-        ApiKey.created_at.desc()
-    ).all()
+    keys = (
+        db.query(ApiKey)
+        .filter(ApiKey.user_id == current_user.id)
+        .order_by(ApiKey.created_at.desc())
+        .all()
+    )
 
     return [
         ApiKeyResponse(
@@ -154,10 +167,14 @@ async def update_api_key(
     db: Session = Depends(get_db),
 ):
     """Update an API key's name, rate limit, or active status."""
-    api_key = db.query(ApiKey).filter(
-        ApiKey.id == key_id,
-        ApiKey.user_id == current_user.id,
-    ).first()
+    api_key = (
+        db.query(ApiKey)
+        .filter(
+            ApiKey.id == key_id,
+            ApiKey.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not api_key:
         raise HTTPException(status_code=404, detail="API key not found")
@@ -166,7 +183,9 @@ async def update_api_key(
         api_key.name = data.name
     if data.rate_limit_per_hour is not None:
         if data.rate_limit_per_hour < 1 or data.rate_limit_per_hour > 10000:
-            raise HTTPException(status_code=400, detail="Rate limit must be between 1 and 10,000")
+            raise HTTPException(
+                status_code=400, detail="Rate limit must be between 1 and 10,000"
+            )
         api_key.rate_limit_per_hour = data.rate_limit_per_hour
     if data.is_active is not None:
         api_key.is_active = data.is_active
@@ -193,10 +212,14 @@ async def revoke_api_key(
     db: Session = Depends(get_db),
 ):
     """Revoke (delete) an API key."""
-    api_key = db.query(ApiKey).filter(
-        ApiKey.id == key_id,
-        ApiKey.user_id == current_user.id,
-    ).first()
+    api_key = (
+        db.query(ApiKey)
+        .filter(
+            ApiKey.id == key_id,
+            ApiKey.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not api_key:
         raise HTTPException(status_code=404, detail="API key not found")
@@ -218,16 +241,17 @@ async def list_api_key_usage_stats(
 ):
     """Get current rate limit usage count per API key for the authenticated user.
     Returns a map of { key_id: current_usage_count }."""
-    keys = db.query(ApiKey).filter(
-        ApiKey.user_id == current_user.id,
-        ApiKey.is_active,
-    ).all()
+    keys = (
+        db.query(ApiKey)
+        .filter(
+            ApiKey.user_id == current_user.id,
+            ApiKey.is_active,
+        )
+        .all()
+    )
 
     result: dict[str, int] = {}
     for key in keys:
         result[str(key.id)] = get_api_key_usage_stats(key.key_hash)
 
     return result
-
-
-

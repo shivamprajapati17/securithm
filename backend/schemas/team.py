@@ -6,7 +6,9 @@ from typing import Optional
 
 class TeamInviteRequest(BaseModel):
     email: str = Field(..., description="Email address of the person to invite")
-    message: Optional[str] = Field(None, max_length=500, description="Optional personal message")
+    message: Optional[str] = Field(
+        None, max_length=500, description="Optional personal message"
+    )
 
 
 class TeamInviteResponse(BaseModel):
@@ -42,4 +44,6 @@ class TeamMemberResponse(BaseModel):
 
 
 class MemberRoleUpdate(BaseModel):
-    role: str = Field(..., pattern=r"^(admin|member|viewer)$", description="New role for the member")
+    role: str = Field(
+        ..., pattern=r"^(admin|member|viewer)$", description="New role for the member"
+    )

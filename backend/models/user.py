@@ -61,7 +61,9 @@ class User(Base):
     assigned_findings = relationship(
         "Finding", back_populates="assignee", foreign_keys="Finding.assigned_to"
     )
-    api_keys = relationship("ApiKey", back_populates="user", cascade="all, delete-orphan")
+    api_keys = relationship(
+        "ApiKey", back_populates="user", cascade="all, delete-orphan"
+    )
     sent_invites = relationship(
         "TeamInvite", back_populates="inviter", foreign_keys="TeamInvite.invited_by"
     )

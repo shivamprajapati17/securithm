@@ -125,13 +125,15 @@ def send_team_invite(
     from_email = settings.resend_from_email or "Securithm <onboarding@resend.dev>"
 
     try:
-        response = resend.Emails.send({
-            "from": from_email,
-            "to": [to_email],
-            "subject": f"You've been invited to {safe_org} on Securithm",
-            "html": email_html,
-            "text": text_content,
-        })
+        response = resend.Emails.send(
+            {
+                "from": from_email,
+                "to": [to_email],
+                "subject": f"You've been invited to {safe_org} on Securithm",
+                "html": email_html,
+                "text": text_content,
+            }
+        )
         return bool(response and response.get("id"))
     except Exception:
         return False
