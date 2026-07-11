@@ -32,10 +32,8 @@ def send_team_invite(
     resend.api_key = settings.resend_api_key
 
     # Escape user-provided values to prevent HTML injection
-    safe_inviter = html.escape(inviter_name)
     safe_org = html.escape(org_name)
     safe_message = html.escape(message) if message else None
-    safe_link = html.escape(invite_link)
 
     # Build a clean HTML email
     email_html = f"""<!DOCTYPE html>

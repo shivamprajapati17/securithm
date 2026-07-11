@@ -12,7 +12,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: "bypass" }));
 afterAll(() => server.close());
 afterEach(() => server.resetHandlers());
 
-function createWorkflowRun(conclusion: string) {
+function createWorkflowRun(conclusion: string | null) {
   return {
     total_count: 1,
     workflow_runs: [
