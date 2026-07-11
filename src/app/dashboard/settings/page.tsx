@@ -11,9 +11,8 @@ import {
   Webhook,
   Download,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
+
 import * as api from "@/lib/api";
 
 const plans = [
@@ -84,7 +83,6 @@ const notificationSettings = [
 ];
 
 export default function SettingsPage() {
-  const { user } = useAuth();
   const [notifications, setNotifications] = useState(notificationSettings);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);

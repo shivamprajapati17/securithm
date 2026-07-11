@@ -14,7 +14,6 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [inviteId, setInviteId] = useState<string | null>(null);
-  const [inviteOrg, setInviteOrg] = useState<string | null>(null);
   const { register } = useAuth();
   const router = useRouter();
 

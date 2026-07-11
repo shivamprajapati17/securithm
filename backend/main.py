@@ -43,7 +43,7 @@ class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
             try:
                 api_key = db.query(ApiKey).filter(
                     ApiKey.key_hash == key_hash,
-                    ApiKey.is_active == True,
+                    ApiKey.is_active,
                 ).first()
 
                 if not api_key:

@@ -2,7 +2,7 @@ import uuid
 import secrets
 import hashlib
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from collections import defaultdict
 from typing import Optional
@@ -83,7 +83,7 @@ async def create_api_key(
     # Enforce max keys per user
     existing_count = db.query(ApiKey).filter(
         ApiKey.user_id == current_user.id,
-        ApiKey.is_active == True,
+        ApiKey.is_active,
     ).count()
     if existing_count >= 10:
         raise HTTPException(status_code=400, detail="Maximum of 10 active API keys allowed")
@@ -220,7 +220,7 @@ async def list_api_key_usage_stats(
     Returns a map of { key_id: current_usage_count }."""
     keys = db.query(ApiKey).filter(
         ApiKey.user_id == current_user.id,
-        ApiKey.is_active == True,
+        ApiKey.is_active,
     ).all()
 
     result: dict[str, int] = {}
