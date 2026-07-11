@@ -54,6 +54,8 @@ jobs:
       # ── Publish to GitHub Packages ──
       - name: Publish to GitHub Packages
         run: |
+          # Add auth for GitHub Packages registry inline
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> .npmrc
           npm publish --registry=https://npm.pkg.github.com/ --access public
         working-directory: ${{ env.SDK_DIR }}
         env:
