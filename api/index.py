@@ -4,8 +4,10 @@ Wraps the FastAPI application using Mangum for Vercel's Python serverless runtim
 The backend is accessible at /api/v1/* via vercel.json rewrites.
 """
 
+import json
 import os
 import sys
+import traceback
 from pathlib import Path
 
 # Add project root to Python path
@@ -23,22 +25,41 @@ try:
         from backend.models import *  # noqa: F401, F403
         Base.metadata.create_all(bind=engine)
 except Exception as e:
-    # Log but don't crash — tables may already exist or DB may not be available
     print(f"[WARN] DB table creation skipped: {e}")
 
 # ── Import the FastAPI app ──
+_app = None
+_import_error = None
 try:
-    from backend.main import app
+    from backend.main import app as _app
     print("[INFO] Backend app imported successfully")
 except Exception as e:
+    _import_error = e
     print(f"[ERROR] Failed to import backend.main: {e}")
-    print(f"[ERROR] sys.path: {sys.path}")
-    import traceback
     traceback.print_exc()
-    raise
 
 from mangum import Mangum
 
-# Create the Vercel ASGI handler
-handler = Mangum(app, lifespan="off")
-print("[INFO] Mangum handler created")
+# Create handler — either the real app or an error-returning stub
+if _app is not None and _import_error is None:
+    handler = Mangum(_app, lifespan="off")
+else:
+    error_detail = {
+        "error": str(_import_error) if _import_error else "App import returned None",
+        "traceback": traceback.format_exc() if _import_error else "No traceback",
+        "sys_path": sys.path,
+    }
+
+    async def error_app(scope, receive, send):
+        body = json.dumps(error_detail).encode()
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 500,
+                "headers": [(b"content-type", b"application/json")],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+    handler = Mangum(error_app, lifespan="off")
+    print(f"[ERROR] Using error stub handler due to: {_import_error}")
