@@ -30,11 +30,13 @@ except Exception as e:
 # ── Import the FastAPI app ──
 _app = None
 _import_error = None
+_error_traceback = None
 try:
     from backend.main import app as _app
     print("[INFO] Backend app imported successfully")
 except Exception as e:
     _import_error = e
+    _error_traceback = traceback.format_exc()  # Capture inside except block
     print(f"[ERROR] Failed to import backend.main: {e}")
     traceback.print_exc()
 
@@ -46,7 +48,7 @@ if _app is not None and _import_error is None:
 else:
     error_detail = {
         "error": str(_import_error) if _import_error else "App import returned None",
-        "traceback": traceback.format_exc() if _import_error else "No traceback",
+        "traceback": _error_traceback or "No traceback",
         "sys_path": sys.path,
     }
 
