@@ -8,13 +8,6 @@
   "github": {
     "silent": true
   },
-  "functions": {
-    "api/index.py": {
-      "runtime": "now-python@3.12.0",
-      "memory": 512,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     {
       "source": "/api/v1/(.*)",
