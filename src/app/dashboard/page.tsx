@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScanInput } from "@/components/scan-input";
 import { useScans } from "@/lib/hooks";
 import { formatRelativeTime } from "@/lib/utils";
+import * as api from "@/lib/api";
 import {
   Shield,
   AlertTriangle,
@@ -12,6 +13,8 @@ import {
   Clock,
   ArrowRight,
   FileText,
+  Users,
+  BarChart3,
 } from "lucide-react";
 
 function StatusBadge({ status }: { status: string }) {
@@ -58,18 +61,24 @@ export default function DashboardPage() {
   const { data: scansData, loading: scansLoading } = useScans({ page_size: 50 });
   const scans = scansData?.items || [];
 
-  const completedScans = scans.filter((s) => s.status === "completed");
-  const totalFindings = completedScans.reduce(
-    (sum, s) => sum + (s.findings?.length || 0), 0
-  );
-  const criticalCount = completedScans.reduce(
-    (sum, s) => sum + (s.findings?.filter((f) => f.severity === "critical").length || 0),
-    0
-  );
-  const resolvedFindings = completedScans.reduce(
-    (sum, s) => sum + (s.findings?.filter((f) => f.status === "resolved").length || 0),
-    0
-  );
+  const completedScans = scans.filter((s: api.Scan) => s.status === "completed");
+  const allFindings = completedScans.flatMap((s: api.Scan) => s.findings || []);
+  const totalFindings = allFindings.length;
+  const criticalCount = allFindings.filter((f: api.Finding) => f.severity === "critical").length;
+  const highCount = allFindings.filter((f: api.Finding) => f.severity === "high").length;
+  const mediumCount = allFindings.filter((f: api.Finding) => f.severity === "medium").length;
+  const lowCount = allFindings.filter((f: api.Finding) => f.severity === "low").length;
+  const infoCount = allFindings.filter((f: api.Finding) => f.severity === "informational").length;
+  const resolvedFindings = allFindings.filter((f: api.Finding) => f.status === "resolved").length;
+  const assignedFindings = allFindings.filter((f: api.Finding) => f.assigned_to).length;
+
+  const severityBreakdown = [
+    { label: "CRITICAL", count: criticalCount, color: "bg-[var(--color-term-error)]", textColor: "text-[var(--color-term-error)]" },
+    { label: "HIGH", count: highCount, color: "bg-[var(--color-term-warning)]", textColor: "text-[var(--color-term-warning)]" },
+    { label: "MEDIUM", count: mediumCount, color: "bg-[var(--color-severity-medium)]", textColor: "text-[var(--color-severity-medium)]" },
+    { label: "LOW", count: lowCount, color: "bg-[var(--color-severity-low)]", textColor: "text-[var(--color-severity-low)]" },
+    { label: "INFO", count: infoCount, color: "bg-[var(--color-term-muted)]", textColor: "text-[var(--color-term-muted)]" },
+  ];
 
   const stats = [
     {
@@ -211,6 +220,81 @@ DASHBOARD OVERVIEW
           )}
         </CardContent>
       </Card>
+
+      {/* Findings Overview */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>{">"} FINDINGS_OVERVIEW</CardTitle>
+          <a href="/dashboard/team">
+            <Button variant="ghost" size="sm" className="gap-1">
+              TEAM BOARD
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </a>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {severityBreakdown.map((sev) => {
+              const pct = totalFindings > 0 ? Math.round((sev.count / totalFindings) * 100) : 0;
+              return (
+                <div key={sev.label} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[9px] font-mono font-bold uppercase ${sev.textColor}`}>
+                      {sev.label}
+                    </span>
+                    <span className="text-[9px] font-mono text-[var(--color-term-muted)]">
+                      {sev.count} / {totalFindings} ({pct}%)
+                    </span>
+                  </div>
+                  <div className="h-2 border border-[var(--color-term-border)] bg-[var(--color-term-bg)] overflow-hidden">
+                    <div
+                      className={`h-full ${sev.color} transition-all duration-500`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bottom Stats */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)] shrink-0">
+              <BarChart3 className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-[var(--color-term-fg)] term-glow">{totalFindings}</div>
+              <div className="text-[9px] text-[var(--color-term-muted)] font-mono uppercase tracking-wider">[TOTAL FINDINGS]</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)] shrink-0">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-[var(--color-term-fg)] term-glow">{resolvedFindings} <span className="text-[10px] text-[var(--color-term-muted)]">/ {totalFindings}</span></div>
+              <div className="text-[9px] text-[var(--color-term-muted)] font-mono uppercase tracking-wider">[RESOLVED]</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center border border-[var(--color-term-border)] text-[var(--color-term-fg)] shrink-0">
+              <Users className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-[var(--color-term-fg)] term-glow">{assignedFindings}</div>
+              <div className="text-[9px] text-[var(--color-term-muted)] font-mono uppercase tracking-wider">[ASSIGNED]</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
