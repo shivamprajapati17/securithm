@@ -11,11 +11,13 @@ import {
   Menu,
   X,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CiStatusIndicator } from "@/components/ci-status";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { useNotifications } from "@/lib/notification-context";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Overview", href: "/dashboard" },
@@ -26,6 +28,90 @@ const navItems = [
   { icon: BarChart3, label: "Risk API", href: "/dashboard/api-console" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
+
+function NotificationPanel() {
+  const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
+  const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClick);
+    }
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  return (
+    <div ref={panelRef} className="relative px-2 py-1 border-t border-[var(--color-term-border)]">
+      <button
+        onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead(); }}
+        className="flex items-center justify-between w-full px-2 py-1.5 text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)] transition-all"
+      >
+        <div className="flex items-center gap-2">
+          <Bell className="h-3.5 w-3.5" />
+          <span className="text-[10px] font-mono uppercase tracking-wider">NOTIFICATIONS</span>
+        </div>
+        {unreadCount > 0 && (
+          <span className="flex h-4 min-w-[14px] items-center justify-center px-1 border border-[var(--color-term-fg)] text-[8px] font-mono font-bold text-[var(--color-term-fg)]">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full left-2 right-2 mb-1 max-h-60 overflow-y-auto border border-[var(--color-term-border)] bg-[var(--color-term-bg)] shadow-lg">
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-[var(--color-term-border)]">
+            <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-[var(--color-term-muted)]">
+              RECENT ({notifications.length})
+            </span>
+            {notifications.length > 0 && (
+              <button onClick={clearAll} className="text-[8px] font-mono text-[var(--color-term-error)] hover:text-[var(--color-term-fg)] transition-colors">
+                CLEAR ALL
+              </button>
+            )}
+          </div>
+          {notifications.length === 0 ? (
+            <div className="px-3 py-4 text-[9px] text-[var(--color-term-muted)] font-mono text-center">
+              $ NO_NOTIFICATIONS
+            </div>
+          ) : (
+            <div className="divide-y divide-[var(--color-term-border)]">
+              {notifications.slice(0, 15).map((n) => (
+                <div key={n.id} className="flex items-start gap-2 px-3 py-1.5 hover:bg-[var(--color-term-dim)] transition-colors">
+                  <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                    n.type === "assigned" ? "bg-[var(--color-term-fg)]" :
+                    n.type === "unassigned" ? "bg-[var(--color-term-error)]" :
+                    "bg-[var(--color-term-warning)]"
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[8px] font-mono text-[var(--color-term-fg)] leading-tight">
+                      {n.type === "assigned" && <>ASSIGNED <span className="font-bold">{n.findingCategory}</span> → <span className="font-bold">{n.memberName}</span></>}
+                      {n.type === "unassigned" && <>UNASSIGNED <span className="text-[var(--color-term-error)]">{n.memberName}</span> FROM <span className="font-bold">{n.findingCategory}</span></>}
+                      {n.type === "status_changed" && <>MOVED <span className="font-bold">{n.findingCategory}</span> → <span className="text-[var(--color-term-warning)]">{n.memberName}</span></>}
+                    </div>
+                    <div className="text-[7px] text-[var(--color-term-muted)] font-mono">
+                      {n.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {notifications.length > 15 && (
+                <div className="px-3 py-1 text-[8px] text-[var(--color-term-muted)] font-mono text-center">
+                  + {notifications.length - 15} MORE
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -115,6 +201,9 @@ export function Sidebar() {
           </a>
         ))}
       </nav>
+
+      {/* Notifications */}
+      {!collapsed && <NotificationPanel />}
 
       {/* CI Status */}
       <CiStatusIndicator collapsed={collapsed} />

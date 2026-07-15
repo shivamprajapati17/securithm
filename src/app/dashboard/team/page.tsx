@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useFindings } from "@/lib/hooks";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { useNotifications } from "@/lib/notification-context";
 import * as api from "@/lib/api";
 import {
   Clock,
@@ -131,6 +132,8 @@ export default function TeamPage() {
   }>>([]);
   const [showActivityLog, setShowActivityLog] = useState(false);
   const [severityFilter, setSeverityFilter] = useState<string>("");
+
+  const { addNotification } = useNotifications();
 
   const getMemberName = useCallback((memberId: string | null) => {
     if (!memberId) return null;
@@ -464,7 +467,9 @@ export default function TeamPage() {
                                                     const token = localStorage.getItem("securithm_token");
                                                     if (token) api.setAuthToken(token);
                                                     await api.updateFinding(item.id, { assigned_to: null });
-                                                    addActivity("unassigned", item.category, getMemberName(item.assigned_to) || "Unknown");
+                                                    const uname = getMemberName(item.assigned_to) || "Unknown";
+                                                    addActivity("unassigned", item.category, uname);
+                                                    addNotification({ type: "unassigned", findingCategory: item.category, memberName: uname });
                                                     refetchFindings();
                                                     loadMembers();
                                                   } catch (err) {
@@ -507,6 +512,7 @@ export default function TeamPage() {
                                                 await api.updateFinding(item.id, { status: transition.status });
                                                 const statusLabel = columnConfig.find(c => c.id === transition.status)?.title || transition.status.toUpperCase();
                                                 addActivity("status_changed", item.category, statusLabel);
+                                                addNotification({ type: "status_changed", findingCategory: item.category, memberName: statusLabel });
                                                 refetchFindings();
                                               } catch (err) {
                                                 alert(`STATUS CHANGE FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
@@ -864,7 +870,9 @@ export default function TeamPage() {
                           await api.updateFinding(assigningFinding.id, {
                             assigned_to: member.id,
                           });
-                          addActivity("assigned", assigningFinding.category, member.display_name || member.email.split("@")[0]);
+                          const assigneeName = member.display_name || member.email.split("@")[0];
+                          addActivity("assigned", assigningFinding.category, assigneeName);
+                          addNotification({ type: "assigned", findingCategory: assigningFinding.category, memberName: assigneeName });
                           setAssigningFinding(null);
                           setAssigningMemberId(null);
                           refetchFindings();
