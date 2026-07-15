@@ -25,7 +25,9 @@ import {
   Eye,
   X,
   ChevronDown,
+  ChevronUp,
   Loader2,
+  History,
 } from "lucide-react";
 
 import {
@@ -90,6 +92,31 @@ export default function TeamPage() {
   const [assigningFinding, setAssigningFinding] = useState<api.Finding | null>(null);
   const [assigningMemberId, setAssigningMemberId] = useState<string | null>(null);
   const [assignLoading, setAssignLoading] = useState(false);
+  const [activityLog, setActivityLog] = useState<Array<{
+    id: string;
+    type: "assigned" | "unassigned" | "status_changed";
+    findingCategory: string;
+    memberName: string;
+    timestamp: Date;
+  }>>([]);
+  const [showActivityLog, setShowActivityLog] = useState(false);
+
+  const getMemberName = useCallback((memberId: string | null) => {
+    if (!memberId) return null;
+    const member = members.find(m => m.id === memberId);
+    if (!member) return memberId.slice(0, 8);
+    return member.display_name || member.email.split("@")[0];
+  }, [members]);
+
+  const addActivity = useCallback((type: "assigned" | "unassigned" | "status_changed", findingCategory: string, memberName: string) => {
+    setActivityLog(prev => [{
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type,
+      findingCategory,
+      memberName,
+      timestamp: new Date(),
+    }, ...prev]);
+  }, []);
 
   const isAdmin = user?.role === "admin";
 
@@ -339,13 +366,37 @@ export default function TeamPage() {
                                     </p>
 
                                     <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-dashed border-[var(--color-term-border)]">
-                                      <div className="flex items-center gap-1">
+                                      <div className="flex items-center gap-1.5 min-w-0">
                                         {item.assigned_to ? (
-                                          <Avatar className="h-4 w-4">
-                                            <AvatarFallback className="text-[6px]">
-                                              {item.assigned_to.slice(0, 2).toUpperCase()}
-                                            </AvatarFallback>
-                                          </Avatar>
+                                          <div className="flex items-center gap-1.5 group/assignee min-w-0">
+                                            <Avatar className="h-4 w-4 shrink-0">
+                                              <AvatarFallback className="text-[6px]">
+                                                {(getMemberName(item.assigned_to) || "??").slice(0, 2).toUpperCase()}
+                                              </AvatarFallback>
+                                            </Avatar>
+                                            <span className="text-[8px] text-[var(--color-term-fg)] font-mono truncate max-w-[70px]">
+                                              {getMemberName(item.assigned_to)}
+                                            </span>
+                                            <button
+                                              onClick={async () => {
+                                                if (!confirm(`UNASSIGN ${getMemberName(item.assigned_to)} FROM THIS FINDING?`)) return;
+                                                try {
+                                                  const token = localStorage.getItem("securithm_token");
+                                                  if (token) api.setAuthToken(token);
+                                                  await api.updateFinding(item.id, { assigned_to: null });
+                                                  addActivity("unassigned", item.category, getMemberName(item.assigned_to) || "Unknown");
+                                                  refetchFindings();
+                                                  loadMembers();
+                                                } catch (err) {
+                                                  alert(`UNASSIGN FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
+                                                }
+                                              }}
+                                              className="h-3 w-3 p-0 opacity-0 group-hover/assignee:opacity-100 text-[var(--color-term-error)] hover:text-[var(--color-term-error)] transition-opacity shrink-0"
+                                              title="Unassign"
+                                            >
+                                              <X className="h-2.5 w-2.5" />
+                                            </button>
+                                          </div>
                                         ) : (
                                           <Button
                                             variant="ghost"
@@ -377,6 +428,61 @@ export default function TeamPage() {
               )}
             </>
           )}
+          {/* ─── Activity Log ──────────────────────── */}
+          <div className="border border-[var(--color-term-border)]">
+            <button
+              onClick={() => setShowActivityLog(!showActivityLog)}
+              className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
+            >
+              <div className="flex items-center gap-1.5">
+                <History className="h-3 w-3" />
+                ACTIVITY LOG ({activityLog.length})
+              </div>
+              {showActivityLog ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+            </button>
+            {showActivityLog && (
+              <div className="border-t border-[var(--color-term-border)] max-h-48 overflow-y-auto">
+                {activityLog.length === 0 ? (
+                  <div className="px-3 py-4 text-[9px] text-[var(--color-term-muted)] font-mono text-center">
+                    $ NO_ACTIVITY_YET —
+                    {' '}ASSIGN A FINDING TO START
+                  </div>
+                ) : (
+                  <div className="divide-y divide-[var(--color-term-border)]">
+                    {activityLog.map((event) => (
+                      <div key={event.id} className="flex items-start gap-2 px-3 py-1.5">
+                        <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                          event.type === "assigned" ? "bg-[var(--color-term-fg)]" :
+                          event.type === "unassigned" ? "bg-[var(--color-term-error)]" :
+                          "bg-[var(--color-term-warning)]"
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[9px] font-mono text-[var(--color-term-fg)] leading-tight">
+                            {event.type === "assigned" && (
+                              <>ASSIGNED <span className="text-[var(--color-term-fg)] font-bold">{event.findingCategory}</span> → <span className="text-[var(--color-term-fg)] font-bold">{event.memberName}</span></>
+                            )}
+                            {event.type === "unassigned" && (
+                              <>UNASSIGNED <span className="text-[var(--color-term-error)]">{event.memberName}</span> FROM <span className="text-[var(--color-term-fg)] font-bold">{event.findingCategory}</span></>
+                            )}
+                            {event.type === "status_changed" && (
+                              <>{event.findingCategory} → {event.memberName}</>
+                            )}
+                          </div>
+                          <div className="text-[7px] text-[var(--color-term-muted)] font-mono">
+                            {event.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </>
       ) : (
         /* ─── Members Tab ──────────────────────────── */
@@ -637,6 +743,7 @@ export default function TeamPage() {
                           await api.updateFinding(assigningFinding.id, {
                             assigned_to: member.id,
                           });
+                          addActivity("assigned", assigningFinding.category, member.display_name || member.email.split("@")[0]);
                           setAssigningFinding(null);
                           setAssigningMemberId(null);
                           refetchFindings();
