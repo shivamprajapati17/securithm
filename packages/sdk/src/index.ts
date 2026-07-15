@@ -22,7 +22,7 @@ export { HttpClient, type ClientOptions };
  *
  * @example
  * ```typescript
- * import { Securithm } from "@securithm/sdk";
+ * import { Securithm } from "securithm";
  *
  * const client = new Securithm({ apiKey: "aai_live_sk_..." });
  *
