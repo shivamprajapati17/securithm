@@ -10,10 +10,12 @@ from .token import router as token_router
 from .payments import router as payments_router
 from .api_keys import router as api_keys_router
 from .team import router as team_router
+from .public_findings import router as public_findings_router
 
 v1_router = APIRouter(prefix="/api/v1")
 v1_router.include_router(scans_router)
 v1_router.include_router(findings_router)
+v1_router.include_router(public_findings_router)
 v1_router.include_router(monitoring_router)
 v1_router.include_router(risk_score_router)
 v1_router.include_router(auth_router)

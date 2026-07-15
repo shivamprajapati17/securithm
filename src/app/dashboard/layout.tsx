@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { useAuth } from "@/lib/auth-context";
+import { NotificationProvider } from "@/lib/notification-context";
 
 export default function DashboardLayout({
   children,
@@ -41,11 +42,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-term-bg)]">
-      <Sidebar />
-      <div className="md:pl-56 pl-0">
-        <main className="p-6 pt-14 md:pt-6">{children}</main>
+    <NotificationProvider>
+      <div className="min-h-screen bg-[var(--color-term-bg)]">
+        <Sidebar />
+        <div className="md:pl-56 pl-0">
+          <main className="p-6 pt-14 md:pt-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </NotificationProvider>
   );
 }
