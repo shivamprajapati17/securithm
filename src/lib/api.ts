@@ -163,6 +163,23 @@ export async function listFindings(params?: {
 }
 
 
+// ─── Findings Update ─────────────────────────────────────────
+
+export async function updateFinding(
+  findingId: string,
+  data: {
+    status?: string;
+    assigned_to?: string | null;
+    remediation_sla?: string | null;
+  }
+): Promise<Finding> {
+  return request<Finding>(`/api/v1/findings/${findingId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+
 // ─── Risk Score ──────────────────────────────────────────────
 
 export async function getRiskScore(
