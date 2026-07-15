@@ -2,7 +2,7 @@
 
 > **Ship secure contracts.** Analyze Solidity/Rust code, get risk scores, monitor deployed contracts, and manage security findings.
 
-[![npm version](https://img.shields.io/npm/v/@shivamprajapati17/securithm-sdk)](https://npm.pkg.github.com/package/securithm)
+[![npm version](https://img.shields.io/npm/v/@shivamprajapati17/securithm-sdk)](https://npmjs.com/package/securithm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-shivamprajapati17%2Fsecurithm-blue)](https://github.com/shivamprajapati17/securithm)
 
