@@ -25,7 +25,15 @@ import {
   Eye,
   X,
   ChevronDown,
+  Loader2,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const severityIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   critical: AlertTriangle,
@@ -63,7 +71,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function TeamPage() {
-  const { data: allFindings, loading, error } = useFindings({});
+  const { data: allFindings, loading, error, refetch: refetchFindings } = useFindings({});
   const findings = allFindings || [];
   const { user } = useAuth();
   const [inviteEmail, setInviteEmail] = useState("");
@@ -79,6 +87,9 @@ export default function TeamPage() {
   }>>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [activeTab, setActiveTab] = useState<"board" | "members">("board");
+  const [assigningFinding, setAssigningFinding] = useState<api.Finding | null>(null);
+  const [assigningMemberId, setAssigningMemberId] = useState<string | null>(null);
+  const [assignLoading, setAssignLoading] = useState(false);
 
   const isAdmin = user?.role === "admin";
 
@@ -200,6 +211,8 @@ export default function TeamPage() {
                 <div className="flex items-center gap-1.5">
                   <input
                     type="email"
+                    id="invite-email-board"
+                    name="invite_email"
                     value={inviteEmail}
                     onChange={(e) => { setInviteEmail(e.target.value); setInviteSent(null); }}
                     placeholder="EMAIL TO INVITE"
@@ -334,7 +347,12 @@ export default function TeamPage() {
                                             </AvatarFallback>
                                           </Avatar>
                                         ) : (
-                                          <Button variant="ghost" size="sm" className="h-4 px-1 text-[8px]">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-4 px-1 text-[8px]"
+                                            onClick={() => setAssigningFinding(item)}
+                                          >
                                             $ ASSIGN
                                           </Button>
                                         )}
@@ -376,6 +394,8 @@ export default function TeamPage() {
               <div className="flex items-center gap-1.5">
                 <input
                   type="email"
+                  id="invite-email-members"
+                  name="invite_email"
                   value={inviteEmail}
                   onChange={(e) => { setInviteEmail(e.target.value); setInviteSent(null); }}
                   placeholder="EMAIL TO INVITE"
@@ -572,6 +592,93 @@ export default function TeamPage() {
           )}
         </div>
       )}
+      {/* ─── Assign Finding Dialog ──────────────────────── */}
+      <Dialog open={!!assigningFinding} onOpenChange={(open) => { if (!open) { setAssigningFinding(null); setAssigningMemberId(null); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-3.5 w-3.5" />
+                ASSIGN FINDING
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-4 py-3 space-y-3">
+            <div className="text-[9px] text-[var(--color-term-muted)] font-mono">
+              {assigningFinding && (
+                <>
+                  <span className="text-[var(--color-term-fg)]">{assigningFinding.category}</span>
+                  {assigningFinding.line_number && (
+                    <> — LINE {assigningFinding.line_number}</>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              {members.length === 0 ? (
+                <div className="text-[10px] text-[var(--color-term-muted)] font-mono italic">
+                  $ NO_TEAM_MEMBERS
+                </div>
+              ) : (
+                members.map((member) => {
+                  const isSelected = assigningMemberId === member.id;
+                  return (
+                    <button
+                      key={member.id}
+                      disabled={assignLoading}
+                      onClick={async () => {
+                        if (!assigningFinding) return;
+                        setAssigningMemberId(member.id);
+                        setAssignLoading(true);
+                        try {
+                          const token = localStorage.getItem("securithm_token");
+                          if (token) api.setAuthToken(token);
+                          await api.updateFinding(assigningFinding.id, {
+                            assigned_to: member.id,
+                          });
+                          setAssigningFinding(null);
+                          setAssigningMemberId(null);
+                          refetchFindings();
+                          loadMembers();
+                        } catch (err) {
+                          alert(`ASSIGN FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
+                        } finally {
+                          setAssignLoading(false);
+                        }
+                      }}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 border text-left transition-all ${
+                        isSelected && assignLoading
+                          ? "border-[var(--color-term-fg)] bg-[var(--color-term-dim)]"
+                          : "border-[var(--color-term-border)] hover:border-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)]"
+                      }`}
+                    >
+                      <Avatar className="h-6 w-6 shrink-0">
+                        <AvatarFallback className="text-[8px] font-mono">
+                          {(member.display_name || member.email)[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-[var(--color-term-fg)] font-mono uppercase truncate">
+                          {member.display_name || member.email.split("@")[0]}
+                        </div>
+                        <div className="text-[8px] text-[var(--color-term-muted)] font-mono truncate">
+                          {member.email}
+                        </div>
+                      </div>
+                      {isSelected && assignLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin text-[var(--color-term-fg)] shrink-0" />
+                      ) : (
+                        <User className="h-3 w-3 text-[var(--color-term-muted)] shrink-0" />
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
