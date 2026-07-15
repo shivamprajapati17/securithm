@@ -336,6 +336,43 @@ export interface ApiKeyUsageResponse {
   [keyId: string]: number;
 }
 
+// ─── Public Findings Types ────────────────────────────────────────
+
+export interface PublicFindingAssignee {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string | null;
+}
+
+export interface PublicFindingResponse extends Finding {
+  assignee: PublicFindingAssignee | null;
+}
+
+export interface PublicFindingsListParams {
+  page?: number;
+  page_size?: number;
+  severity?: FindingSeverity;
+  status?: FindingStatus;
+  assigned_to?: string;
+}
+
+export interface PublicFindingsListResponse {
+  items: PublicFindingResponse[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface PublicFindingsStats {
+  total_findings: number;
+  severity_breakdown: Record<string, number>;
+  status_breakdown: Record<string, number>;
+  assigned_count: number;
+  resolved_count: number;
+  resolution_rate: number;
+}
+
 // ─── Error Type ────────────────────────────────────────────
 
 export class SecurithmError extends Error {
