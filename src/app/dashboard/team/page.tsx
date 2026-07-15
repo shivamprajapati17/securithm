@@ -72,6 +72,36 @@ const roleColors: Record<string, string> = {
   viewer: "text-[var(--color-term-muted)]",
 };
 
+const severityOptions = [
+  { value: "", label: "ALL", color: "" },
+  { value: "critical", label: "CRITICAL", color: "text-[var(--color-term-error)]" },
+  { value: "high", label: "HIGH", color: "text-[var(--color-term-warning)]" },
+  { value: "medium", label: "MEDIUM", color: "text-[var(--color-severity-medium)]" },
+  { value: "low", label: "LOW", color: "text-[var(--color-severity-low)]" },
+  { value: "informational", label: "INFO", color: "text-[var(--color-term-muted)]" },
+];
+
+const statusTransitions: Record<string, { label: string; status: string }[]> = {
+  open: [
+    { label: "→ FIXING", status: "in_progress" },
+    { label: "→ WONT_FIX", status: "wont_fix" },
+    { label: "→ RESOLVED", status: "resolved" },
+  ],
+  in_progress: [
+    { label: "→ RESOLVED", status: "resolved" },
+    { label: "→ NEW", status: "open" },
+    { label: "→ WONT_FIX", status: "wont_fix" },
+  ],
+  resolved: [
+    { label: "→ REOPEN", status: "open" },
+    { label: "→ FIXING", status: "in_progress" },
+  ],
+  wont_fix: [
+    { label: "→ REOPEN", status: "open" },
+    { label: "→ FIXING", status: "in_progress" },
+  ],
+};
+
 export default function TeamPage() {
   const { data: allFindings, loading, error, refetch: refetchFindings } = useFindings({});
   const findings = allFindings || [];
@@ -100,6 +130,7 @@ export default function TeamPage() {
     timestamp: Date;
   }>>([]);
   const [showActivityLog, setShowActivityLog] = useState(false);
+  const [severityFilter, setSeverityFilter] = useState<string>("");
 
   const getMemberName = useCallback((memberId: string | null) => {
     if (!memberId) return null;
@@ -146,11 +177,15 @@ export default function TeamPage() {
     }
   }, [user, loadMembers]);
 
+  const filteredFindings = severityFilter
+    ? findings.filter(f => f.severity === severityFilter)
+    : findings;
+
   const grouped = {
-    open: findings.filter(f => f.status === "open"),
-    in_progress: findings.filter(f => f.status === "in_progress"),
-    resolved: findings.filter(f => f.status === "resolved"),
-    wont_fix: findings.filter(f => f.status === "wont_fix"),
+    open: filteredFindings.filter(f => f.status === "open"),
+    in_progress: filteredFindings.filter(f => f.status === "in_progress"),
+    resolved: filteredFindings.filter(f => f.status === "resolved"),
+    wont_fix: filteredFindings.filter(f => f.status === "wont_fix"),
   };
 
   return (
@@ -220,7 +255,7 @@ export default function TeamPage() {
                 TEAM BOARD
               </h1>
               <p className="text-[10px] text-[var(--color-term-muted)] mt-1 font-mono">
-                REMEDIATION WORKFLOW — {findings.length} TOTAL FINDINGS
+                REMEDIATION WORKFLOW — {filteredFindings.length} / {findings.length} FINDINGS{severityFilter ? ` (FILTERED: ${severityFilter.toUpperCase()})` : ""}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -287,6 +322,31 @@ export default function TeamPage() {
             ))}
           </div>
 
+          {/* Severity Filter */}
+          <div className="flex items-center gap-1">
+            {severityOptions.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSeverityFilter(opt.value)}
+                className={`px-2 py-1 text-[9px] font-mono font-bold uppercase tracking-wider border transition-all ${
+                  severityFilter === opt.value
+                    ? "border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-[var(--color-term-dim)]"
+                    : `border-[var(--color-term-border)] ${opt.color || "text-[var(--color-term-muted)]"} hover:border-[var(--color-term-fg)]`
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+            {severityFilter && (
+              <button
+                onClick={() => setSeverityFilter("")}
+                className="ml-1 px-2 py-1 text-[9px] font-mono text-[var(--color-term-error)] hover:text-[var(--color-term-fg)] transition-colors"
+              >
+                <X className="h-2.5 w-2.5 inline" /> CLEAR
+              </button>
+            )}
+          </div>
+
           {/* Loading */}
           {loading && (
             <div className="grid md:grid-cols-4 gap-3">
@@ -317,6 +377,12 @@ export default function TeamPage() {
                 <Card>
                   <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
                     $ NO_FINDINGS_YET
+                  </CardContent>
+                </Card>
+              ) : filteredFindings.length === 0 ? (
+                <Card>
+                  <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
+                    $ NO_FINDINGS_MATCH_FILTER
                   </CardContent>
                 </Card>
               ) : (
@@ -365,55 +431,80 @@ export default function TeamPage() {
                                       {item.description}
                                     </p>
 
-                                    <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-dashed border-[var(--color-term-border)]">
-                                      <div className="flex items-center gap-1.5 min-w-0">
-                                        {item.assigned_to ? (
-                                          <div className="flex items-center gap-1.5 group/assignee min-w-0">
-                                            <Avatar className="h-4 w-4 shrink-0">
-                                              <AvatarFallback className="text-[6px]">
-                                                {(getMemberName(item.assigned_to) || "??").slice(0, 2).toUpperCase()}
-                                              </AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-[8px] text-[var(--color-term-fg)] font-mono truncate max-w-[70px]">
-                                              {getMemberName(item.assigned_to)}
-                                            </span>
-                                            <button
-                                              onClick={async () => {
-                                                if (!confirm(`UNASSIGN ${getMemberName(item.assigned_to)} FROM THIS FINDING?`)) return;
-                                                try {
-                                                  const token = localStorage.getItem("securithm_token");
-                                                  if (token) api.setAuthToken(token);
-                                                  await api.updateFinding(item.id, { assigned_to: null });
-                                                  addActivity("unassigned", item.category, getMemberName(item.assigned_to) || "Unknown");
-                                                  refetchFindings();
-                                                  loadMembers();
-                                                } catch (err) {
-                                                  alert(`UNASSIGN FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
-                                                }
-                                              }}
-                                              className="h-3 w-3 p-0 opacity-0 group-hover/assignee:opacity-100 text-[var(--color-term-error)] hover:text-[var(--color-term-error)] transition-opacity shrink-0"
-                                              title="Unassign"
+                                    <div className="flex flex-col gap-1 mt-1.5 pt-1.5 border-t border-dashed border-[var(--color-term-border)]">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          {item.assigned_to ? (
+                                            <div className="flex items-center gap-1.5 group/assignee min-w-0">
+                                              <Avatar className="h-4 w-4 shrink-0">
+                                                <AvatarFallback className="text-[6px]">
+                                                  {(getMemberName(item.assigned_to) || "??").slice(0, 2).toUpperCase()}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              <span className="text-[8px] text-[var(--color-term-fg)] font-mono truncate max-w-[70px]">
+                                                {getMemberName(item.assigned_to)}
+                                              </span>
+                                              <button
+                                                onClick={async () => {
+                                                  if (!confirm(`UNASSIGN ${getMemberName(item.assigned_to)} FROM THIS FINDING?`)) return;
+                                                  try {
+                                                    const token = localStorage.getItem("securithm_token");
+                                                    if (token) api.setAuthToken(token);
+                                                    await api.updateFinding(item.id, { assigned_to: null });
+                                                    addActivity("unassigned", item.category, getMemberName(item.assigned_to) || "Unknown");
+                                                    refetchFindings();
+                                                    loadMembers();
+                                                  } catch (err) {
+                                                    alert(`UNASSIGN FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
+                                                  }
+                                                }}
+                                                className="h-3 w-3 p-0 opacity-0 group-hover/assignee:opacity-100 text-[var(--color-term-error)] hover:text-[var(--color-term-error)] transition-opacity shrink-0"
+                                                title="Unassign"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </button>
+                                            </div>
+                                          ) : (
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-4 px-1 text-[8px]"
+                                              onClick={() => setAssigningFinding(item)}
                                             >
-                                              <X className="h-2.5 w-2.5" />
-                                            </button>
+                                              $ ASSIGN
+                                            </Button>
+                                          )}
+                                        </div>
+                                        {item.remediation_sla && (
+                                          <div className="flex items-center gap-0.5 text-[8px] text-[var(--color-term-muted)] font-mono">
+                                            <Clock className="h-2 w-2" />
+                                            {formatDate(item.remediation_sla)}
                                           </div>
-                                        ) : (
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-4 px-1 text-[8px]"
-                                            onClick={() => setAssigningFinding(item)}
-                                          >
-                                            $ ASSIGN
-                                          </Button>
                                         )}
                                       </div>
-                                      {item.remediation_sla && (
-                                        <div className="flex items-center gap-0.5 text-[8px] text-[var(--color-term-muted)] font-mono">
-                                          <Clock className="h-2 w-2" />
-                                          {formatDate(item.remediation_sla)}
-                                        </div>
-                                      )}
+                                      {/* Quick status change */}
+                                      <div className="flex items-center gap-1 group/status">
+                                        {(statusTransitions[item.status] || []).map(transition => (
+                                          <button
+                                            key={transition.status}
+                                            onClick={async () => {
+                                              try {
+                                                const token = localStorage.getItem("securithm_token");
+                                                if (token) api.setAuthToken(token);
+                                                await api.updateFinding(item.id, { status: transition.status });
+                                                const statusLabel = columnConfig.find(c => c.id === transition.status)?.title || transition.status.toUpperCase();
+                                                addActivity("status_changed", item.category, statusLabel);
+                                                refetchFindings();
+                                              } catch (err) {
+                                                alert(`STATUS CHANGE FAILED: ${err instanceof Error ? err.message : "Unknown error"}`);
+                                              }
+                                            }}
+                                            className="text-[7px] font-mono text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:bg-[var(--color-term-dim)] px-1 py-0.5 border border-transparent hover:border-[var(--color-term-border)] transition-all"
+                                          >
+                                            {transition.label}
+                                          </button>
+                                        ))}
+                                      </div>
                                     </div>
                                   </CardContent>
                                 </Card>
@@ -469,7 +560,7 @@ export default function TeamPage() {
                               <>UNASSIGNED <span className="text-[var(--color-term-error)]">{event.memberName}</span> FROM <span className="text-[var(--color-term-fg)] font-bold">{event.findingCategory}</span></>
                             )}
                             {event.type === "status_changed" && (
-                              <>{event.findingCategory} → {event.memberName}</>
+                              <>MOVED <span className="text-[var(--color-term-fg)] font-bold">{event.findingCategory}</span> → <span className="text-[var(--color-term-warning)]">{event.memberName}</span></>
                             )}
                           </div>
                           <div className="text-[7px] text-[var(--color-term-muted)] font-mono">
