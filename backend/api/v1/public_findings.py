@@ -1,6 +1,7 @@
+import hashlib
 from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 from uuid import UUID
 from typing import Optional
 from datetime import datetime
@@ -8,7 +9,9 @@ from datetime import datetime
 from ...core.database import get_db
 from ...models.scan import Finding, FindingStatus, FindingSeverity
 from ...models.user import User
+from ...models.api_key import APIKey
 from ...schemas.scan import FindingResponse
+from .api_keys import get_api_key_from_header
 from pydantic import BaseModel
 
 
@@ -33,21 +36,49 @@ class PublicFindingsListResponse(BaseModel):
     page_size: int
 
 
-def get_api_key(
+def verify_api_key(
     authorization: Optional[str] = Header(None),
     x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
-) -> str:
-    """Extract API key from Authorization header or X-API-Key header."""
-    key = None
-    if authorization and authorization.startswith("Bearer "):
-        key = authorization[7:]
-    elif x_api_key:
+    db: Session = Depends(get_db),
+) -> None:
+    """Extract and validate API key from request headers.
+
+    Accepts key via Authorization: Bearer sk_... or X-API-Key header.
+    Validates against the database and updates last_used_at.
+    """
+    key = get_api_key_from_header(authorization)
+    if not key and x_api_key:
         key = x_api_key
 
     if not key:
         raise HTTPException(status_code=401, detail="API key required. Provide via Authorization: Bearer <key> or X-API-Key header.")
 
-    return key
+    key_hash = hashlib.sha256(key.encode()).hexdigest()
+    record = db.execute(
+        select(APIKey).where(APIKey.key_hash == key_hash, APIKey.is_active == True)
+    ).scalar_one_or_none()
+
+    if not record:
+        raise HTTPException(status_code=403, detail="Invalid or inactive API key")
+
+    record.last_used_at = datetime.utcnow()
+    db.commit()
+
+
+def _build_finding_filters(
+    query,
+    severity: Optional[FindingSeverity] = None,
+    status: Optional[FindingStatus] = None,
+    assigned_to: Optional[UUID] = None,
+):
+    """Apply common finding filters to a query."""
+    if severity:
+        query = query.where(Finding.severity == severity)
+    if status:
+        query = query.where(Finding.status == status)
+    if assigned_to:
+        query = query.where(Finding.assigned_to == assigned_to)
+    return query
 
 
 @router.get("", response_model=PublicFindingsListResponse)
@@ -57,7 +88,7 @@ async def list_findings_public(
     severity: Optional[FindingSeverity] = None,
     status: Optional[FindingStatus] = None,
     assigned_to: Optional[UUID] = None,
-    api_key: str = Depends(get_api_key),
+    _: None = Depends(verify_api_key),
     db: Session = Depends(get_db),
 ):
     """Public endpoint to list findings with team assignment info.
@@ -72,50 +103,18 @@ async def list_findings_public(
     - status: Filter by status (open, in_progress, resolved, wont_fix)
     - assigned_to: Filter by assignee user ID
     """
-    # Validate API key (basic lookup)
-    from ...models.api_key import APIKey
-    key_record = db.execute(
-        select(APIKey).where(APIKey.key == api_key, APIKey.is_active == True)
-    ).scalar_one_or_none()
+    # Base query
+    base_query = select(Finding).order_by(Finding.severity_order, Finding.created_at.desc())
+    base_query = _build_finding_filters(base_query, severity, status, assigned_to)
 
-    if not key_record:
-        raise HTTPException(status_code=403, detail="Invalid or inactive API key")
+    # Count total efficiently
+    count_query = select(func.count()).select_from(Finding)
+    count_query = _build_finding_filters(count_query, severity, status, assigned_to)
+    total = db.scalar(count_query) or 0
 
-    # Update last used timestamp
-    key_record.last_used_at = datetime.utcnow()
-    db.commit()
-
-    # Build query
-    query = select(Finding).order_by(
-        Finding.severity_order,
-        Finding.created_at.desc(),
-    )
-
-    if severity:
-        query = query.where(Finding.severity == severity)
-    if status:
-        query = query.where(Finding.status == status)
-    if assigned_to:
-        query = query.where(Finding.assigned_to == assigned_to)
-
-    # Count total
-    count_query = select(Finding).order_by(
-        Finding.severity_order,
-        Finding.created_at.desc(),
-    )
-    if severity:
-        count_query = count_query.where(Finding.severity == severity)
-    if status:
-        count_query = count_query.where(Finding.status == status)
-    if assigned_to:
-        count_query = count_query.where(Finding.assigned_to == assigned_to)
-
-    total = len(db.execute(count_query).scalars().all())
-
-    # Paginate
+    # Fetch paginated results
     offset = (page - 1) * page_size
-    query = query.offset(offset).limit(page_size)
-    findings = db.execute(query).scalars().all()
+    findings = db.execute(base_query.offset(offset).limit(page_size)).scalars().all()
 
     # Build response with assignee info
     items = []
@@ -146,7 +145,7 @@ async def list_findings_public(
 
 @router.get("/stats", response_model=dict)
 async def get_findings_stats_public(
-    api_key: str = Depends(get_api_key),
+    _: None = Depends(verify_api_key),
     db: Session = Depends(get_db),
 ):
     """Public endpoint to get aggregate findings statistics.
@@ -154,36 +153,25 @@ async def get_findings_stats_public(
     Requires an API key for authentication.
     Returns counts by severity, status, and overall totals.
     """
-    # Validate API key
-    from ...models.api_key import APIKey
-    key_record = db.execute(
-        select(APIKey).where(APIKey.key == api_key, APIKey.is_active == True)
-    ).scalar_one_or_none()
-
-    if not key_record:
-        raise HTTPException(status_code=403, detail="Invalid or inactive API key")
-
-    key_record.last_used_at = datetime.utcnow()
-    db.commit()
-
     findings = db.execute(select(Finding)).scalars().all()
 
-    severity_counts = {}
-    status_counts = {}
+    severity_counts: dict[str, int] = {}
+    status_counts: dict[str, int] = {}
     for f in findings:
-        sev = f.severity.value if hasattr(f.severity, 'value') else str(f.severity)
-        stat = f.status.value if hasattr(f.status, 'value') else str(f.status)
+        sev = f.severity.value
+        stat = f.status.value
         severity_counts[sev] = severity_counts.get(sev, 0) + 1
         status_counts[stat] = status_counts.get(stat, 0) + 1
 
     assigned_count = sum(1 for f in findings if f.assigned_to)
     resolved_count = status_counts.get("resolved", 0)
+    total = len(findings)
 
     return {
-        "total_findings": len(findings),
+        "total_findings": total,
         "severity_breakdown": severity_counts,
         "status_breakdown": status_counts,
         "assigned_count": assigned_count,
         "resolved_count": resolved_count,
-        "resolution_rate": round((resolved_count / len(findings) * 100), 1) if findings else 0,
+        "resolution_rate": round((resolved_count / total * 100), 1) if total else 0,
     }
