@@ -2,7 +2,7 @@
 
 > **Ship secure contracts.** Analyze Solidity/Rust code, get risk scores, monitor deployed contracts, and manage security findings.
 
-[![npm version](https://img.shields.io/npm/v/@shivamprajapati17/securithm-sdk)](https://npmjs.com/package/securithm)
+[![npm version](https://img.shields.io/npm/v/securithm)](https://www.npmjs.com/package/securithm)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-shivamprajapati17%2Fsecurithm-blue)](https://github.com/shivamprajapati17/securithm)
 
@@ -11,19 +11,17 @@
 ## Installation
 
 ```bash
-npm install securithm-sdk
+npm install securithm
 # or
-yarn add securithm-sdk
+yarn add securithm
 # or
-pnpm add securithm-sdk
-
-> **Note:** Also available on GitHub Packages as `@shivamprajapati17/securithm-sdk`.
+pnpm add securithm
 ```
 
 ## Quick Start
 
 ```typescript
-import { Securithm } from "securithm-sdk";
+import { Securithm } from "securithm";
 
 // Initialize the client
 const client = new Securithm({
@@ -235,7 +233,7 @@ const usage = await client.apiKeys.getUsage();
 All API errors throw a typed `SecurithmError`:
 
 ```typescript
-import { SecurithmError } from "securithm-sdk";
+import { SecurithmError } from "securithm";
 
 try {
   await client.scans.get("invalid-id");
