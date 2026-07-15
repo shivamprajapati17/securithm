@@ -151,6 +151,19 @@ export default function TeamPage() {
 
   const isAdmin = user?.role === "admin";
 
+  // Pre-compute per-member finding severity stats
+  const memberFindingStats = new Map<string, Record<string, number>>();
+  for (const f of findings) {
+    if (f.assigned_to) {
+      let stats = memberFindingStats.get(f.assigned_to);
+      if (!stats) {
+        stats = {};
+        memberFindingStats.set(f.assigned_to, stats);
+      }
+      stats[f.severity] = (stats[f.severity] || 0) + 1;
+    }
+  }
+
   const loadMembers = useCallback(async () => {
     try {
       setLoadingMembers(true);
@@ -645,6 +658,7 @@ export default function TeamPage() {
               {members.map((member) => {
                 const RoleIcon = roleIcon[member.role] || User;
                 const isCurrentUser = member.id === user?.id;
+                const memberStats = memberFindingStats.get(member.id);
                 return (
                   <div
                     key={member.id}
@@ -670,6 +684,22 @@ export default function TeamPage() {
                           <span>·</span>
                           <span className="shrink-0">JOINED {formatDate(member.created_at)}</span>
                         </div>
+                        {memberStats && (
+                          <div className="flex items-center gap-2 mt-1">
+                            {["critical","high","medium","low","informational"].map(sev => {
+                              const count = memberStats[sev];
+                              if (!count) return null;
+                              const SevIcon = severityIcons[sev] || Info;
+                              const txtColor = severityColors[sev] ? severityColors[sev].split(" ")[0] : "text-[var(--color-term-muted)]";
+                              return (
+                                <div key={sev} className={`flex items-center gap-0.5 text-[8px] font-mono ${txtColor}`}>
+                                  <SevIcon className="h-2.5 w-2.5" />
+                                  <span>{count}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     </div>
 
