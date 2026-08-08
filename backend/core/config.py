@@ -47,6 +47,7 @@ class Settings(BaseSettings):
     # Email (Resend)
     resend_api_key: str = ""
     resend_from_email: str = "Securithm <onboarding@resend.dev>"
+    demo_notify_email: str = ""
 
     # Sentry
     sentry_dsn: str = ""
