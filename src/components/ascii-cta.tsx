@@ -222,7 +222,7 @@ export default function AsciiCta() {
 
           <a
             ref={btnRef}
-            href="/auth/register"
+            href="/book-demo"
             className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-6 py-3 text-sm font-mono uppercase tracking-wider transition-colors"
           >
             scan your first contract
