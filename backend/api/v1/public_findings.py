@@ -9,7 +9,7 @@ from datetime import datetime
 from ...core.database import get_db
 from ...models.scan import Finding, FindingStatus, FindingSeverity
 from ...models.user import User
-from ...models.api_key import APIKey
+from ...models.api_key import ApiKey as APIKey
 from ...schemas.scan import FindingResponse
 from .api_keys import get_api_key_from_header
 from pydantic import BaseModel

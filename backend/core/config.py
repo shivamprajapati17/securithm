@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     anthropic_api_key: str = ""
 
+    # Frontend
+    frontend_url: str = "http://localhost:3000"
+
     # OAuth
     google_client_id: str = ""
     google_client_secret: str = ""
@@ -48,7 +51,7 @@ class Settings(BaseSettings):
     # Sentry
     sentry_dsn: str = ""
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "allow"}
 
 
 @lru_cache()

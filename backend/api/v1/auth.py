@@ -405,9 +405,7 @@ async def callback_oauth(
     if not code:
         return RedirectResponse(url="/auth/login?error=missing_code")
 
-    frontend_url = (
-        settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
-    )
+    frontend_url = settings.frontend_url
 
     # ── Handle GitHub repo connection callback ──
     if state.startswith("github_repo"):
@@ -527,9 +525,7 @@ async def _handle_github_repo_callback(
         user.github_id = github_id
     db.commit()
 
-    frontend_url = (
-        settings.cors_origins[0] if settings.cors_origins else "http://localhost:3000"
-    )
+    frontend_url = settings.frontend_url
     return f"{frontend_url}/dashboard/repos?github_connected={github_login}"
 
 

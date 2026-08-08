@@ -122,6 +122,24 @@ export default function Soc2Page() {
               </div>
             </div>
 
+            {/* Book demo */}
+            <div className="border border-[var(--color-term-fg)] p-5 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider mb-1 term-glow">
+                  WANT TO SEE SECURITHM IN ACTION?
+                </h3>
+                <p className="text-[10px] text-[var(--color-term-muted)] font-mono">
+                  Book a live demo and see scans, monitoring, and the risk score API first-hand.
+                </p>
+              </div>
+              <a
+                href="/book-demo"
+                className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-5 py-2.5 text-xs font-mono uppercase tracking-wider transition-colors shrink-0"
+              >
+                BOOK DEMO
+              </a>
+            </div>
+
             <div className="border-t border-[var(--color-term-border)] pt-4 mt-6">
               <p className="text-[9px] text-[var(--color-term-muted)] font-mono">
                 Last audit: Q2 2026 | Next scheduled: Q1 2027

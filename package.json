@@ -1,7 +1,7 @@
 {
   "name": "securithm",
   "version": "0.1.0",
-  "private": true,
+  "publish": true,
   "description": "Securithm - Ship secure contracts. Before the hackers find the bugs.",
   "scripts": {
     "dev": "next dev",
@@ -53,6 +53,7 @@
     "eslint": "^9.0.0",
     "jsdom": "^29.1.1",
     "msw": "^2.14.6",
+    "securithm": "file:packages/sdk",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.7.0",
     "vitest": "^4.1.9"

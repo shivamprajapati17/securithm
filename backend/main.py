@@ -58,6 +58,12 @@ class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
                     return JSONResponse(
                         status_code=401,
                         content={"detail": "Invalid API key"},
+                        headers={
+                            "Access-Control-Allow-Origin": request.headers.get(
+                                "origin", "*"
+                            ),
+                            "Access-Control-Allow-Credentials": "true",
+                        },
                     )
 
                 if not check_api_key_rate_limit(key_hash, api_key.rate_limit_per_hour):
@@ -65,6 +71,12 @@ class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
                         status_code=429,
                         content={
                             "detail": f"Rate limit exceeded. Maximum {api_key.rate_limit_per_hour} requests per hour."
+                        },
+                        headers={
+                            "Access-Control-Allow-Origin": request.headers.get(
+                                "origin", "*"
+                            ),
+                            "Access-Control-Allow-Credentials": "true",
                         },
                     )
 
@@ -81,12 +93,15 @@ class ApiKeyRateLimitMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     """Application lifecycle handler.
 
-    On startup: create database tables (dev only — use Alembic in production).
+    On startup: create database tables if possible (dev only — use Alembic in production).
     On shutdown: clean up resources.
     """
-    # Create tables in dev mode
+    # Create tables in dev mode (gracefully handle missing DB)
     if settings.debug:
-        Base.metadata.create_all(bind=engine)
+        try:
+            Base.metadata.create_all(bind=engine)
+        except Exception as e:
+            print(f"[WARN] Could not create database tables: {e}")
     yield
 
 
@@ -142,10 +157,18 @@ app.include_router(v1_router)
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler for unhandled errors."""
+    # Include CORS headers explicitly because BaseHTTPMiddleware interactions
+    # can strip them from error responses as they pass back through the stack.
+    origin = request.headers.get("origin", "")
+    headers = {
+        "Access-Control-Allow-Origin": origin if origin else "*",
+        "Access-Control-Allow-Credentials": "true",
+    }
     return JSONResponse(
         status_code=500,
         content={
             "detail": "An unexpected error occurred",
             "type": exc.__class__.__name__,
         },
+        headers=headers,
     )
