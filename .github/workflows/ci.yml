@@ -75,7 +75,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio httpx ruff
+          pip install "ruff>=0.15,<0.16" pytest pytest-asyncio httpx
 
       - name: Lint backend
         run: ruff check backend/
