@@ -51,11 +51,14 @@ def verify_api_key(
         key = x_api_key
 
     if not key:
-        raise HTTPException(status_code=401, detail="API key required. Provide via Authorization: Bearer <key> or X-API-Key header.")
+        raise HTTPException(
+            status_code=401,
+            detail="API key required. Provide via Authorization: Bearer <key> or X-API-Key header.",
+        )
 
     key_hash = hashlib.sha256(key.encode()).hexdigest()
     record = db.execute(
-        select(APIKey).where(APIKey.key_hash == key_hash, APIKey.is_active == True)
+        select(APIKey).where(APIKey.key_hash == key_hash, APIKey.is_active)
     ).scalar_one_or_none()
 
     if not record:
@@ -104,7 +107,9 @@ async def list_findings_public(
     - assigned_to: Filter by assignee user ID
     """
     # Base query
-    base_query = select(Finding).order_by(Finding.severity_order, Finding.created_at.desc())
+    base_query = select(Finding).order_by(
+        Finding.severity_order, Finding.created_at.desc()
+    )
     base_query = _build_finding_filters(base_query, severity, status, assigned_to)
 
     # Count total efficiently
@@ -130,10 +135,12 @@ async def list_findings_public(
                     display_name=user.display_name,
                     role=user.role,
                 )
-        items.append(PublicFindingResponse(
-            **finding_data.model_dump(),
-            assignee=assignee_info,
-        ))
+        items.append(
+            PublicFindingResponse(
+                **finding_data.model_dump(),
+                assignee=assignee_info,
+            )
+        )
 
     return PublicFindingsListResponse(
         items=items,
