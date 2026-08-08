@@ -106,12 +106,6 @@ export default function FeaturesPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 px-2 py-1 border border-[var(--color-term-border)] mb-6 w-fit">
-              <span className="text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-                STATUS: PUBLIC BETA [OK]
-              </span>
-            </div>
-
             <StaggerGrid className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerAmount={0.08}>
               {features.map((feature) => (
                 <div
