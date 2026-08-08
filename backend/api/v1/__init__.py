@@ -14,8 +14,8 @@ from .public_findings import router as public_findings_router
 
 v1_router = APIRouter(prefix="/api/v1")
 v1_router.include_router(scans_router)
-v1_router.include_router(findings_router)
 v1_router.include_router(public_findings_router)
+v1_router.include_router(findings_router)
 v1_router.include_router(monitoring_router)
 v1_router.include_router(risk_score_router)
 v1_router.include_router(auth_router)

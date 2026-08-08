@@ -12,8 +12,8 @@ class ApiKey(Base):
     user_id = Column(Uuid(), ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     key_prefix = Column(
-        String(8), nullable=False
-    )  # First 8 chars for display (e.g. "sk_live_")
+        String(32), nullable=False
+    )  # First ~15+3 chars for display (e.g. "sk_live_a1b2c3d4e...")
     key_hash = Column(String(255), nullable=False)  # Hashed full key
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

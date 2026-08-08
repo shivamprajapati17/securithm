@@ -319,16 +319,12 @@ export default function Home() {
                 severity threshold.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a
-                  href="https://github.com/marketplace"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"
+                <span
+                  className="inline-flex items-center gap-2 border border-[var(--color-term-border)] text-[var(--color-term-muted)] px-4 py-2 text-xs font-mono uppercase tracking-wider"
                 >
                   <Github className="h-3.5 w-3.5" />
-                  INSTALL APP
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                  COMING SOON
+                </span>
                 <a
                   href="/docs"
                   className="inline-flex items-center gap-2 border border-[var(--color-term-border)] text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] hover:border-[var(--color-term-fg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"

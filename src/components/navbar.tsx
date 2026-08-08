@@ -1,7 +1,6 @@
 "use client";
 
-import { Shield, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Shield, Menu, X, CalendarDays } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -22,16 +21,10 @@ export function Navbar() {
 
           <nav className="hidden md:flex items-center gap-6">
             <a
-              href="#features"
+              href="/features"
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
               features
-            </a>
-            <a
-              href="#pricing"
-              className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
-            >
-              pricing
             </a>
             <a
               href="/docs"
@@ -42,15 +35,12 @@ export function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
-            <a href="/auth/login">
-              <Button variant="ghost" size="sm">
-                sign in
-              </Button>
-            </a>
-            <a href="/auth/register">
-              <Button size="sm">
-                [ start ]
-              </Button>
+            <a
+              href="/book-demo"
+              className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-3 h-8 text-xs font-mono uppercase tracking-wider transition-colors"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              book demo
             </a>
           </div>
 
@@ -69,25 +59,19 @@ export function Navbar() {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-4 py-4 space-y-3">
-          <a href="#features" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+          <a href="/features" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             features
-          </a>
-          <a href="#pricing" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
-            pricing
           </a>
           <a href="/docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             docs
           </a>
-          <div className="flex gap-2 pt-2">
-            <a href="/auth/login" className="flex-1">
-              <Button variant="outline" size="sm" className="w-full">
-                sign in
-              </Button>
-            </a>
-            <a href="/auth/register" className="flex-1">
-              <Button size="sm" className="w-full">
-                [ start ]
-              </Button>
+          <div className="pt-2">
+            <a
+              href="/book-demo"
+              className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"
+            >
+              <CalendarDays className="h-3.5 w-3.5" />
+              book demo
             </a>
           </div>
         </div>
