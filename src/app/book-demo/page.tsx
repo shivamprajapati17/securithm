@@ -2,7 +2,8 @@
 
 import { Navbar } from "@/components/navbar";
 import { useState } from "react";
-import { CalendarDays, CheckCircle2, Send } from "lucide-react";
+import { CalendarDays, CheckCircle2, Send, Loader2 } from "lucide-react";
+import { request } from "@/lib/api";
 
 interface Booking {
   id: string;
@@ -20,8 +21,9 @@ export default function BookDemoPage() {
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
       setError("Please fill in your name and email.");
@@ -34,6 +36,7 @@ export default function BookDemoPage() {
       message: message.trim(),
       createdAt: new Date().toISOString(),
     };
+    // Save locally first (always works, offline-safe)
     try {
       const existing = window.localStorage.getItem(STORAGE_KEY);
       const bookings: Booking[] = existing ? JSON.parse(existing) : [];
@@ -43,7 +46,24 @@ export default function BookDemoPage() {
       // storage unavailable — ignore
     }
     setError("");
-    setSubmitted(true);
+    setSending(true);
+    // Send email notification via the backend (best-effort)
+    try {
+      await request("/api/v1/demo/request", {
+        method: "POST",
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          message: message.trim() || null,
+        }),
+      });
+    } catch {
+      // Email notification failed — form still succeeded locally.
+      // Do not block the thank-you screen.
+    } finally {
+      setSending(false);
+      setSubmitted(true);
+    }
   };
 
   return (
@@ -139,10 +159,20 @@ export default function BookDemoPage() {
 
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-6 py-3 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer"
+                    disabled={sending}
+                    className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-6 py-3 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="h-3.5 w-3.5" />
-                    SUBMIT
+                    {sending ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        SENDING...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3.5 w-3.5" />
+                        SUBMIT
+                      </>
+                    )}
                   </button>
                 </form>
               </>

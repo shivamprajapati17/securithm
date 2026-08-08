@@ -11,6 +11,7 @@ from .payments import router as payments_router
 from .api_keys import router as api_keys_router
 from .team import router as team_router
 from .public_findings import router as public_findings_router
+from .demo import router as demo_router
 
 v1_router = APIRouter(prefix="/api/v1")
 v1_router.include_router(scans_router)
@@ -24,5 +25,6 @@ v1_router.include_router(token_router)
 v1_router.include_router(payments_router)
 v1_router.include_router(api_keys_router)
 v1_router.include_router(team_router)
+v1_router.include_router(demo_router)
 
 __all__ = ["v1_router"]

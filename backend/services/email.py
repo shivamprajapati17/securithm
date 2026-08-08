@@ -137,3 +137,136 @@ def send_team_invite(
         return bool(response and response.get("id"))
     except Exception:
         return False
+
+
+def send_demo_request(
+    name: str,
+    email: str,
+    message: str | None = None,
+    notify_email: str | None = None,
+) -> bool:
+    """Send a demo request notification email via Resend.
+
+    Notifies the Securithm team (or the configured notify address) when a
+    visitor submits the demo booking form.
+
+    Args:
+        name: Visitor's name
+        email: Visitor's email address
+        message: Optional message from the visitor
+        notify_email: Where to send the notification. Falls back to the
+            DEMO_NOTIFY_EMAIL setting.
+
+    Returns:
+        True if sent successfully, False otherwise
+    """
+    settings = get_settings()
+
+    if not settings.resend_api_key:
+        return False
+
+    resend.api_key = settings.resend_api_key
+
+    safe_name = html.escape(name)
+    safe_email = html.escape(email)
+    safe_message = html.escape(message) if message else None
+
+    # Build a clean HTML email
+    email_html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:system-ui,-apple-system,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table width="480" cellpadding="0" cellspacing="0" style="border:1px solid #1a1a1a;border-radius:0;background:#111;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:24px 28px 0;text-align:center;">
+              <span style="font-size:11px;font-weight:700;color:#e0e0e0;letter-spacing:2px;text-transform:uppercase;">
+                ⚡ SECURITHM — NEW DEMO REQUEST
+              </span>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding:28px;">
+              <h1 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#e0e0e0;letter-spacing:0.5px;">
+                {safe_name} wants to book a demo
+              </h1>
+              <p style="margin:0 0 4px;font-size:10px;color:#666;font-family:monospace;text-transform:uppercase;">
+                Contact email:
+              </p>
+              <p style="margin:0 0 16px;font-size:13px;color:#e0e0e0;font-family:monospace;">
+                <a href="mailto:{safe_email}" style="color:#e0e0e0;">{safe_email}</a>
+              </p>
+"""
+
+    if safe_message:
+        email_html += f"""          <!-- Message -->
+          <div style="margin:0 0 20px;padding:16px;border-left:2px solid #e0e0e0;background:#0d0d0d;">
+            <p style="margin:0 0 4px;font-size:10px;color:#666;font-family:monospace;text-transform:uppercase;">
+              Message:
+            </p>
+            <p style="margin:0;font-size:12px;color:#bbb;line-height:1.5;">
+              &ldquo;{safe_message}&rdquo;
+            </p>
+          </div>
+"""
+
+    email_html += f"""          <!-- Reply button -->
+          <table cellpadding="0" cellspacing="0" style="margin:24px 0;">
+            <tr>
+              <td style="border:1px solid #e0e0e0;padding:0;">
+                <a href="mailto:{safe_email}" 
+                   style="display:inline-block;padding:10px 28px;font-size:11px;font-weight:600;
+                          color:#0a0a0a;background:#e0e0e0;text-decoration:none;
+                          letter-spacing:1px;text-transform:uppercase;font-family:monospace;">
+                  Reply to {safe_name}
+                </a>
+              </td>
+            </tr>
+          </table>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:16px 28px;border-top:1px solid #1a1a1a;">
+              <p style="margin:0;font-size:9px;color:#444;text-align:center;font-family:monospace;">
+                Securithm — Smart Contract Security Audits
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+    text_content = (
+        f"New demo request from {name}\n\n"
+        f"Email: {email}\n"
+        f"Message: {message or '—'}\n\n"
+        f"Reply to {name}: {email}"
+    )
+
+    to_email = notify_email or settings.demo_notify_email
+    if not to_email:
+        return False
+
+    from_email = settings.resend_from_email or "Securithm <onboarding@resend.dev>"
+
+    try:
+        response = resend.Emails.send(
+            {
+                "from": from_email,
+                "to": [to_email],
+                "subject": f"New demo request from {safe_name} — Securithm",
+                "html": email_html,
+                "text": text_content,
+            }
+        )
+        return bool(response and response.get("id"))
+    except Exception:
+        return False
