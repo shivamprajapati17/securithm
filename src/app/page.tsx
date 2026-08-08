@@ -126,12 +126,6 @@ export default function Home() {
   SMART CONTRACT SECURITY`}
             </pre>
 
-            <div className="inline-flex items-center gap-2 px-2 py-1 border border-[var(--color-term-border)] mb-6">
-              <span className="text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-                STATUS: PUBLIC BETA [OK]
-              </span>
-            </div>
-
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight mb-6 text-[var(--color-term-fg)] term-glow">
               SHIP SECURE CONTRACTS.
               <br />
@@ -149,7 +143,7 @@ export default function Home() {
 
           {/* Scan Input */}
           <div className="max-w-3xl mx-auto mb-8">
-            <ScanInput variant="hero" />
+            <ScanInput variant="hero" redirectToDemo />
           </div>
 
           {/* No signup badge */}
@@ -358,7 +352,6 @@ export default function Home() {
               <a href="/terms" className="hover:text-[var(--color-term-fg)]">TERMS</a>
               <a href="/privacy" className="hover:text-[var(--color-term-fg)]">PRIVACY</a>
               <a href="/soc2" className="hover:text-[var(--color-term-fg)]">SOC 2</a>
-              <a href="/status" className="hover:text-[var(--color-term-fg)]">STATUS</a>
               <a href="/docs" className="hover:text-[var(--color-term-fg)]">DOCS</a>
               <span className="text-[var(--color-term-muted)]">&copy; 2026 SECURITHM</span>
             </div>

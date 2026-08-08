@@ -109,7 +109,7 @@ export default function TermsPage() {
               <p className="text-[var(--color-term-muted)] leading-relaxed">
                 Enterprise plan includes a 99.9% uptime SLA. Standard and Pro plans are provided
                 on a commercially reasonable effort basis. Scheduled maintenance will be announced
-                via the status page at /status.
+                in advance.
               </p>
             </section>
 

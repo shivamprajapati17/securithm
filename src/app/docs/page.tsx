@@ -173,10 +173,6 @@ export default function DocsPage() {
                 SECURITY
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
-              <a href="/status" className="text-[10px] text-[var(--color-term-muted)] font-mono hover:text-[var(--color-term-fg)] flex items-center gap-1">
-                SYSTEM STATUS
-                <ExternalLink className="h-2.5 w-2.5" />
-              </a>
             </div>
           </div>
         </div>

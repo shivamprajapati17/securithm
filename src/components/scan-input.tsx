@@ -41,9 +41,11 @@ contract VulnerableVault {
 interface ScanInputProps {
   onScan?: (code: string, chain: string) => void;
   variant?: "hero" | "inline";
+  /** When true, submitting the scan redirects to the demo booking page. */
+  redirectToDemo?: boolean;
 }
 
-export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
+export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: ScanInputProps) {
   const [code, setCode] = useState("");
   const [chain, setChain] = useState("ethereum");
   const [inputMode, setInputMode] = useState<"code" | "address" | "github">(
@@ -55,6 +57,10 @@ export function ScanInput({ onScan, variant = "hero" }: ScanInputProps) {
 
   const handleScan = async () => {
     if (!code.trim()) return;
+    if (redirectToDemo) {
+      router.push("/book-demo");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
