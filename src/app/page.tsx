@@ -29,13 +29,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const stats = [
-  { label: "CONTRACTS ANALYZED", value: "10,000+" },
-  { label: "BUGS CAUGHT", value: "500+" },
-  { label: "DEV SIGNUPS", value: "2,000+" },
-  { label: "CHAINS SUPPORTED", value: "6" },
-];
-
 const features = [
   {
     icon: Zap,
@@ -155,26 +148,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ── STATS SECTION ── */}
-      <FadeInSection>
-        <section className="border-y border-[var(--color-term-border)]">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {stats.map((stat) => (
-                <div key={stat.label} className="text-center border border-[var(--color-term-border)] p-4">
-                  <div className="text-lg sm:text-xl font-bold text-[var(--color-term-fg)] term-glow">
-                    {stat.value}
-                  </div>
-                  <div className="text-[10px] font-mono text-[var(--color-term-muted)] mt-1 uppercase tracking-wider">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </FadeInSection>
 
       {/* ── CHAINS ── */}
       <FadeInSection delay={0.1}>
@@ -356,11 +329,6 @@ export default function Home() {
               <span className="text-[var(--color-term-muted)]">&copy; 2026 SECURITHM</span>
             </div>
           </div>
-          <p className="text-center text-[9px] text-[var(--color-term-muted)] mt-4 max-w-2xl mx-auto font-mono">
-            DISCLAIMER: AI analysis provides preliminary findings and is not a
-            substitute for a full manual audit. Always engage a professional
-            security firm for production deployments.
-          </p>
         </div>
       </footer>
     </div>
