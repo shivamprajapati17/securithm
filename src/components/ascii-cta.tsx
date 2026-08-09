@@ -229,11 +229,6 @@ export default function AsciiCta() {
             <ArrowRight className="h-4 w-4" />
           </a>
 
-          <p className="text-[9px] text-[var(--color-term-muted)] mt-6 font-mono max-w-lg">
-            DISCLAIMER: AI analysis provides preliminary findings and is not a
-            substitute for a full manual audit. Always engage a professional
-            security firm for production deployments.
-          </p>
         </div>
       </div>
     </section>
