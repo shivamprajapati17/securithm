@@ -53,7 +53,7 @@ export default function Soc2Page() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <Shield className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM COMPLIANCE
+              AUDITAI COMPLIANCE
             </span>
           </div>
           <div className="p-6">
@@ -63,7 +63,7 @@ export default function Soc2Page() {
                   SOC 2 COMPLIANCE
                 </h1>
                 <p className="text-xs text-[var(--color-term-muted)] font-mono max-w-2xl">
-                  Securithm maintains industry-standard security controls to protect your data.
+                  AuditAI maintains industry-standard security controls to protect your data.
                   We are committed to SOC 2 Type II certification and maintain GDPR and CCPA compliance.
                 </p>
               </div>
@@ -116,7 +116,7 @@ export default function Soc2Page() {
                   <p className="text-[10px] text-[var(--color-term-muted)] font-mono">
                     Enterprise customers can request our latest SOC 2 Type II report, penetration
                     testing results, and security questionnaire responses. Contact
-                    security@securithm.io to initiate a request.
+                    security@auditai.io to initiate a request.
                   </p>
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function Soc2Page() {
             <div className="border border-[var(--color-term-fg)] p-5 mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider mb-1 term-glow">
-                  WANT TO SEE SECURITHM IN ACTION?
+                  WANT TO SEE AUDITAI IN ACTION?
                 </h3>
                 <p className="text-[10px] text-[var(--color-term-muted)] font-mono">
                   Book a live demo and see scans, monitoring, and the risk score API first-hand.

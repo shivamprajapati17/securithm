@@ -12,7 +12,7 @@ export default function PrivacyPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <Shield className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM PRIVACY POLICY
+              AUDITAI PRIVACY POLICY
             </span>
             <span className="ml-auto text-[9px] text-[var(--color-term-muted)] font-mono">
               v1.0 — Last updated: July 2026
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           </div>
           <div className="p-6 space-y-6 text-xs font-mono text-[var(--color-term-fg)]">
             <p className="text-[var(--color-term-muted)]">
-              {`# PRIVACY POLICY — SECURITHM`}
+              {`# PRIVACY POLICY — AUDITAI`}
             </p>
 
             <section className="space-y-3">
@@ -93,7 +93,7 @@ export default function PrivacyPage() {
                 We retain your account data for as long as your account is active. Scan results
                 are retained for 2 years. Anonymized contract code used for model training is
                 retained indefinitely. You may request deletion at any time by contacting
-                privacy@securithm.io.
+                privacy@auditai.io.
               </p>
             </section>
 
@@ -137,13 +137,13 @@ export default function PrivacyPage() {
                 7. CONTACT
               </h2>
               <p className="text-[var(--color-term-muted)] leading-relaxed">
-                Data Controller: Securithm Inc. Contact privacy@securithm.io for any privacy-related inquiries.
+                Data Controller: AuditAI Inc. Contact privacy@auditai.io for any privacy-related inquiries.
               </p>
             </section>
 
             <div className="border-t border-[var(--color-term-border)] pt-4 mt-6">
               <p className="text-[9px] text-[var(--color-term-muted)] font-mono">
-                END OF PRIVACY POLICY — Securithm Inc. All rights reserved.
+                END OF PRIVACY POLICY — AuditAI Inc. All rights reserved.
               </p>
             </div>
           </div>

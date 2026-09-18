@@ -13,7 +13,7 @@ interface Booking {
   createdAt: string;
 }
 
-const STORAGE_KEY = "securithm_demo_bookings";
+const STORAGE_KEY = "auditai_demo_bookings";
 
 export default function BookDemoPage() {
   const [name, setName] = useState("");
@@ -74,7 +74,7 @@ export default function BookDemoPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM DEMO
+              AUDITAI DEMO
             </span>
           </div>
 
@@ -110,7 +110,7 @@ export default function BookDemoPage() {
                   BOOK A DEMO
                 </h1>
                 <p className="text-xs text-[var(--color-term-muted)] font-mono mb-6">
-                  Schedule a live walkthrough of Securithm.
+                  Schedule a live walkthrough of AuditAI.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { CheckCircle2 } from "lucide-react";
 
 const installSteps = [
-  { cmd: "npm install securithm", duration: 1200 },
-  { cmd: "npx securithm init", duration: 800 },
-  { cmd: "Securithm scan . --contract ./contracts", duration: 600 },
+  { cmd: "npm install auditai", duration: 1200 },
+  { cmd: "npx auditai init", duration: 800 },
+  { cmd: "AuditAI scan . --contract ./contracts", duration: 600 },
 ];
 
 export default function InstallCommand() {
@@ -158,7 +158,7 @@ export default function InstallCommand() {
             <div className="flex items-center gap-2 pl-5 mt-2 text-[var(--color-term-fg)]">
               <CheckCircle2 className="h-4 w-4" />
               <span className="text-xs font-medium">
-                Securithm installed and initialized successfully.
+                AuditAI installed and initialized successfully.
               </span>
             </div>
           )}

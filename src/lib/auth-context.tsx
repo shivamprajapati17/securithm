@@ -27,15 +27,15 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("securithm_token");
+  return localStorage.getItem("auditai_token");
 }
 
 function setStoredToken(token: string | null) {
   if (typeof window === "undefined") return;
   if (token) {
-    localStorage.setItem("securithm_token", token);
+    localStorage.setItem("auditai_token", token);
   } else {
-    localStorage.removeItem("securithm_token");
+    localStorage.removeItem("auditai_token");
   }
 }
 

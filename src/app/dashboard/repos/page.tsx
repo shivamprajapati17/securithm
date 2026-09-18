@@ -78,7 +78,7 @@ export default function ReposPage() {
     setReposLoading(true);
     setReposError(null);
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) return;
       api.setAuthToken(token);
 
@@ -104,7 +104,7 @@ export default function ReposPage() {
     setConnecting(true);
     setReposError(null);
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) throw new Error("Not authenticated");
       api.setAuthToken(token);
 
@@ -121,7 +121,7 @@ export default function ReposPage() {
   const handleDisconnect = async () => {
     setReposLoading(true);
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) return;
       api.setAuthToken(token);
       await api.request("/api/v1/auth/github/disconnect");
@@ -202,7 +202,7 @@ export default function ReposPage() {
                 $ QUICK_SETUP --GUIDE
               </h3>
               <p className="text-[10px] text-[var(--color-term-muted)] mb-2 font-mono">
-                SECURITHM AUTOMATICALLY SCANS EVERY PR AND PUSH WHEN YOU INSTALL THE GITHUB ACTION.
+                AUDITAI AUTOMATICALLY SCANS EVERY PR AND PUSH WHEN YOU INSTALL THE GITHUB ACTION.
               </p>
               <ol className="space-y-1.5 text-[10px] text-[var(--color-term-muted)] font-mono">
                 <li className="flex items-start gap-2">
@@ -215,7 +215,7 @@ export default function ReposPage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">3</span>
-                  <span>$ PUSH_CODE — SECURITHM POSTS INLINE COMMENTS + SARIF</span>
+                  <span>$ PUSH_CODE — AUDITAI POSTS INLINE COMMENTS + SARIF</span>
                 </li>
               </ol>
             </div>
@@ -504,7 +504,7 @@ export default function ReposPage() {
                         size="sm"
                         className="gap-1 h-5 text-[8px]"
                         onClick={() => {
-                          const config = `name: SECURITHM_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: securithm/action@v1\n        with:\n          threshold: HIGH\n          token: \${{ secrets.SECURITHM_TOKEN }}`;
+                          const config = `name: AUDITAI_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: auditai/action@v1\n        with:\n          threshold: HIGH\n          token: \${{ secrets.AUDITAI_TOKEN }}`;
                           navigator.clipboard.writeText(config);
                           alert("CI CONFIG COPIED TO CLIPBOARD");
                         }}
@@ -514,7 +514,7 @@ export default function ReposPage() {
                       </Button>
                     </div>
                     <pre className="border border-[var(--color-term-border)] bg-[#050505] text-[var(--color-term-fg)] p-2 overflow-x-auto text-[9px] leading-relaxed">
-                      <code>{"name: SECURITHM_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: securithm/action@v1\n        with:\n          threshold: HIGH\n          token: ${{ secrets.SECURITHM_TOKEN }}"}</code>
+                      <code>{"name: AUDITAI_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: auditai/action@v1\n        with:\n          threshold: HIGH\n          token: ${{ secrets.AUDITAI_TOKEN }}"}</code>
                     </pre>
                   </div>
 

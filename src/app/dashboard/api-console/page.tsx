@@ -58,31 +58,31 @@ const apiEndpoints: ApiEndpoint[] = [
     method: "GET",
     path: "/api/v1/risk-score/{chain}/{address}",
     description: "GET CURRENT RISK SCORE FOR A CONTRACT ADDRESS",
-    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.securithm.dev/api/v1/risk-score/ethereum/0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.auditai.dev/api/v1/risk-score/ethereum/0xdAC17F958D2ee523a2206206994597C13D831ec7",
   },
   {
     method: "GET",
     path: "/api/v1/risk-score/{chain}/{address}/history",
     description: "GET HISTORICAL RISK SCORE DATA",
-    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.securithm.dev/api/v1/risk-score/ethereum/0xdAC17F958D2ee523a2206206994597C13D831ec7/history",
+    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.auditai.dev/api/v1/risk-score/ethereum/0xdAC17F958D2ee523a2206206994597C13D831ec7/history",
   },
   {
     method: "GET",
     path: "/api/v1/scans/{id}",
     description: "RETRIEVE SCAN RESULTS BY ID",
-    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.securithm.dev/api/v1/scans/YOUR_SCAN_ID",
+    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.auditai.dev/api/v1/scans/YOUR_SCAN_ID",
   },
   {
     method: "POST",
     path: "/api/v1/scans",
     description: "SUBMIT A NEW CONTRACT FOR ANALYSIS",
-    example: "curl -X POST -H \"Authorization: Bearer YOUR_API_KEY\" -H \"Content-Type: application/json\" -d '{\"contract_source\":\"0xdAC17F958D2ee523a2206206994597C13D831ec7\",\"chain\":\"ethereum\"}' https://api.securithm.dev/api/v1/scans",
+    example: "curl -X POST -H \"Authorization: Bearer YOUR_API_KEY\" -H \"Content-Type: application/json\" -d '{\"contract_source\":\"0xdAC17F958D2ee523a2206206994597C13D831ec7\",\"chain\":\"ethereum\"}' https://api.auditai.dev/api/v1/scans",
   },
   {
     method: "GET",
     path: "/api/v1/payments/plans",
     description: "LIST BILLING PLANS AND PRICING",
-    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.securithm.dev/api/v1/payments/plans",
+    example: "curl -H \"Authorization: Bearer YOUR_API_KEY\" https://api.auditai.dev/api/v1/payments/plans",
   },
 ];
 
@@ -125,7 +125,7 @@ export default function ApiConsolePage() {
   const fetchApiKeys = async () => {
     setKeysLoading(true);
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) {
         setApiKeys([]);
         return;
@@ -152,7 +152,7 @@ export default function ApiConsolePage() {
       // Only refresh usage silently (don't show loading skeleton)
       const refreshUsage = async () => {
         try {
-          const token = localStorage.getItem("securithm_token");
+          const token = localStorage.getItem("auditai_token");
           if (!token) return;
           api.setAuthToken(token);
           const [keys, usage] = await Promise.all([
@@ -179,7 +179,7 @@ export default function ApiConsolePage() {
     setCreatedKey(null);
 
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) throw new Error("Not authenticated");
       api.setAuthToken(token);
 
@@ -207,7 +207,7 @@ export default function ApiConsolePage() {
   const handleRevokeKey = async (keyId: string) => {
     if (!confirm("REVOKE THIS API KEY? THIS ACTION CANNOT BE UNDONE.")) return;
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (!token) return;
       api.setAuthToken(token);
       await api.request(`/api/v1/auth/api-keys/${keyId}`, { method: "DELETE" });
@@ -226,7 +226,7 @@ export default function ApiConsolePage() {
     }
     rateLimitTimers.current[keyId] = setTimeout(async () => {
       try {
-        const token = localStorage.getItem("securithm_token");
+        const token = localStorage.getItem("auditai_token");
         if (!token) return;
         api.setAuthToken(token);
         await api.request(`/api/v1/auth/api-keys/${keyId}`, {

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   TERMINAL CLI DESIGN SYSTEM — Securithm
+   TERMINAL CLI DESIGN SYSTEM — AuditAI
    "Brutally functional, high-contrast, authentic"
    ═══════════════════════════════════════════════ */
 
@@ -341,7 +341,167 @@
 
   /* Input-like terminal prompt */
   .term-prompt::before {
-    content: "user@securithm:~$ ";
+    content: "user@auditai:~$ ";
     color: var(--color-term-muted);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CINEMATIC LANDING — Framewise-style layer
+   Warm dark #140a05 · orange-300 accents · grain
+   ═══════════════════════════════════════════════ */
+
+@theme {
+  --color-fw-bg: #140a05;
+  --color-fw-accent: #ffb366;
+  --font-dmmono: "DM Mono", "JetBrains Mono", monospace;
+  --font-manrope: "Manrope", "Inter", sans-serif;
+}
+
+/* Kill the CRT scanline overlay on the landing page */
+.no-scanlines::before {
+  display: none !important;
+}
+
+.fw-root {
+  background: #140a05;
+  color: #fff;
+  font-family: "Manrope", "Inter", sans-serif;
+  overflow-x: clip;
+}
+/* Neutralize the terminal theme inside the landing page.
+   Lives in @layer base so Tailwind utilities still win on top of it. */
+@layer base {
+  .fw-root :where(*) {
+    font-family: inherit;
+    text-shadow: none;
+  }
+  .fw-root :where(a) {
+    color: inherit;
+    text-decoration: none;
+    background: transparent;
+  }
+  .fw-root :where(a:hover) {
+    background: transparent;
+  }
+  .fw-root :where(h1, h2, h3, h4, h5, h6) {
+    text-transform: none;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+.fw-root .fw-mono,
+.fw-root .fw-mono :where(*) {
+  font-family: "DM Mono", "JetBrains Mono", monospace;
+}
+.fw-root ::selection {
+  background: #ffb366;
+  color: #1a0c05;
+}
+.fw-root a,
+.fw-root button {
+  cursor: pointer;
+}
+.fw-cursor-on .fw-root,
+.fw-cursor-on .fw-root a,
+.fw-cursor-on .fw-root button {
+  cursor: none;
+}
+
+.fw-mono {
+  font-family: "DM Mono", "JetBrains Mono", monospace;
+}
+
+/* ── Grain overlay (SVG fractal turbulence) ── */
+.fw-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 300px 300px;
+}
+
+/* ── Split-word mask reveal targets ── */
+.fw-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.fw-mask > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ── Marquee ── */
+.fw-marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+/* ── Tilt cards ── */
+.fw-tilt {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ── Image hover zoom (features) ── */
+.fw-img-hover {
+  overflow: hidden;
+}
+.fw-img-hover img {
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fw-img-hover:hover img {
+  transform: scale(1.1);
+}
+
+/* ── Viewfinder mock ── */
+.fw-focus-frame {
+  animation: fw-focus 4s ease-in-out infinite;
+}
+@keyframes fw-focus {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.965); }
+}
+.fw-float {
+  animation: fw-sine 5.5s ease-in-out infinite;
+}
+@keyframes fw-sine {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* ── FAQ accordion ── */
+.fw-faq-content {
+  height: 0;
+  overflow: hidden;
+}
+
+/* ── Scroll progress bar ── */
+.fw-progress {
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+/* ── Preloader orbit ── */
+.fw-orbit {
+  animation: fw-spin 1.4s linear infinite;
+}
+@keyframes fw-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Reduced motion: keep everything visible & static ── */
+@media (prefers-reduced-motion: reduce) {
+  .fw-mask > span {
+    transform: none !important;
+  }
+  .fw-focus-frame,
+  .fw-float,
+  .fw-orbit {
+    animation: none !important;
   }
 }

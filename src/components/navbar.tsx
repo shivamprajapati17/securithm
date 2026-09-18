@@ -15,7 +15,7 @@ export function Navbar() {
               <Shield className="h-4 w-4 text-[var(--color-term-fg)] group-hover:text-[var(--color-term-bg)]" />
             </div>
             <span className="text-sm font-bold uppercase tracking-wider text-[var(--color-term-fg)] term-glow">
-              Securithm
+              AuditAI
             </span>
           </a>
 
@@ -25,6 +25,12 @@ export function Navbar() {
               className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
             >
               features
+            </a>
+            <a
+              href="/solvency"
+              className="text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)] hover:text-[var(--color-term-fg)] transition-colors"
+            >
+              solvency
             </a>
             <a
               href="/docs"
@@ -61,6 +67,9 @@ export function Navbar() {
         <div className="md:hidden border-t border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-4 py-4 space-y-3">
           <a href="/features" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             features
+          </a>
+          <a href="/solvency" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
+            solvency
           </a>
           <a href="/docs" className="block text-xs font-mono uppercase tracking-wider text-[var(--color-term-muted)]">
             docs

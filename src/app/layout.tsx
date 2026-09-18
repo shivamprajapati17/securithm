@@ -4,8 +4,8 @@ import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "SECURITHM — SMART CONTRACT SECURITY AUDITS",
-    template: "%s | SECURITHM",
+    default: "AUDITAI — SMART CONTRACT SECURITY AUDITS",
+    template: "%s | AUDITAI",
   },
   description:
     "AI-POWERED SMART CONTRACT SECURITY ANALYSIS. SHIP SECURE CONTRACTS BEFORE THE HACKERS FIND THE BUGS.",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     "solidity security",
     "web3 security",
     "smart contract scanner",
-    "securithm",
+    "auditai",
   ],
 };
 
@@ -33,7 +33,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=VT323&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600&display=swap"
           rel="stylesheet"
         />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

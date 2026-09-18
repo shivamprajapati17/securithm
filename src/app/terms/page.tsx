@@ -13,7 +13,7 @@ export default function TermsPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <Shield className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM TERMS OF SERVICE
+              AUDITAI TERMS OF SERVICE
             </span>
             <span className="ml-auto text-[9px] text-[var(--color-term-muted)] font-mono">
               v1.0 — Last updated: July 2026
@@ -21,7 +21,7 @@ export default function TermsPage() {
           </div>
           <div className="p-6 space-y-6 text-xs font-mono text-[var(--color-term-fg)]">
             <p className="text-[var(--color-term-muted)]">
-              {`# TERMS OF SERVICE — SECURITHM`}
+              {`# TERMS OF SERVICE — AUDITAI`}
             </p>
 
             <section className="space-y-3">
@@ -29,10 +29,10 @@ export default function TermsPage() {
                 1. ACCEPTANCE OF TERMS
               </h2>
               <p className="text-[var(--color-term-muted)] leading-relaxed">
-                By accessing or using the Securithm platform ("Service"), you agree to be bound
+                By accessing or using the AuditAI platform ("Service"), you agree to be bound
                 by these Terms of Service ("Terms"). If you do not agree to these Terms, do not
                 access or use the Service. These Terms constitute a binding legal agreement between
-                you and Securithm Inc.
+                you and AuditAI Inc.
               </p>
             </section>
 
@@ -41,7 +41,7 @@ export default function TermsPage() {
                 2. SERVICE DESCRIPTION
               </h2>
               <p className="text-[var(--color-term-muted)] leading-relaxed">
-                Securithm provides AI-powered smart contract security analysis, including but not
+                AuditAI provides AI-powered smart contract security analysis, including but not
                 limited to: static analysis, symbolic execution, risk scoring, continuous
                 monitoring, and remediation guidance. The Service analyzes smart contract source
                 code and on-chain data to identify potential security vulnerabilities.
@@ -95,7 +95,7 @@ export default function TermsPage() {
                 5. LIMITATION OF LIABILITY
               </h2>
               <p className="text-[var(--color-term-muted)] leading-relaxed">
-                To the maximum extent permitted by law, Securithm shall not be liable for any
+                To the maximum extent permitted by law, AuditAI shall not be liable for any
                 indirect, incidental, special, consequential, or punitive damages arising from
                 your use of the Service. Our total liability shall not exceed the amount paid by
                 you in the 12 months preceding the claim.
@@ -129,13 +129,13 @@ export default function TermsPage() {
                 8. CONTACT
               </h2>
               <p className="text-[var(--color-term-muted)] leading-relaxed">
-                For questions about these Terms, contact legal@securithm.io
+                For questions about these Terms, contact legal@auditai.io
               </p>
             </section>
 
             <div className="border-t border-[var(--color-term-border)] pt-4 mt-6">
               <p className="text-[9px] text-[var(--color-term-muted)] font-mono">
-                END OF TERMS — Securithm Inc. All rights reserved.
+                END OF TERMS — AuditAI Inc. All rights reserved.
               </p>
             </div>
           </div>

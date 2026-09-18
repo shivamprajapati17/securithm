@@ -19,7 +19,7 @@ const plans = [
   {
     name: "FREE",
     price: "$0",
-    description: "FOR SOLO DEVELOPERS EXPLORING SECURITHM",
+    description: "FOR SOLO DEVELOPERS EXPLORING AUDITAI",
     features: [
       "50 SCANS/MONTH",
       "BASIC MONITOR (1 CONTRACT)",
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                   disabled={plan.current}
                   onClick={() => {
                     if (!plan.current) {
-                      window.open('https://securithm.vercel.app/dashboard/settings?checkout=' + plan.name.toLowerCase(), '_blank');
+                      window.open('https://auditai.vercel.app/dashboard/settings?checkout=' + plan.name.toLowerCase(), '_blank');
                       alert(`REDIRECTING TO ${plan.name} CHECKOUT...`);
                     }
                   }}
@@ -228,7 +228,7 @@ export default function SettingsPage() {
               setupSteps: [
                 "PROVIDE YOUR HTTPS ENDPOINT URL",
                 "SELECT WHICH EVENT TYPES TO RECEIVE",
-                "SECURITHM WILL POST JSON PAYLOADS",
+                "AUDITAI WILL POST JSON PAYLOADS",
                 "TEST THE WEBHOOK WITH A SAMPLE EVENT",
               ],
             },
@@ -239,7 +239,7 @@ export default function SettingsPage() {
               connected: false,
               setupSteps: [
                 "INSTALL N8N WORKFLOW AUTOMATION",
-                "ADD THE SECURITHM WEBHOOK NODE",
+                "ADD THE AUDITAI WEBHOOK NODE",
                 "CONFIGURE TRIGGER EVENTS FOR SCANS AND ALERTS",
                 "AUTOMATE TICKETING, NOTIFICATIONS, AND REPORTING",
               ],
@@ -286,10 +286,10 @@ export default function SettingsPage() {
                     const guides: Record<string, string> = {
                       SLACK: 'https://api.slack.com/messaging/webhooks',
                       DISCORD: 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks',
-                      WEBHOOKS: 'https://example.com/securithm-webhook-setup',
-                      N8N: 'https://docs.n8n.io/integrations/securithm/',
+                      WEBHOOKS: 'https://example.com/auditai-webhook-setup',
+                      N8N: 'https://docs.n8n.io/integrations/auditai/',
                     };
-                    window.open(guides[integration.name] || 'https://docs.securithm.dev', '_blank');
+                    window.open(guides[integration.name] || 'https://docs.auditai.dev', '_blank');
                   }}>
                     [ SETUP GUIDE ]
                   </Button>
@@ -343,7 +343,7 @@ export default function SettingsPage() {
               const name = (document.getElementById('settings-display-name') as HTMLInputElement)?.value;
               const email = (document.getElementById('settings-email') as HTMLInputElement)?.value;
               try {
-                const token = localStorage.getItem('securithm_token');
+                const token = localStorage.getItem('auditai_token');
                 if (token) {
                   api.setAuthToken(token);
                   await api.getMe();

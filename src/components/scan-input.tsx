@@ -111,7 +111,7 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
             <span className="text-[9px] text-[var(--color-term-fg)]">●</span>
           </div>
           <span className="ml-2 text-[10px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
-            scan input — SECURITHM ANALYSIS
+            scan input — AUDITAI ANALYSIS
           </span>
         </div>
       )}

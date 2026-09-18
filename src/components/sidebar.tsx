@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   Bell,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CiStatusIndicator } from "@/components/ci-status";
@@ -25,6 +26,7 @@ const navItems = [
   { icon: GitBranch, label: "Repos", href: "/dashboard/repos" },
   { icon: Radio, label: "Monitor", href: "/dashboard/monitoring" },
   { icon: Users, label: "Team", href: "/dashboard/team" },
+  { icon: Scale, label: "Solvency", href: "/dashboard/solvency" },
   { icon: BarChart3, label: "Risk API", href: "/dashboard/api-console" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
@@ -155,7 +157,7 @@ export function Sidebar() {
           onClick={handleNavClick}
         >
           <span className="text-xs font-bold text-[var(--color-term-fg)] term-glow">
-            {collapsed ? "AI" : "SECURITHM"}
+            {collapsed ? "AI" : "AUDITAI"}
           </span>
         </a>
         {/* Desktop collapse button */}
