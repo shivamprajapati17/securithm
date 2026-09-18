@@ -54,7 +54,7 @@ export default function LoginPage() {
         <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
           <Shield className="h-4 w-4 text-[var(--color-term-fg)]" />
           <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-            SECURITHM LOGIN
+            AUDITAI LOGIN
           </span>
         </div>
 

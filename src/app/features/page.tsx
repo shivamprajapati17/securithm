@@ -89,7 +89,7 @@ export default function FeaturesPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <Zap className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM FEATURES
+              AUDITAI FEATURES
             </span>
             <span className="ml-auto text-[9px] text-[var(--color-term-muted)] font-mono">
               [ v0.1.0 ]
@@ -102,7 +102,7 @@ export default function FeaturesPage() {
               </h1>
               <p className="text-xs text-[var(--color-term-muted)] font-mono max-w-2xl">
                 From instant pre-deploy checks to continuous post-deploy
-                monitoring. Securithm covers the full security lifecycle.
+                monitoring. AuditAI covers the full security lifecycle.
               </p>
             </div>
 

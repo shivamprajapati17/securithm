@@ -22,11 +22,11 @@ const sections = [
   {
     number: "01",
     title: "EXECUTIVE SUMMARY",
-    content: `Securithm is a next-generation smart contract security analysis platform that combines static analysis, symbolic execution, and AI-powered vulnerability detection to provide comprehensive security assessments for blockchain-based smart contracts. This whitepaper presents the technical architecture, methodology, and economic model behind Securithm's approach to automated smart contract auditing.
+    content: `AuditAI is a next-generation smart contract security analysis platform that combines static analysis, symbolic execution, and AI-powered vulnerability detection to provide comprehensive security assessments for blockchain-based smart contracts. This whitepaper presents the technical architecture, methodology, and economic model behind AuditAI's approach to automated smart contract auditing.
 
-The DeFi ecosystem has experienced over $3.8 billion in losses due to smart contract vulnerabilities since 2020, with attacks growing in both frequency and sophistication. Traditional security audits are expensive, time-consuming, and often fail to catch complex logical vulnerabilities. Securithm addresses these challenges by providing instant, continuous, and cost-effective security analysis.
+The DeFi ecosystem has experienced over $3.8 billion in losses due to smart contract vulnerabilities since 2020, with attacks growing in both frequency and sophistication. Traditional security audits are expensive, time-consuming, and often fail to catch complex logical vulnerabilities. AuditAI addresses these challenges by providing instant, continuous, and cost-effective security analysis.
 
-Our platform processes an average of 500+ vulnerability patterns across Solidity, Rust, and Vyper contracts, achieving a 94.7% detection rate against known vulnerability classes while maintaining a false positive rate below 8.2%. Through continuous monitoring and real-time threat intelligence, Securithm enables protocol teams to detect and remediate vulnerabilities before they can be exploited.`,
+Our platform processes an average of 500+ vulnerability patterns across Solidity, Rust, and Vyper contracts, achieving a 94.7% detection rate against known vulnerability classes while maintaining a false positive rate below 8.2%. Through continuous monitoring and real-time threat intelligence, AuditAI enables protocol teams to detect and remediate vulnerabilities before they can be exploited.`,
   },
   {
     number: "02",
@@ -60,11 +60,11 @@ SCALABILITY — The rapid pace of DeFi innovation far exceeds the capacity of th
   },
   {
     number: "03",
-    title: "SECURITHM ARCHITECTURE",
+    title: "AUDITAI ARCHITECTURE",
     sections: [
       {
         subtitle: "SYSTEM OVERVIEW",
-        content: `Securithm employs a multi-layered architecture that combines multiple analysis techniques to achieve comprehensive coverage:
+        content: `AuditAI employs a multi-layered architecture that combines multiple analysis techniques to achieve comprehensive coverage:
 
 LAYER 1 — STATIC ANALYSIS ENGINE: Pattern-matching engine with 500+ vulnerability signatures, covering OWASP Smart Contract Top 10, SWC Registry, and custom DeFi-specific patterns. Uses abstract syntax tree (AST) traversal and control-flow graph (CFG) analysis for deep code inspection.
 
@@ -131,7 +131,7 @@ Our benchmarks show a 23% improvement in detection of business logic vulnerabili
   {
     number: "05",
     title: "RISK SCORING MODEL",
-    content: `Securithm employs a multi-factor risk scoring model that evaluates contracts across five dimensions:
+    content: `AuditAI employs a multi-factor risk scoring model that evaluates contracts across five dimensions:
 
 1. VULNERABILITY SEVERITY (40% weight): Number and severity of findings, categorized by CVSS scores
 2. EXPLOITABILITY (25% weight): Ease of exploitation, required attacker privileges, value at risk
@@ -158,7 +158,7 @@ LOW: Limited analysis due to code complexity or missing dependencies`,
   {
     number: "06",
     title: "CONTINUOUS MONITORING",
-    content: `Beyond point-in-time audits, Securithm provides real-time monitoring for deployed contracts:
+    content: `Beyond point-in-time audits, AuditAI provides real-time monitoring for deployed contracts:
 
 ON-CHAIN SURVEILLANCE: Monitors contract state changes, unusual transaction patterns, and potential attack indicators across Ethereum, Base, Arbitrum, Polygon, and BNB Chain.
 
@@ -174,7 +174,7 @@ Monitoring latency averages 2.3 seconds from transaction confirmation to alert d
   {
     number: "07",
     title: "PERFORMANCE BENCHMARKS",
-    content: `Securithm has been benchmarked against industry-standard testing datasets:
+    content: `AuditAI has been benchmarked against industry-standard testing datasets:
 
 DETECTION RATES:
 Reentrancy: 99.2% (Industry avg: 87%)
@@ -201,7 +201,7 @@ Contracts analyzed: 50,000+`,
   {
     number: "08",
     title: "SECURITY & COMPLIANCE",
-    content: `Securithm takes a defense-in-depth approach to its own security architecture:
+    content: `AuditAI takes a defense-in-depth approach to its own security architecture:
 
 INFRASTRUCTURE SECURITY:
 - All data encrypted at rest (AES-256) and in transit (TLS 1.3)
@@ -231,7 +231,7 @@ COMPLIANCE FRAMEWORK:
   {
     number: "09",
     title: "TOKENOMICS & ECONOMIC MODEL",
-    content: `Securithm operates on a tiered subscription model designed to serve teams of all sizes:
+    content: `AuditAI operates on a tiered subscription model designed to serve teams of all sizes:
 
 FREE TIER — $0/month
 50 scans per month
@@ -310,7 +310,7 @@ export default function WhitepaperPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM WHITEPAPER
+              AUDITAI WHITEPAPER
             </span>
             <span className="ml-auto text-[9px] text-[var(--color-term-muted)] font-mono">
               v1.0 — July 2026
@@ -326,7 +326,7 @@ export default function WhitepaperPage() {
                 </div>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-term-fg)] term-glow uppercase tracking-wider mb-3">
-                SECURITHM WHITEPAPER
+                AUDITAI WHITEPAPER
               </h1>
               <p className="text-sm text-[var(--color-term-muted)] font-mono max-w-3xl mx-auto mb-4">
                 A COMPREHENSIVE FRAMEWORK FOR AUTOMATED SMART CONTRACT SECURITY ANALYSIS
@@ -344,14 +344,14 @@ export default function WhitepaperPage() {
                 <span className="text-[10px] font-bold text-[var(--color-term-fg)] uppercase tracking-wider">ABSTRACT</span>
               </div>
               <p className="text-[11px] text-[var(--color-term-fg)] font-mono leading-relaxed italic">
-                "This whitepaper presents Securithm, a multi-layered smart contract security analysis platform
+                "This whitepaper presents AuditAI, a multi-layered smart contract security analysis platform
                 that integrates static analysis, symbolic execution, and artificial intelligence to detect
                 vulnerabilities in blockchain-based smart contracts. We demonstrate that our hybrid approach
                 achieves a 94.7% detection rate across known vulnerability classes while maintaining a false
                 positive rate of 8.2%. The platform processes contracts in under 45 seconds on average and
                 supports continuous monitoring for deployed contracts across six blockchain networks.
                 We present the technical architecture, detection methodology, risk scoring model, and
-                economic analysis of the Securithm platform."
+                economic analysis of the AuditAI platform."
               </p>
             </div>
 
@@ -421,7 +421,7 @@ export default function WhitepaperPage() {
                 <span className="text-[10px] font-bold text-[var(--color-term-fg)] uppercase tracking-wider">CONCLUSION</span>
               </div>
               <p className="text-[11px] text-[var(--color-term-fg)] font-mono leading-relaxed">
-                Securithm represents a significant advancement in automated smart contract security analysis.
+                AuditAI represents a significant advancement in automated smart contract security analysis.
                 By combining multiple analysis techniques with AI-powered semantic understanding, we achieve
                 detection rates that approach and in some areas exceed those of manual expert audits, while
                 reducing analysis time from weeks to seconds.                Our platform's ability to provide continuous
@@ -447,7 +447,7 @@ export default function WhitepaperPage() {
                   "[4] Kalra, S., Goel, S., Dhawan, M., & Sharma, S. (2018). ZEUS: Analyzing Safety of Smart Contracts.",
                   "[5] Mueller, B. (2018). Mythril: Security Analysis of Ethereum Smart Contracts.",
                   "[6] Zhang, P., Xiao, Y., & Wang, H. (2020). S-gram: Towards Semantic-Aware Security Auditing.",
-                  "[7] Reentrancy Guardian. Cross-Chain Reentrancy Detection Using Dynamic Analysis. SECURITHM Labs, 2025.",
+                  "[7] Reentrancy Guardian. Cross-Chain Reentrancy Detection Using Dynamic Analysis. AUDITAI Labs, 2025.",
                   "[8] DeFi Attack Database. REKT News. https://rekt.news",
                   "[9] OWASP. Smart Contract Top 10. https://owasp.org/www-project-smart-contract-top-10",
                   "[10] Certora. Formal Verification of Smart Contracts. https://certora.com",
@@ -462,7 +462,7 @@ export default function WhitepaperPage() {
             {/* Footer */}
             <div className="border-t border-[var(--color-term-border)] pt-4 mt-8">
               <div className="flex items-center justify-between text-[9px] text-[var(--color-term-muted)] font-mono">
-                <span>© 2026 Securithm Labs. All rights reserved.</span>
+                <span>© 2026 AuditAI Labs. All rights reserved.</span>
                 <a
                   href="/docs"
                   className="flex items-center gap-1 hover:text-[var(--color-term-fg)] transition-colors"

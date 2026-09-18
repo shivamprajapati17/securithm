@@ -7,10 +7,10 @@ const docSections = [
   {
     icon: Terminal,
     title: "QUICK START",
-    description: "Get started with Securithm in minutes. Scan your first contract.",
+    description: "Get started with AuditAI in minutes. Scan your first contract.",
     items: [
-      "Install the CLI: npm install securithm -g",
-      "Scan a contract: securithm scan ./contract.sol",
+      "Install the CLI: npm install auditai -g",
+      "Scan a contract: auditai scan ./contract.sol",
       "View results in the dashboard",
       "Set up CI/CD integration",
     ],
@@ -40,7 +40,7 @@ const docSections = [
   {
     icon: Zap,
     title: "API REFERENCE",
-    description: "Programmatic access to all Securithm features.",
+    description: "Programmatic access to all AuditAI features.",
     items: [
       "POST /api/v1/scans — Submit new contract for analysis",
       "GET /api/v1/scans/{id} — Retrieve scan results",
@@ -73,7 +73,7 @@ const docSections = [
   {
     icon: BarChart3,
     title: "RISK SCORING",
-    description: "Understand how Securithm evaluates contract risk.",
+    description: "Understand how AuditAI evaluates contract risk.",
     items: [
       "Grade A (0-20): Low risk, no critical findings",
       "Grade B (21-40): Moderate risk, minor issues",
@@ -104,7 +104,7 @@ export default function DocsPage() {
           <div className="border-b border-[var(--color-term-border)] bg-[var(--color-term-dim)] px-4 py-2 flex items-center gap-2">
             <BookOpen className="h-4 w-4 text-[var(--color-term-fg)]" />
             <span className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider term-glow">
-              SECURITHM DOCUMENTATION
+              AUDITAI DOCUMENTATION
             </span>
             <span className="ml-auto text-[9px] text-[var(--color-term-muted)] font-mono">
               v0.1.0
@@ -116,7 +116,7 @@ export default function DocsPage() {
                 DOCUMENTATION
               </h1>
               <p className="text-xs text-[var(--color-term-muted)] font-mono max-w-2xl">
-                Comprehensive documentation for the Securithm smart contract security platform.
+                Comprehensive documentation for the AuditAI smart contract security platform.
                 Browse sections below or jump directly to API endpoints.
               </p>
             </div>
@@ -130,11 +130,11 @@ export default function DocsPage() {
               <div className="space-y-1 text-[10px] font-mono">
                 <div className="flex items-center gap-2">
                   <span className="text-[var(--color-term-muted)] shrink-0">$</span>
-                  <span className="text-[var(--color-term-fg)]">npm install securithm -g</span>
+                  <span className="text-[var(--color-term-fg)]">npm install auditai -g</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[var(--color-term-muted)] shrink-0">$</span>
-                  <span className="text-[var(--color-term-fg)]">securithm scan ./contracts/VulnerableVault.sol --chain ethereum</span>
+                  <span className="text-[var(--color-term-fg)]">auditai scan ./contracts/VulnerableVault.sol --chain ethereum</span>
                 </div>
               </div>
             </div>

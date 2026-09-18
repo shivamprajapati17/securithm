@@ -27,7 +27,7 @@ export function WalletButton() {
     // (React state in the closure would still be stale at this point)
     setTimeout(async () => {
       try {
-        const token = localStorage.getItem("securithm_token");
+        const token = localStorage.getItem("auditai_token");
         if (token && window.ethereum) {
           api.setAuthToken(token);
           const accounts = (await window.ethereum.request({
@@ -48,7 +48,7 @@ export function WalletButton() {
   const handleDisconnect = async () => {
     // Clear wallet address from profile
     try {
-      const token = localStorage.getItem("securithm_token");
+      const token = localStorage.getItem("auditai_token");
       if (token) {
         api.setAuthToken(token);
         await api.updateMe({ wallet_address: null });

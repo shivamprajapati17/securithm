@@ -20,7 +20,7 @@ function CallbackHandler() {
     }
 
     if (token) {
-      localStorage.setItem("securithm_token", token);
+      localStorage.setItem("auditai_token", token);
       api.setAuthToken(token);
       router.push("/dashboard");
     } else {

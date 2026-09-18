@@ -65,3 +65,6 @@ build/
 Thumbs.db
 
 .vercel
+
+# local env template contains real secrets — never commit
+.env.example
