@@ -58,8 +58,8 @@ export function Preloader() {
         {/* Orbit spinner */}
         <div className="pl-orbit relative h-12 w-12">
           <span className="absolute inset-0 rounded-full border border-white/15" />
-          <span className="absolute inset-0 rounded-full border-t border-[#ffb366]" />
-          <span className="absolute left-1/2 top-0 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ffb366]" />
+          <span className="absolute inset-0 rounded-full border-t border-[#a56bff]" />
+          <span className="absolute left-1/2 top-0 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a56bff]" />
         </div>
 
         {/* Word reveal */}
@@ -69,10 +69,9 @@ export function Preloader() {
           </span>{" "}
           <span className="pl-word fw-mask">
             <span>every</span>
-          </span>{" "}
-          <span className="pl-word fw-mask">
-            <span className="text-[#ffb366]">frame</span>
-          </span>{" "}
+          </span>{" "}          <span className="pl-word fw-mask">
+            <span className="text-[#a56bff]">frame</span>
+          </span>{""}
           <span className="pl-word fw-mask">
             <span>of</span>
           </span>{" "}
@@ -86,7 +85,7 @@ export function Preloader() {
 
         {/* Progress line */}
         <div className="h-px w-48 overflow-hidden bg-white/10">
-          <div className="pl-bar h-full w-full origin-left bg-[#ffb366]" />
+          <div className="pl-bar h-full w-full origin-left ax-gradient" />
         </div>
       </div>
     </div>
@@ -155,17 +154,17 @@ export function CustomCursor() {
     <>
       <div
         ref={ringRef}
-        className="pointer-events-none fixed left-0 top-0 z-[94] -ml-4 -mt-4 h-8 w-8 rounded-full border border-[#ffb366]/70"
+        className="pointer-events-none fixed left-0 top-0 z-[94] -ml-4 -mt-4 h-8 w-8 rounded-full border border-[#a56bff]/70"
         style={{ transform: "translate(-100px,-100px)" }}
       />
       <div
         ref={dotRef}
-        className="pointer-events-none fixed left-0 top-0 z-[95] -ml-[3px] -mt-[3px] h-1.5 w-1.5 rounded-full bg-[#ffb366]"
+        className="pointer-events-none fixed left-0 top-0 z-[95] -ml-[3px] -mt-[3px] h-1.5 w-1.5 rounded-full bg-[#a56bff]"
         style={{ transform: "translate(-100px,-100px)" }}
       />
       <div
         ref={labelRef}
-        className="fw-mono pointer-events-none fixed left-0 top-0 z-[96] ml-5 mt-4 rounded-sm bg-[#ffb366] px-2 py-0.5 text-[10px] uppercase tracking-widest text-[#1a0c05] opacity-0"
+        className="fw-mono pointer-events-none fixed left-0 top-0 z-[96] ml-5 mt-4 rounded-[4px] bg-[#8338ec] px-2 py-0.5 text-[10px] uppercase tracking-widest text-white opacity-0"
         style={{ transform: "translate(-100px,-100px)" }}
       />
     </>
@@ -211,15 +210,15 @@ export function AuraCanvas() {
       const COUNT = 1100;
       const pos = new Float32Array(COUNT * 3);
       const col = new Float32Array(COUNT * 3);
-      const warm = new THREE.Color("#ffb366");
-      const ember = new THREE.Color("#ff6b35");
-      const dim = new THREE.Color("#5a3a1f");
+      const violet = new THREE.Color("#a56bff");
+      const blue = new THREE.Color("#3a86ff");
+      const dim = new THREE.Color("#2b2350");
       for (let i = 0; i < COUNT; i++) {
         pos[i * 3] = (Math.random() - 0.5) * 26;
         pos[i * 3 + 1] = (Math.random() - 0.5) * 16;
         pos[i * 3 + 2] = (Math.random() - 0.5) * 12 - 2;
         const r = Math.random();
-        const c = r > 0.9 ? ember : r > 0.55 ? warm : dim;
+        const c = r > 0.88 ? blue : r > 0.5 ? violet : dim;
         col[i * 3] = c.r;
         col[i * 3 + 1] = c.g;
         col[i * 3 + 2] = c.b;
@@ -317,7 +316,7 @@ export function ScrollProgress() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5 bg-white/5">
-      <div ref={ref} className="fw-progress h-full w-full bg-[#ffb366]" />
+      <div ref={ref} className="fw-progress ax-gradient h-full w-full" />
     </div>
   );
 }
@@ -359,6 +358,38 @@ export function useLandingMotion(reduced: boolean) {
           { yPercent: 0, duration: 1, stagger: 0.08, ease: "power4.out", delay: 1.5 },
         );
       }
+
+      // 2b. Hero sub-elements: slide up 20px + fade, 100ms stagger (Axiom spec)
+      const heroEls = document.querySelectorAll("[data-ax-hero]");
+      if (heroEls.length) {
+        gsap.fromTo(
+          heroEls,
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            stagger: 0.1,
+            ease: "power3.out",
+            delay: 1.7,
+          },
+        );
+      }
+
+      // 2c. Generic scroll reveal: fade + slide up at 20% visible
+      gsap.utils.toArray<HTMLElement>("[data-ax-reveal]").forEach((el) => {
+        gsap.fromTo(
+          el,
+          { y: 24, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            scrollTrigger: { trigger: el, start: "top 80%" },
+          },
+        );
+      });
 
       // 3. Parallax on images inside .fw-parallax
       gsap.utils.toArray<HTMLElement>(".fw-parallax").forEach((img) => {
