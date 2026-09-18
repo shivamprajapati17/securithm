@@ -13,6 +13,12 @@ import {
   Wrench,
   Radar,
   Gauge,
+  Terminal,
+  Vault,
+  Github,
+  MessageCircle,
+  X as XIcon,
+  FileCheck,
 } from "lucide-react";
 import {
   Preloader,
@@ -72,6 +78,30 @@ const FEATURES = [
   },
 ];
 
+const ECOSYSTEM = [
+  {
+    icon: ScanLine,
+    title: "AuditAI Scan",
+    desc: "Paste source, point at a repo, or target a deployed address. Multi-engine analysis returns severity-tagged findings and AI-generated fixes in seconds.",
+    href: "/features",
+    cta: "Start a scan",
+  },
+  {
+    icon: Vault,
+    title: "AuditAI Monitor",
+    desc: "Continuous on-chain surveillance for deployed contracts — anomalous outflows, unknown callers and TVL drops alert your team in real time.",
+    href: "/dashboard/monitoring",
+    cta: "Watch contracts",
+  },
+  {
+    icon: Terminal,
+    title: "AuditAI Build",
+    desc: "Risk Score API, GitHub Action CI gating and SARIF reports. Wire security into your pipeline with one API key and a single workflow file.",
+    href: "/docs",
+    cta: "Read the docs",
+  },
+];
+
 const FAQS = [
   {
     q: "What exactly does AuditAI scan?",
@@ -98,15 +128,17 @@ const FAQS = [
 function SplitWords({
   text,
   className = "",
+  gradient = false,
 }: {
   text: string;
   className?: string;
+  gradient?: boolean;
 }) {
   return (
     <span className={className}>
       {text.split(" ").map((w, i) => (
         <span key={i} className="fw-mask mr-[0.28em] last:mr-0">
-          <span>{w}</span>
+          <span className={gradient ? "ax-gradient-text" : undefined}>{w}</span>
         </span>
       ))}
     </span>
@@ -116,14 +148,17 @@ function SplitWords({
 export default function Home() {
   const reduced = useReducedMotion();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [scrolled, setScrolled] = useState(false);
   const faqRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useLandingMotion(reduced);
 
-  // Remove the CRT scanline overlay on the landing page
+  // Nav glassmorphic state (> 50px per Axiom spec)
   useEffect(() => {
-    document.body.classList.add("no-scanlines");
-    return () => document.body.classList.remove("no-scanlines");
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const toggleFaq = (i: number) => {
@@ -154,20 +189,26 @@ export default function Home() {
       <ScrollProgress />
       <LandingBehaviors reduced={reduced} />
 
-      {/* ── HEADER ── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#140a05]/60 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* ── NAV — transparent → glassmorphic after 50px ── */}
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "ax-glass-nav"
+            : "border-b border-transparent bg-transparent"
+        }`}
+      >
+        <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#ffb366] text-[#1a0c05]">
-              <Shield className="h-4 w-4" strokeWidth={2.4} />
+            <span className="ax-gradient flex h-8 w-8 items-center justify-center rounded-[8px]">
+              <Shield className="h-4 w-4 text-white" strokeWidth={2.4} />
             </span>
-            <span className="text-sm font-semibold tracking-[0.18em] text-white">
+            <span className="font-[family-name:var(--font-display)] text-sm font-semibold tracking-[0.14em] text-[var(--color-ax-text)]">
               AUDITAI
             </span>
           </Link>
           <nav className="hidden items-center gap-8 md:flex">
             {[
-              ["Solutions", "/features"],
+              ["Ecosystem", "/features"],
               ["Whitepaper", "/whitepaper"],
               ["Solvency", "/solvency"],
               ["Docs", "/docs"],
@@ -175,7 +216,7 @@ export default function Home() {
               <Link
                 key={href}
                 href={href}
-                className="text-xs font-medium text-white/60 transition-colors hover:text-white"
+                className="text-sm text-[var(--color-ax-muted)] transition-colors duration-200 hover:text-white"
               >
                 {label}
               </Link>
@@ -184,122 +225,271 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
-              className="hidden text-xs font-medium text-white/60 transition-colors hover:text-white sm:block"
+              className="hidden text-sm text-[var(--color-ax-muted)] transition-colors duration-200 hover:text-white sm:block"
             >
               Log in
             </Link>
             <Link
-              href="/book-demo"
-              className="magnetic inline-flex items-center gap-1.5 rounded-sm bg-[#ffb366] px-4 py-2 text-xs font-semibold text-[#1a0c05] transition-colors hover:bg-[#ffc68f]"
+              href="/dashboard"
+              className="ax-press inline-flex h-10 items-center gap-1.5 rounded-[12px] bg-[var(--color-ax-primary)] px-4 text-sm font-medium text-white transition-all duration-200 hover:bg-[#9b5de5] hover:ax-glow"
             >
-              Book a demo
-              <ArrowUpRight className="h-3.5 w-3.5" />
+              Launch App
+              <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </header>
 
       <main className="relative z-10">
-        {/* ── SECTION 1 · HERO ── */}
-        <section className="relative px-4 pt-36 sm:px-6 lg:px-8">
+        {/* ── SECTION 1 · HERO — glowing orb + reveal on load ── */}
+        <section className="relative overflow-hidden px-6 pt-40 pb-24">
+          {/* Glowing orb: layered radial gradients in accent colors */}
+          <div className="pointer-events-none absolute inset-0 -z-[1]" aria-hidden>
+            <div
+              className="absolute left-1/2 top-[-220px] h-[560px] w-[820px] -translate-x-1/2 rounded-full opacity-40 blur-[120px]"
+              style={{
+                background:
+                  "radial-gradient(ellipse at center, rgba(131,56,236,0.55) 0%, rgba(58,134,255,0.25) 45%, transparent 70%)",
+              }}
+            />
+            <div
+              className="absolute right-[8%] top-[30%] h-[300px] w-[300px] rounded-full opacity-25 blur-[90px]"
+              style={{
+                background:
+                  "radial-gradient(circle at center, rgba(58,134,255,0.5) 0%, transparent 70%)",
+              }}
+            />
+          </div>
+
           <div className="mx-auto max-w-4xl text-center">
-            <p className="fw-mono mb-6 text-[11px] uppercase tracking-[0.35em] text-white/50">
+            <p
+              data-ax-hero
+              className="fw-mono mb-6 text-xs uppercase tracking-[0.3em] text-[var(--color-ax-muted)]"
+            >
               AI-powered smart contract security
             </p>
             <h1
               data-hero-split
-              className="text-balance text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl"
+              className="text-balance font-[family-name:var(--font-display)] text-4xl font-bold leading-[1.1] tracking-tight text-[var(--color-ax-text)] sm:text-5xl lg:text-[64px] lg:leading-[1.12]"
             >
-              <SplitWords text="Your intelligent" />{"\u00A0"}
-              <SplitWords
-                text="smart contract auditor"
-                className="text-[#ffb366]"
-              />
+              <SplitWords text="The next-generation" />{" "}
+              <SplitWords text="security protocol" gradient />{" "}
+              <SplitWords text="for on-chain value" />
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-pretty text-sm leading-relaxed text-white/60 sm:text-base">
-              Paste your code, a deployed address, or connect your repo. Get
-              severity-tagged findings, AI fix suggestions and a risk score —
-              before the hackers find the bugs.
+            <p
+              data-ax-hero
+              className="mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-[var(--color-ax-muted)]"
+            >
+              Blistering scan speeds, absolute precision, and continuous
+              monitoring — institutional-grade analysis powered by AI, for
+              every contract you ship.
             </p>
 
-            {/* Stat readouts */}
-            <div className="fw-mono mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[11px] uppercase tracking-widest text-white/50">
-              <span>
-                <span className="text-[#ffb366]">$3.8B</span> lost to exploits
-              </span>
-              <span>
-                <span className="text-[#ffb366]">&lt;30s</span> per scan
-              </span>
-              <span>
-                <span className="text-[#ffb366]">98.2%</span> precision
-              </span>
-              <span>
-                <span className="text-[#ffb366]">6</span> chains
-              </span>
+            <div
+              data-ax-hero
+              className="mt-10 flex flex-wrap items-center justify-center gap-4"
+            >
+              <Link
+                href="/dashboard"
+                className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] bg-[var(--color-ax-primary)] px-7 text-base font-medium text-white transition-all duration-200 hover:bg-[#9b5de5] hover:ax-glow"
+              >
+                Launch App
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/docs"
+                className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] border border-[var(--color-ax-border)] bg-transparent px-7 text-base font-medium text-[var(--color-ax-text)] transition-all duration-200 hover:border-[var(--color-ax-muted)] hover:bg-white/5"
+              >
+                Read Docs
+              </Link>
             </div>
 
-            {/* Working scan input */}
-            <div className="mx-auto mt-10 max-w-2xl [&_input]:bg-white/5 [&_input]:text-white [&_input]:placeholder:text-white/40 [&_button]:bg-[#ffb366] [&_button]:text-[#1a0c05] [&_button]:hover:bg-[#ffc68f] [&_*]:border-white/15 [&_*]:font-manrope">
+            {/* Working scan input — reach core action in 1 click */}
+            <div
+              data-ax-hero
+              className="mx-auto mt-12 max-w-2xl [&_input]:bg-white/5 [&_input]:text-white [&_input]:placeholder:text-[var(--color-ax-muted)] [&_button]:bg-[var(--color-ax-primary)] [&_button]:text-white [&_button]:hover:bg-[#9b5de5] [&_*]:border-[var(--color-ax-border)]"
+            >
               <ScanInput variant="hero" redirectToDemo />
             </div>
-            <p className="fw-mono mt-4 text-[10px] uppercase tracking-widest text-white/40">
+            <p
+              data-ax-hero
+              className="fw-mono mt-4 text-[11px] uppercase tracking-widest text-[var(--color-ax-muted)]"
+            >
               No signup required for basic scan
             </p>
           </div>
+        </section>
 
-          {/* Viewfinder mock */}
-          <div className="relative mx-auto mt-16 max-w-5xl">
-            <div className="fw-focus-frame relative overflow-hidden rounded-lg border border-white/10">
-              <video
-                data-loop-in-view
-                className="aspect-video w-full object-cover"
-                poster="/fw/hero-poster.jpg"
-                src={HERO_VIDEO}
-                muted
-                playsInline
-                preload="metadata"
-                loop
-              />
-              {/* Viewfinder overlay chrome */}
-              <div className="pointer-events-none absolute inset-0">
-                <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-[#ffb366]/80" />
-                <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-[#ffb366]/80" />
-                <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-[#ffb366]/80" />
-                <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-[#ffb366]/80" />
-                <div className="fw-mono absolute left-1/2 top-5 -translate-x-1/2 text-[10px] uppercase tracking-[0.3em] text-white/70">
-                  REC · LIVE SCAN
+        {/* ── SECTION 2 · PERFORMANCE METRICS BAR ── */}
+        <section className="relative z-10 border-y border-[var(--color-ax-border)] bg-[var(--color-ax-surface)]/80 py-10 backdrop-blur-sm">
+          <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-8 px-6 sm:grid-cols-3">
+            {[
+              { v: "10,000+", l: "Scans per hour" },
+              { v: "<30s", l: "Average scan time" },
+              { v: "98.2%", l: "Detection precision" },
+            ].map((m) => (
+              <div
+                key={m.l}
+                data-ax-reveal
+                className="text-center"
+              >
+                <div className="fw-mono tnum text-3xl font-medium text-white sm:text-4xl">
+                  <span className="ax-gradient-text">{m.v}</span>
+                </div>
+                <div className="mt-2 text-sm text-[var(--color-ax-muted)]">
+                  {m.l}
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
+        </section>
 
-            {/* Floating guidance card */}
-            <div className="fw-float absolute -bottom-6 left-4 hidden rounded-md border border-white/10 bg-[#1d1006]/90 p-4 shadow-2xl backdrop-blur-md sm:block lg:left-10">
-              <p className="fw-mono text-[10px] uppercase tracking-widest text-white/50">
-                Guidance
-              </p>
-              <p className="mt-1.5 text-xs leading-relaxed text-white">
-                Reentrancy found in{" "}
-                <span className="fw-mono text-[#ffb366]">withdraw()</span>
-              </p>
-              <p className="mt-1 text-[11px] text-white/60">
-                Fix suggestion ready · severity: high
-              </p>
+        {/* ── SECTION 3 · CORE ECOSYSTEM — 3-column glass grid ── */}
+        <section id="ecosystem" className="relative px-6 py-24">
+          <div className="mx-auto max-w-[1280px]">
+            <p className="fw-mono mb-4 text-xs uppercase tracking-[0.3em] text-[var(--color-ax-primary)]">
+              Core ecosystem
+            </p>
+            <h2
+              data-split
+              className="max-w-2xl text-balance font-[family-name:var(--font-display)] text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-[40px] sm:leading-[1.2]"
+            >
+              <SplitWords text="One protocol for the" />{" "}
+              <SplitWords text="full security lifecycle" />
+            </h2>
+
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {ECOSYSTEM.map((card) => (
+                <div
+                  key={card.title}
+                  data-ax-reveal
+                  className="ax-glass group relative flex flex-col p-8 transition-colors duration-200 hover:border-[var(--color-ax-primary)]/40"
+                >
+                  <div className="ax-gradient flex h-12 w-12 items-center justify-center rounded-[12px]">
+                    <card.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <h3 className="mt-6 font-[family-name:var(--font-display)] text-xl font-semibold text-white">
+                    {card.title}
+                  </h3>
+                  <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--color-ax-muted)]">
+                    {card.desc}
+                  </p>
+                  <Link
+                    href={card.href}
+                    data-cursor="Explore"
+                    className="fw-mono mt-8 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[var(--color-ax-glow)] transition-colors hover:text-white"
+                  >
+                    {card.cta}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ── SECTION 2 · MARQUEE ── */}
-        <section className="relative z-10 mt-24 overflow-hidden border-y border-white/5 py-5">
+        {/* ── SECTION 4 · DEVELOPER QUICKSTART — split screen ── */}
+        <section className="relative border-y border-[var(--color-ax-border)] px-6 py-24">
+          <div className="mx-auto grid max-w-[1280px] items-center gap-12 lg:grid-cols-2">
+            <div data-ax-reveal>
+              <p className="fw-mono mb-4 text-xs uppercase tracking-[0.3em] text-[var(--color-ax-primary)]">
+                Developer quickstart
+              </p>
+              <h2 className="text-balance font-[family-name:var(--font-display)] text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-[40px] sm:leading-[1.2]">
+                Build without{" "}
+                <span className="ax-gradient-text">vulnerabilities</span>
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-relaxed text-[var(--color-ax-muted)]">
+                One CLI. One API key. One GitHub Action. AuditAI plugs into the
+                tools you already use and returns findings where you work —
+                your terminal, your PRs, your Security tab.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Link
+                  href="/docs"
+                  className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] bg-[var(--color-ax-primary)] px-6 text-sm font-medium text-white transition-all duration-200 hover:bg-[#9b5de5] hover:ax-glow"
+                >
+                  Open the docs
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="/dashboard/api-console"
+                  className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] border border-[var(--color-ax-border)] px-6 text-sm font-medium text-white transition-all duration-200 hover:border-[var(--color-ax-muted)] hover:bg-white/5"
+                >
+                  Try the API
+                </Link>
+              </div>
+            </div>
+
+            {/* Mock terminal — Mac dots + syntax-highlighted snippet */}
+            <div data-ax-reveal>
+              <div className="overflow-hidden rounded-[16px] border border-[rgba(255,255,255,0.08)] bg-[#08080d] shadow-[0_0_40px_rgba(131,56,236,0.12)]">
+                <div className="flex items-center gap-2 border-b border-[var(--color-ax-border)] px-4 py-3">
+                  <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+                  <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+                  <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+                  <span className="fw-mono ml-3 text-[11px] text-[var(--color-ax-muted)]">
+                    quickstart — zsh
+                  </span>
+                </div>
+                <pre className="fw-mono overflow-x-auto border-0 bg-transparent p-5 text-[13px] leading-7">
+                  <code>
+                    <span className="text-[var(--color-ax-muted)]">$</span>{" "}
+                    <span className="text-white">npm install</span>{" "}
+                    <span className="text-[#7cb0ff]">auditai</span>
+                    {"\n"}
+                    <span className="text-[var(--color-ax-muted)]">$</span>{" "}
+                    <span className="text-white">npx auditai init</span>{" "}
+                    <span className="text-[#c792ea]">--network</span>{" "}
+                    <span className="text-[#3dd68c]">monad</span>
+                    {"\n"}
+                    <span className="text-[var(--color-ax-muted)]">$</span>{" "}
+                    <span className="text-white">auditai scan</span>{" "}
+                    <span className="text-[#c792ea]">./contracts</span>
+                    {"\n\n"}
+                    <span className="text-[var(--color-ax-muted)]">
+                      ✔ 3 engines completed in{" "}
+                    </span>
+                    <span className="text-[#3dd68c]">18.4s</span>
+                    {"\n"}
+                    <span className="text-[var(--color-ax-muted)]">
+                      ├ 2 critical · 1 high · 0 medium
+                    </span>
+                    {"\n"}
+                    <span className="text-[var(--color-ax-muted)]">
+                      ├ fixes generated:{" "}
+                    </span>
+                    <span className="text-[#7cb0ff]">3 / 3</span>
+                    {"\n"}
+                    <span className="text-[var(--color-ax-muted)]">
+                      └ risk grade:{" "}
+                    </span>
+                    <span className="text-[#ff4d6d]">F</span>
+                    <span className="text-[var(--color-ax-muted)]"> → </span>
+                    <span className="text-[#3dd68c]">A</span>
+                    <span className="text-[var(--color-ax-muted)]">
+                      {" "}
+                      (after fixes)
+                    </span>
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── MARQUEE ── */}
+        <section className="relative z-10 overflow-hidden border-b border-[var(--color-ax-border)] py-5">
           <div className="fw-marquee-track">
             {[0, 1].map((half) => (
               <div key={half} className="flex shrink-0 items-center">
                 {MARQUEE_ITEMS.map((item) => (
                   <span
                     key={`${half}-${item}`}
-                    className="fw-mono flex items-center whitespace-nowrap text-sm uppercase tracking-[0.25em] text-white/50"
+                    className="fw-mono flex items-center whitespace-nowrap text-sm uppercase tracking-[0.25em] text-[var(--color-ax-muted)]"
                   >
                     <span className="px-6">{item}</span>
-                    <span className="text-[#ffb366]">✦</span>
+                    <span className="text-[var(--color-ax-primary)]">✦</span>
                   </span>
                 ))}
               </div>
@@ -307,143 +497,17 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── SECTION 3 · SOLUTIONS (bento) ── */}
-        <section id="solutions" className="relative px-4 py-24 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <p className="fw-mono mb-4 text-[11px] uppercase tracking-[0.35em] text-[#ffb366]">
-              Solutions
-            </p>
-            <h2
-              data-split
-              className="max-w-2xl text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-white sm:text-4xl"
-            >
-              <SplitWords text="One engine for the" />{" "}
-              <SplitWords text="full security lifecycle" />
-            </h2>
-
-            {/* Top row — 1.65fr / 0.75fr */}
-            <div className="mt-12 grid gap-4 lg:grid-cols-[1.65fr_0.75fr]">
-              <div className="fw-tilt group relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.02]">
-                <div className="grid h-full lg:grid-cols-[1.35fr_0.65fr]">
-                  <div className="flex flex-col justify-between p-8">
-                    <div>
-                      <h3 className="text-xl font-semibold text-white">
-                        Multi-engine analysis
-                      </h3>
-                      <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">
-                        500+ static rules, a Z3 symbolic solver and a
-                        security-tuned LLM cross-check every finding — so you
-                        see real vulnerabilities, not noise.
-                      </p>
-                    </div>
-                    <Link
-                      href="/features"
-                      data-cursor="Explore"
-                      className="fw-mono mt-8 inline-flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#ffb366]"
-                    >
-                      Explore the engines
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                  <div className="fw-img-hover relative min-h-56 overflow-hidden">
-                    <img
-                      src="/fw/feat-1.jpg"
-                      alt="Analysis engines"
-                      className="fw-parallax absolute inset-0 h-[114%] w-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="fw-tilt flex flex-col justify-between rounded-lg border border-white/10 bg-white/[0.02] p-8">
-                <div>
-                  <p className="fw-mono text-[10px] uppercase tracking-widest text-white/50">
-                    Live readout
-                  </p>
-                  <div className="fw-mono mt-5 space-y-4 text-xs">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                      <span className="text-white/50">STATIC RULES</span>
-                      <span className="text-[#ffb366]">500+</span>
-                    </div>
-                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                      <span className="text-white/50">SYMBOLIC SOLVER</span>
-                      <span className="text-[#ffb366]">Z3</span>
-                    </div>
-                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                      <span className="text-white/50">SCAN TIME</span>
-                      <span className="text-[#ffb366]">&lt;30S</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/50">PRECISION</span>
-                      <span className="text-[#ffb366]">98.2%</span>
-                    </div>
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard/api-console"
-                  data-cursor="Explore"
-                  className="fw-mono mt-8 inline-flex items-center gap-2 text-[11px] uppercase tracking-widest text-[#ffb366]"
-                >
-                  Risk Score API
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Second row */}
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
-              <div className="fw-tilt relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] p-8">
-                <h3 className="text-lg font-semibold text-white">
-                  CI/CD gating
-                </h3>
-                <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">
-                  A GitHub Action on every push and PR. Inline comments,
-                  severity thresholds that fail the build, SARIF reports in
-                  your Security tab.
-                </p>
-                <div className="fw-mono mt-6 flex flex-wrap gap-2 text-[10px] uppercase tracking-widest text-white/50">
-                  {["GitHub Action", "SARIF", "Inline comments", "Severity gates"].map(
-                    (t) => (
-                      <span
-                        key={t}
-                        className="rounded-sm border border-white/10 px-2.5 py-1"
-                      >
-                        {t}
-                      </span>
-                    ),
-                  )}
-                </div>
-              </div>
-              <div className="fw-tilt relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] p-8">
-                <h3 className="text-lg font-semibold text-white">
-                  Continuous monitoring
-                </h3>
-                <p className="mt-3 max-w-md text-sm leading-relaxed text-white/60">
-                  Deployed contracts watched around the clock — large outflows,
-                  unknown callers and TVL drops trigger alerts in seconds.
-                </p>
-                <div className="fw-mono mt-6 flex items-center gap-2 text-[10px] uppercase tracking-widest">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ffb366]" />
-                  <span className="text-white/60">
-                    Watching · Lending Pool · USDC Vault
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SECTION 4 · FEATURES (toolkit) ── */}
-        <section className="relative px-4 py-16 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
+        {/* ── FEATURE TOOLKIT (staggered glass cards) ── */}
+        <section className="relative px-6 py-24">
+          <div className="mx-auto max-w-[1280px]">
             <div className="flex flex-wrap items-end justify-between gap-6">
               <div>
-                <p className="fw-mono mb-4 text-[11px] uppercase tracking-[0.35em] text-[#ffb366]">
+                <p className="fw-mono mb-4 text-xs uppercase tracking-[0.3em] text-[var(--color-ax-primary)]">
                   The toolkit
                 </p>
                 <h2
                   data-split
-                  className="max-w-xl text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-white sm:text-4xl"
+                  className="max-w-xl text-balance font-[family-name:var(--font-display)] text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-[40px] sm:leading-[1.2]"
                 >
                   <SplitWords text="Everything between" />{" "}
                   <SplitWords text="code and mainnet" />
@@ -451,20 +515,21 @@ export default function Home() {
               </div>
               <Link
                 href="/features"
-                className="fw-mono inline-flex items-center gap-2 text-[11px] uppercase tracking-widest text-white/60 transition-colors hover:text-[#ffb366]"
+                className="fw-mono inline-flex items-center gap-2 text-xs uppercase tracking-widest text-[var(--color-ax-muted)] transition-colors hover:text-white"
               >
                 All capabilities
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 
-            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {FEATURES.map((f) => (
                 <Link
                   key={f.title}
                   href="/features"
                   data-cursor={f.cursor}
-                  className={`fw-img-hover group relative block overflow-hidden rounded-lg border border-white/10 bg-white/[0.02] transition-colors hover:border-[#ffb366]/40 ${f.offset ?? ""}`}
+                  data-ax-reveal
+                  className={`ax-glass fw-img-hover group relative block overflow-hidden rounded-[16px]! transition-colors duration-200 hover:border-[var(--color-ax-primary)]/40 ${f.offset ?? ""}`}
                 >
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
@@ -472,14 +537,16 @@ export default function Home() {
                       alt={f.title}
                       className="fw-parallax absolute inset-0 h-[114%] w-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#140a05] via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-transparent to-transparent" />
                   </div>
-                  <div className="p-5">
-                    <f.icon className="h-4 w-4 text-[#ffb366]" />
-                    <h3 className="mt-3 text-sm font-semibold text-white">
+                  <div className="p-6">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[var(--color-ax-primary)]/15">
+                      <f.icon className="h-4 w-4 text-[#a56bff]" />
+                    </div>
+                    <h3 className="mt-4 font-[family-name:var(--font-display)] text-base font-semibold text-white">
                       {f.title}
                     </h3>
-                    <p className="mt-2 text-xs leading-relaxed text-white/60">
+                    <p className="mt-2 text-sm leading-relaxed text-[var(--color-ax-muted)]">
                       {f.desc}
                     </p>
                   </div>
@@ -490,8 +557,8 @@ export default function Home() {
         </section>
 
         {/* ── WORKFLOW STRIP ── */}
-        <section className="relative px-4 py-12 sm:px-6 lg:px-8">
-          <div className="fw-mono mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[10px] uppercase tracking-widest text-white/40">
+        <section className="relative px-6 py-8">
+          <div className="fw-mono mx-auto flex max-w-[1280px] flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[11px] uppercase tracking-widest text-[var(--color-ax-muted)]">
             {[
               "Input",
               "Parse",
@@ -504,39 +571,41 @@ export default function Home() {
             ].map((step, i, arr) => (
               <span key={step} className="flex items-center gap-3">
                 <span>{step}</span>
-                {i < arr.length - 1 && <span className="text-[#ffb366]">→</span>}
+                {i < arr.length - 1 && (
+                  <span className="text-[var(--color-ax-primary)]">→</span>
+                )}
               </span>
             ))}
           </div>
         </section>
 
         {/* ── SECTION 5 · FAQ ── */}
-        <section className="relative px-4 py-20 sm:px-6 lg:px-8">
+        <section className="relative px-6 py-20">
           <div className="mx-auto max-w-3xl">
-            <p className="fw-mono mb-4 text-center text-[11px] uppercase tracking-[0.35em] text-[#ffb366]">
+            <p className="fw-mono mb-4 text-center text-xs uppercase tracking-[0.3em] text-[var(--color-ax-primary)]">
               FAQ
             </p>
             <h2
               data-split
-              className="text-center text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              className="text-center font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-white sm:text-[40px]"
             >
               <SplitWords text="Questions, answered" />
             </h2>
 
-            <div className="mt-12 divide-y divide-white/5 border-y border-white/5">
+            <div className="mt-12 divide-y divide-[var(--color-ax-border)] rounded-[24px] border border-[var(--color-ax-border)] bg-[var(--color-ax-surface)]/50 px-8">
               {FAQS.map((faq, i) => {
                 const open = openFaq === i;
                 return (
                   <div key={i}>
                     <button
                       onClick={() => toggleFaq(i)}
-                      className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                      className="flex w-full items-center justify-between gap-6 py-6 text-left"
                       aria-expanded={open}
                     >
-                      <span className="text-sm font-medium text-white sm:text-base">
+                      <span className="text-base font-medium text-white">
                         {faq.q}
                       </span>
-                      <span className="shrink-0 text-[#ffb366]">
+                      <span className="shrink-0 text-[#a56bff]">
                         {open ? (
                           <Minus className="h-4 w-4" />
                         ) : (
@@ -551,7 +620,7 @@ export default function Home() {
                       className="fw-faq-content"
                       style={{ height: open && reduced ? "auto" : undefined }}
                     >
-                      <p className="pb-6 pr-10 text-sm leading-relaxed text-white/60">
+                      <p className="pb-6 pr-10 text-sm leading-relaxed text-[var(--color-ax-muted)]">
                         {faq.a}
                       </p>
                     </div>
@@ -563,28 +632,39 @@ export default function Home() {
         </section>
 
         {/* ── CTA ── */}
-        <section className="relative px-4 py-24 text-center sm:px-6 lg:px-8">
+        <section className="relative px-6 py-24 text-center">
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-[1] h-[360px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-25 blur-[110px]"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, rgba(131,56,236,0.5) 0%, rgba(58,134,255,0.2) 50%, transparent 70%)",
+            }}
+            aria-hidden
+          />
           <h2
             data-split
-            className="mx-auto max-w-2xl text-balance text-3xl font-semibold leading-[1.12] tracking-tight text-white sm:text-5xl"
+            className="mx-auto max-w-2xl text-balance font-[family-name:var(--font-display)] text-4xl font-semibold leading-[1.12] tracking-tight text-white sm:text-[56px] sm:leading-[1.15]"
           >
             <SplitWords text="Ship secure contracts." />
           </h2>
-          <p className="mx-auto mt-5 max-w-md text-sm text-white/60">
+          <p
+            data-ax-hero
+            className="mx-auto mt-5 max-w-md text-base text-[var(--color-ax-muted)]"
+          >
             Run your first scan free — no credit card, no signup. Upgrade when
             your contracts go live.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/auth/register"
-              className="magnetic inline-flex items-center gap-2 rounded-sm bg-[#ffb366] px-7 py-3.5 text-sm font-semibold text-[#1a0c05] transition-colors hover:bg-[#ffc68f]"
+              className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] bg-[var(--color-ax-primary)] px-7 text-base font-medium text-white transition-all duration-200 hover:bg-[#9b5de5] hover:ax-glow"
             >
               Start scanning free
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/whitepaper"
-              className="magnetic inline-flex items-center gap-2 rounded-sm border border-white/15 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:border-[#ffb366]/60 hover:text-[#ffb366]"
+              className="ax-press inline-flex h-12 items-center gap-2 rounded-[12px] border border-[var(--color-ax-border)] px-7 text-base font-medium text-white transition-all duration-200 hover:border-[var(--color-ax-muted)] hover:bg-white/5"
             >
               Read the whitepaper
             </Link>
@@ -592,22 +672,38 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ── FOOTER (all pages un-hidden) ── */}
-      <footer className="relative z-10 border-t border-white/5 px-4 py-14 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      {/* ── SECTION 5 · FOOTER ── */}
+      <footer className="relative z-10 border-t border-[var(--color-ax-border)] px-6 py-14">
+        <div className="mx-auto grid max-w-[1280px] gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-[#ffb366] text-[#1a0c05]">
-                <Shield className="h-4 w-4" strokeWidth={2.4} />
+              <span className="ax-gradient flex h-8 w-8 items-center justify-center rounded-[8px]">
+                <Shield className="h-4 w-4 text-white" strokeWidth={2.4} />
               </span>
-              <span className="text-sm font-semibold tracking-[0.18em] text-white">
+              <span className="font-[family-name:var(--font-display)] text-sm font-semibold tracking-[0.14em] text-white">
                 AUDITAI
               </span>
             </div>
-            <p className="mt-4 max-w-xs text-xs leading-relaxed text-white/50">
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--color-ax-muted)]">
               AI-powered smart contract security analysis. Find bugs before
               they find your users.
             </p>
+            <div className="mt-6 flex items-center gap-3">
+              {[
+                { icon: MessageCircle, href: "/book-demo", label: "Discord" },
+                { icon: XIcon, href: "/book-demo", label: "X" },
+                { icon: Github, href: "/docs", label: "GitHub" },
+              ].map((s) => (
+                <Link
+                  key={s.label}
+                  href={s.href}
+                  aria-label={s.label}
+                  className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[var(--color-ax-border)] text-[var(--color-ax-muted)] transition-colors duration-200 hover:border-[var(--color-ax-primary)]/50 hover:text-white"
+                >
+                  <s.icon className="h-4 w-4" />
+                </Link>
+              ))}
+            </div>
           </div>
           {[
             {
@@ -634,19 +730,20 @@ export default function Home() {
                 ["SOC 2", "/soc2"],
                 ["Terms", "/terms"],
                 ["Privacy", "/privacy"],
+                ["Audit reports", "/whitepaper"],
               ],
             },
           ].map((col) => (
             <div key={col.head}>
-              <p className="fw-mono text-[10px] uppercase tracking-widest text-white/40">
+              <p className="fw-mono text-[11px] uppercase tracking-widest text-[var(--color-ax-muted)]">
                 {col.head}
               </p>
-              <ul className="mt-4 space-y-2.5">
+              <ul className="mt-4 space-y-3">
                 {col.links.map(([label, href]) => (
                   <li key={href}>
                     <Link
                       href={href}
-                      className="text-xs text-white/60 transition-colors hover:text-[#ffb366]"
+                      className="text-sm text-[var(--color-ax-muted)] transition-colors duration-200 hover:text-white"
                     >
                       {label}
                     </Link>
@@ -656,9 +753,12 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="fw-mono mx-auto mt-12 flex max-w-7xl items-center justify-between border-t border-white/5 pt-6 text-[10px] uppercase tracking-widest text-white/40">
+        <div className="fw-mono mx-auto mt-12 flex max-w-[1280px] items-center justify-between border-t border-[var(--color-ax-border)] pt-6 text-[11px] uppercase tracking-widest text-[var(--color-ax-muted)]">
           <span>© 2026 AuditAI</span>
-          <span>All contracts monitored · All frames secured</span>
+          <span className="flex items-center gap-2">
+            <FileCheck className="h-3.5 w-3.5" />
+            Audited · Monitored · Secured
+          </span>
         </div>
       </footer>
     </div>

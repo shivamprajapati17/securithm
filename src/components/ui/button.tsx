@@ -4,28 +4,27 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 font-mono border",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ax-primary)]/50 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98] rounded-[12px]",
   {
     variants: {
       variant: {
         default:
-          "border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] active:opacity-80 uppercase tracking-wider",
+          "bg-[var(--color-ax-primary)] text-white border border-transparent hover:bg-[#9b5de5] hover:ax-glow",
         destructive:
-          "border-[var(--color-term-error)] text-[var(--color-term-error)] bg-transparent hover:bg-[var(--color-term-error)] hover:text-[var(--color-term-bg)] uppercase tracking-wider",
+          "bg-[var(--color-severity-critical)] text-white border border-transparent hover:brightness-110",
         outline:
-          "border-[var(--color-term-border)] text-[var(--color-term-fg)] bg-transparent hover:border-[var(--color-term-fg)] uppercase tracking-wider",
+          "bg-transparent border border-[var(--color-ax-border)] text-[var(--color-ax-text)] hover:bg-white/5 hover:border-[var(--color-ax-muted)]",
         secondary:
-          "border-[var(--color-term-border)] text-[var(--color-term-secondary)] bg-transparent hover:bg-[var(--color-term-secondary)] hover:text-[var(--color-term-bg)] uppercase tracking-wider",
+          "bg-[var(--color-ax-glow)]/10 text-[var(--color-ax-glow)] border border-[var(--color-ax-glow)]/30 hover:bg-[var(--color-ax-glow)]/20",
         ghost:
-          "border-transparent text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-dim)] hover:border-[var(--color-term-border)]",
-        link:
-          "border-none text-[var(--color-term-fg)] underline underline-offset-4 hover:bg-transparent hover:text-[var(--color-term-secondary)]",
+          "border-transparent text-[var(--color-ax-text)] bg-transparent hover:bg-white/5",
+        link: "border-none text-[var(--color-ax-glow)] underline underline-offset-4 hover:bg-transparent hover:text-[#7cb0ff]",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 px-3 text-xs",
-        lg: "h-12 px-6 text-base",
-        xl: "h-14 px-8 text-lg",
+        default: "h-12 px-5",
+        sm: "h-9 px-3 text-xs rounded-[8px]",
+        lg: "h-14 px-7 text-base",
+        xl: "h-14 px-8 text-base",
         icon: "h-10 w-10 p-0",
       },
     },

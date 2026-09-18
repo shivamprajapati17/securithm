@@ -1,143 +1,54 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   TERMINAL CLI DESIGN SYSTEM — AuditAI
-   "Brutally functional, high-contrast, authentic"
+   AXIOM PROTOCOL DESIGN SYSTEM — AuditAI
+   "Cyber-Minimalist Web3"
+   Deep void backgrounds · Monad purple · Electric blue
    ═══════════════════════════════════════════════ */
 
 @theme {
-  /* ── Terminal Color Palette (Dark Mode Only) ── */
-  --color-term-bg: #0a0a0a;
-  --color-term-fg: #33ff00;
-  --color-term-secondary: #ffb000;
-  --color-term-muted: #1f521f;
-  --color-term-accent: #33ff00;
-  --color-term-error: #ff3333;
-  --color-term-warning: #ffb000;
-  --color-term-medium: #e6c000;
-  --color-term-border: #1f521f;
-  --color-term-dim: #0d2e0d;
+  /* ── Axiom Core Palette ── */
+  --color-ax-base: #0a0a0f;
+  --color-ax-surface: #13141c;
+  --color-ax-primary: #8338ec;
+  --color-ax-primary-hover: #9b5de5;
+  --color-ax-glow: #3a86ff;
+  --color-ax-text: #f8f9fa;
+  --color-ax-muted: #8b92a5;
+  --color-ax-border: #1f2233;
 
-  /* Severity (terminal-adapted) */
-  --color-severity-critical: #ff3333;
-  --color-severity-high: #ffb000;
-  --color-severity-medium: #e6c000;
-  --color-severity-low: #33aaff;
-  --color-severity-info: #1f521f;
+  /* ── Legacy token bridge (term-* used across dashboard/pages) ──
+     Remapped to the Axiom palette so the whole app re-themes at once. */
+  --color-term-bg: #0a0a0f;
+  --color-term-fg: #f8f9fa;
+  --color-term-secondary: #8338ec;
+  --color-term-muted: #8b92a5;
+  --color-term-accent: #8338ec;
+  --color-term-error: #ff4d6d;
+  --color-term-warning: #ffb020;
+  --color-term-medium: #ffd166;
+  --color-term-border: #1f2233;
+  --color-term-dim: #13141c;
 
-  /* Risk grades (terminal-adapted) */
-  --color-risk-a: #33ff00;
-  --color-risk-b: #66ff33;
-  --color-risk-c: #e6c000;
-  --color-risk-d: #ffb000;
-  --color-risk-e: #ff6600;
-  --color-risk-f: #ff3333;
+  /* Severity */
+  --color-severity-critical: #ff4d6d;
+  --color-severity-high: #ffb020;
+  --color-severity-medium: #ffd166;
+  --color-severity-low: #3a86ff;
+  --color-severity-info: #8b92a5;
 
-  /* Monospace as the only font */
-  --font-mono: "JetBrains Mono", "Fira Code", "VT323", "Consolas", "Courier New", monospace;
-  --font-sans: "JetBrains Mono", "Fira Code", "VT323", "Consolas", "Courier New", monospace;
+  /* Risk grades */
+  --color-risk-a: #3dd68c;
+  --color-risk-b: #7ee2a8;
+
+  /* ── Typography ── */
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", monospace;
 }
 
-/* ── CRT Scanline Overlay ── */
-.scanlines::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 9999;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.08) 2px,
-    rgba(0, 0, 0, 0.08) 4px
-  );
-}
-
-/* ── CRT Phosphor Glow ── */
-.term-glow {
-  text-shadow: 0 0 5px rgba(51, 255, 0, 0.5), 0 0 10px rgba(51, 255, 0, 0.2);
-}
-
-.term-glow-amber {
-  text-shadow: 0 0 5px rgba(255, 176, 0, 0.5), 0 0 10px rgba(255, 176, 0, 0.2);
-}
-
-.term-glow-error {
-  text-shadow: 0 0 5px rgba(255, 51, 51, 0.5), 0 0 10px rgba(255, 51, 51, 0.2);
-}
-
-/* ── Animations ── */
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-@keyframes blink-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-@keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-@keyframes glitch {
-  0% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(2px, -1px); }
-  60% { transform: translate(-1px, 1px); }
-  80% { transform: translate(1px, -2px); }
-  100% { transform: translate(0); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px rgba(51, 255, 0, 0.2); }
-  50% { box-shadow: 0 0 15px rgba(51, 255, 0, 0.5); }
-}
-
-@keyframes scanline-scroll {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-.animate-blink {
-  animation: blink 1s step-end infinite;
-}
-
-.animate-blink-cursor {
-  animation: blink-cursor 1s step-end infinite;
-}
-
-.animate-typewriter {
-  overflow: hidden;
-  white-space: nowrap;
-  animation: typewriter 2s steps(40) forwards;
-}
-
-.animate-glitch:hover {
-  animation: glitch 0.3s ease-in-out;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* ── Base Styles ── */
-
+/* ── Base ── */
 @layer base {
-  * {
-    /* No rounded corners — ever */
-    border-radius: 0 !important;
-    /* Monospace everywhere */
-    font-family: var(--font-mono);
-  }
-
   *,
   *::before,
   *::after {
@@ -147,234 +58,322 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-term-bg);
-    color: var(--color-term-fg);
-    font-family: var(--font-mono);
-    font-size: 14px;
+    background-color: var(--color-ax-base);
+    color: var(--color-ax-text);
+    font-family: var(--font-sans);
+    font-size: 16px;
     line-height: 1.5;
-    text-shadow: 0 0 5px rgba(51, 255, 0, 0.3);
     min-height: 100vh;
   }
 
-  /* Selection highlight */
+  /* Display headings — Space Grotesk, no forced uppercase */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* Financial / tabular data */
+  .font-mono,
+  code,
+  pre,
+  kbd {
+    font-family: var(--font-mono);
+  }
+  .tnum,
+  table,
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+
   ::selection {
-    background: var(--color-term-fg);
-    color: var(--color-term-bg);
+    background: var(--color-ax-primary);
+    color: #fff;
   }
 
-  /* Scrollbar styling */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
-
   ::-webkit-scrollbar-track {
-    background: var(--color-term-bg);
+    background: var(--color-ax-base);
   }
-
   ::-webkit-scrollbar-thumb {
-    background: var(--color-term-muted);
-    border: 1px solid var(--color-term-border);
+    background: #262a3d;
+    border-radius: 8px;
+    border: 2px solid var(--color-ax-base);
   }
-
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-term-fg);
+    background: #3a3f58;
   }
 
-  /* Focus styles */
   :focus-visible {
-    outline: 1px solid var(--color-term-fg);
+    outline: 2px solid var(--color-ax-primary);
     outline-offset: 2px;
+    border-radius: 4px;
   }
 
-  /* All caps for headers */
-  h1, h2, h3, h4, h5, h6 {
-    text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
-
-  /* Links */
   a {
-    color: var(--color-term-fg);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  a:hover {
-    color: var(--color-term-bg);
-    background: var(--color-term-fg);
+    color: inherit;
     text-decoration: none;
   }
 
-  /* Code blocks */
-  pre, code {
-    font-family: var(--font-mono);
-    font-size: 0.875em;
-  }
-
   pre {
-    background: #050505;
-    border: 1px solid var(--color-term-border);
+    background: #08080d;
+    border: 1px solid var(--color-ax-border);
+    border-radius: 12px;
     padding: 1rem;
     overflow-x: auto;
   }
 
   code {
-    background: rgba(51, 255, 0, 0.08);
-    padding: 0.15em 0.3em;
+    background: rgba(131, 56, 236, 0.12);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
   }
-
   pre code {
     background: none;
     padding: 0;
   }
 
-  /* Tables */
   table {
     border-collapse: collapse;
     width: 100%;
   }
-
-  th, td {
-    border: 1px solid var(--color-term-border);
+  th,
+  td {
+    border: 1px solid var(--color-ax-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
-
   th {
-    background: var(--color-term-dim);
-    text-transform: uppercase;
+    background: var(--color-ax-surface);
     font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ax-muted);
   }
 
-  /* Horizontal rule */
   hr {
     border: none;
-    border-top: 1px solid var(--color-term-border);
+    border-top: 1px solid var(--color-ax-border);
     margin: 1rem 0;
   }
 }
 
-/* ── Terminal-Specific Utilities ── */
-
+/* ── Legacy Terminal Utilities (remapped to Axiom) ── */
 @layer utilities {
-  /* Terminal window pane */
   .term-pane {
-    border: 1px solid var(--color-term-border);
-    background: var(--color-term-bg);
+    border: 1px solid var(--color-ax-border);
+    background: var(--color-ax-surface);
+    border-radius: 12px;
   }
-
-  /* Inverted video (hover/active state) */
   .term-invert {
-    background: var(--color-term-fg);
-    color: var(--color-term-bg);
-    text-shadow: none;
+    background: var(--color-ax-primary);
+    color: #fff;
   }
-
   .term-invert-amber {
-    background: var(--color-term-secondary);
-    color: var(--color-term-bg);
-    text-shadow: none;
+    background: var(--color-ax-glow);
+    color: #fff;
   }
-
-  /* Terminal progress bar fill */
   .term-progress-fill {
-    background: var(--color-term-fg);
+    background: var(--color-ax-primary);
   }
-
   .term-progress-bg {
-    background: var(--color-term-dim);
+    background: #1a1c29;
   }
-
-  /* Terminal separator */
   .term-separator {
     border: none;
-    border-top: 1px dashed var(--color-term-muted);
+    border-top: 1px dashed #2a2e44;
   }
-
-  /* Grid border style */
   .term-border {
-    border: 1px solid var(--color-term-border);
+    border: 1px solid var(--color-ax-border);
   }
-
   .term-border-dashed {
-    border: 1px dashed var(--color-term-muted);
+    border: 1px dashed #2a2e44;
   }
-
-  /* Status dots */
   .term-dot-ok {
-    background: var(--color-term-fg);
-    box-shadow: 0 0 4px rgba(51, 255, 0, 0.6);
+    background: #3dd68c;
+    box-shadow: 0 0 6px rgba(61, 214, 140, 0.6);
   }
-
   .term-dot-warn {
-    background: var(--color-term-secondary);
-    box-shadow: 0 0 4px rgba(255, 176, 0, 0.6);
+    background: #ffb020;
+    box-shadow: 0 0 6px rgba(255, 176, 32, 0.6);
   }
-
   .term-dot-err {
-    background: var(--color-term-error);
-    box-shadow: 0 0 4px rgba(255, 51, 51, 0.6);
+    background: #ff4d6d;
+    box-shadow: 0 0 6px rgba(255, 77, 109, 0.6);
   }
-
   .term-dot-idle {
-    background: var(--color-term-muted);
+    background: #3a3f58;
   }
-
-  /* Grade colors for risk score */
-  .term-grade-a { color: var(--color-term-fg); }
-  .term-grade-b { color: #66ff33; }
-  .term-grade-c { color: var(--color-severity-medium); }
-  .term-grade-d { color: var(--color-term-secondary); }
-  .term-grade-e { color: #ff6600; }
-  .term-grade-f { color: var(--color-term-error); }
-
-  /* Terminal row hover */
+  .term-grade-a {
+    color: #3dd68c;
+  }
+  .term-grade-b {
+    color: #7ee2a8;
+  }
+  .term-grade-c {
+    color: #ffd166;
+  }
+  .term-grade-d {
+    color: #ffb020;
+  }
+  .term-grade-e {
+    color: #ff8f5e;
+  }
+  .term-grade-f {
+    color: #ff4d6d;
+  }
   .term-row-hover:hover {
-    background: var(--color-term-dim);
+    background: rgba(255, 255, 255, 0.03);
   }
-
-  /* Input-like terminal prompt */
   .term-prompt::before {
     content: "user@auditai:~$ ";
-    color: var(--color-term-muted);
+    color: var(--color-ax-muted);
   }
+}
+
+/* ── Axiom Utilities (@utility so hover: / variants work in TW v4) ── */
+@utility ax-glass {
+  background: rgba(19, 20, 28, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+}
+@utility ax-glass-strong {
+  background: rgba(19, 20, 28, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+}
+@utility ax-glass-nav {
+  background: rgba(19, 20, 28, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+@utility ax-glow {
+  box-shadow: 0 0 15px rgba(131, 56, 236, 0.4);
+}
+@utility ax-glow-text {
+  text-shadow: 0 0 24px rgba(131, 56, 236, 0.5);
+}
+@utility ax-gradient {
+  background: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);
+}
+@utility ax-gradient-text {
+  background: linear-gradient(135deg, #a56bff 0%, #3a86ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility ax-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #161826;
+  border-radius: 8px;
+}
+.ax-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  animation: ax-shimmer 1.6s infinite;
+}
+@keyframes ax-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@utility ax-press {
+  transition: transform 150ms ease-in-out;
+}
+.ax-press:active {
+  transform: scale(0.98);
+}
+
+/* Legacy glow aliases used across dashboard pages */
+.term-glow {
+  text-shadow: 0 0 18px rgba(131, 56, 236, 0.45);
+}
+.term-glow-amber {
+  text-shadow: 0 0 18px rgba(58, 134, 255, 0.45);
+}
+
+/* Legacy animations still referenced by app pages */
+@keyframes ax-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.animate-blink {
+  animation: ax-blink 1.1s step-end infinite;
+}
+@keyframes ax-glitch {
+  0%,
+  93%,
+  100% {
+    transform: none;
+  }
+  94% {
+    transform: translateX(-1px);
+  }
+  96% {
+    transform: translateX(1px);
+  }
+  98% {
+    transform: translateX(-1px);
+  }
+}
+.animate-glitch {
+  animation: ax-glitch 4s linear infinite;
+}
+
+/* CRT scanline overlay — disabled under Axiom (class kept for layout.tsx) */
+.scanlines::before {
+  content: none;
 }
 
 /* ═══════════════════════════════════════════════
-   CINEMATIC LANDING — Framewise-style layer
-   Warm dark #140a05 · orange-300 accents · grain
+   CINEMATIC LANDING LAYER (fw-*)
+   Recolored to Axiom: void base · purple · electric blue
    ═══════════════════════════════════════════════ */
 
-@theme {
-  --color-fw-bg: #140a05;
-  --color-fw-accent: #ffb366;
-  --font-dmmono: "DM Mono", "JetBrains Mono", monospace;
-  --font-manrope: "Manrope", "Inter", sans-serif;
-}
-
-/* Kill the CRT scanline overlay on the landing page */
-.no-scanlines::before {
-  display: none !important;
-}
-
 .fw-root {
-  background: #140a05;
-  color: #fff;
-  font-family: "Manrope", "Inter", sans-serif;
+  background: #0a0a0f;
+  color: #f8f9fa;
+  font-family: "Inter", system-ui, sans-serif;
   overflow-x: clip;
 }
-/* Neutralize the terminal theme inside the landing page.
+
+/* Neutralize legacy base rules inside the landing page.
    Lives in @layer base so Tailwind utilities still win on top of it. */
 @layer base {
   .fw-root :where(*) {
     font-family: inherit;
-    text-shadow: none;
   }
   .fw-root :where(a) {
     color: inherit;
@@ -392,11 +391,11 @@
 }
 .fw-root .fw-mono,
 .fw-root .fw-mono :where(*) {
-  font-family: "DM Mono", "JetBrains Mono", monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 .fw-root ::selection {
-  background: #ffb366;
-  color: #1a0c05;
+  background: #8338ec;
+  color: #fff;
 }
 .fw-root a,
 .fw-root button {
@@ -409,7 +408,7 @@
 }
 
 .fw-mono {
-  font-family: "DM Mono", "JetBrains Mono", monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 
 /* ── Grain overlay (SVG fractal turbulence) ── */
@@ -463,15 +462,27 @@
   animation: fw-focus 4s ease-in-out infinite;
 }
 @keyframes fw-focus {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.55; transform: scale(0.965); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.965);
+  }
 }
 .fw-float {
   animation: fw-sine 5.5s ease-in-out infinite;
 }
 @keyframes fw-sine {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 /* ── FAQ accordion ── */
@@ -491,7 +502,9 @@
   animation: fw-spin 1.4s linear infinite;
 }
 @keyframes fw-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Reduced motion: keep everything visible & static ── */
@@ -502,6 +515,9 @@
   .fw-focus-frame,
   .fw-float,
   .fw-orbit {
+    animation: none !important;
+  }
+  .ax-skeleton::after {
     animation: none !important;
   }
 }
