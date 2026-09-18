@@ -10,12 +10,13 @@
   /* ── Axiom Core Palette ── */
   --color-ax-base: #0a0a0f;
   --color-ax-surface: #13141c;
-  --color-ax-primary: #8338ec;
-  --color-ax-primary-hover: #9b5de5;
+  --color-ax-primary: #6c5ce7;
+  --color-ax-primary-hover: #7d6cf0;
   --color-ax-glow: #3a86ff;
   --color-ax-text: #f8f9fa;
   --color-ax-muted: #8b92a5;
   --color-ax-border: #1f2233;
+  --color-ax-void: #0c0820;
 
   /* ── Legacy token bridge (term-* used across dashboard/pages) ──
      Remapped to the Axiom palette so the whole app re-themes at once. */
@@ -42,9 +43,10 @@
   --color-risk-b: #7ee2a8;
 
   /* ── Typography ── */
-  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-display: "Inter", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", monospace;
+  --font-space: "Space Mono", "Courier New", monospace;
 }
 
 /* ── Base ── */
@@ -265,16 +267,16 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 @utility ax-glow {
-  box-shadow: 0 0 15px rgba(131, 56, 236, 0.4);
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.4);
 }
 @utility ax-glow-text {
-  text-shadow: 0 0 24px rgba(131, 56, 236, 0.5);
+  text-shadow: 0 0 24px rgba(108, 92, 231, 0.5);
 }
 @utility ax-gradient {
-  background: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);
+  background: linear-gradient(135deg, #6c5ce7 0%, #3a86ff 100%);
 }
 @utility ax-gradient-text {
-  background: linear-gradient(135deg, #a56bff 0%, #3a86ff 100%);
+  background: linear-gradient(135deg, #7d6cf0 0%, #3a86ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -519,5 +521,137 @@
   }
   .ax-skeleton::after {
     animation: none !important;
+  }
+  .ax-orb,
+  .ax-marquee,
+  .ax-marquee-rev,
+  .ax-bar {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   AXIOM EDITORIAL LAYER (ref: axiom-ten-xi)
+   Light Swiss base · void bands · violet accents
+   ═══════════════════════════════════════════════ */
+.ax-editorial {
+  background: #fdfdfa;
+  color: #0a0a0a;
+  font-family: "Inter", system-ui, sans-serif;
+}
+.ax-editorial ::selection {
+  background: #6c5ce7;
+  color: #fff;
+}
+.ax-space {
+  font-family: "Space Mono", "Courier New", monospace;
+}
+
+/* Dotted grids */
+@utility ax-dots-dark {
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.13) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+}
+@utility ax-dots-light {
+  background-image: radial-gradient(
+    circle,
+    rgba(10, 10, 20, 0.16) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+}
+
+/* Striped hero bars (vertical, animated drift) */
+.ax-bar {
+  background: repeating-linear-gradient(
+    180deg,
+    #0a0a0a 0 5px,
+    transparent 5px 11px
+  );
+  background-size: 100% 22px;
+  animation: ax-bar-drift 2.4s linear infinite;
+}
+@keyframes ax-bar-drift {
+  to {
+    background-position-y: 22px;
+  }
+}
+.ax-bar-light {
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9) 0 5px,
+    transparent 5px 11px
+  );
+  background-size: 100% 22px;
+  animation: ax-bar-drift 2.4s linear infinite;
+}
+
+/* Breathing violet orb */
+.ax-orb {
+  border-radius: 9999px;
+  background:
+    radial-gradient(
+      circle at 38% 32%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0) 28%
+    ),
+    radial-gradient(
+      circle at 45% 40%,
+      #c9b8ff 0%,
+      #9d7bfa 38%,
+      #6c5ce7 68%,
+      #4b34b8 100%
+    );
+  box-shadow:
+    0 0 120px 30px rgba(124, 108, 240, 0.45),
+    0 0 260px 80px rgba(108, 92, 231, 0.25);
+  animation: ax-breathe 6s ease-in-out infinite;
+}
+@keyframes ax-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+/* Dashed guide circle */
+.ax-dashed-ring {
+  border: 1px dashed rgba(10, 10, 20, 0.25);
+  border-radius: 9999px;
+}
+.ax-dashed-ring-light {
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+
+/* Word marquees (plug-and-play rows) */
+.ax-marquee {
+  animation: ax-marquee 42s linear infinite;
+}
+.ax-marquee-rev {
+  animation: ax-marquee 52s linear infinite reverse;
+}
+@keyframes ax-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Scroll reveal initial state (JS animates in) */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
   }
 }
