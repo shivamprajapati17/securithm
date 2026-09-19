@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { setAuthToken } from "./api";
+import { setAuthToken, getApiBase } from "./api";
 
 interface User {
   id: string;
@@ -26,17 +26,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL !== undefined
-    ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NODE_ENV === "production"
-    ? ""
-    : "http://localhost:8000";
-
 /** Fetch the user profile from the backend. */
 async function fetchBackendProfile(accessToken: string): Promise<User | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+    const res = await fetch(`${getApiBase()}/api/v1/auth/me`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return null;
@@ -74,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Email / Password Login ──
   const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+    const res = await fetch(`${getApiBase()}/api/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -94,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Email / Password Register ──
   const register = useCallback(
     async (email: string, password: string, display_name?: string, invite_id?: string) => {
-      const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+      const res = await fetch(`${getApiBase()}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, display_name, invite_id }),
@@ -115,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Google OAuth Login ──
   const loginWithGoogle = useCallback(async () => {
-    const res = await fetch(`${API_BASE}/api/v1/auth/login/google`);
+    const res = await fetch(`${getApiBase()}/api/v1/auth/login/google`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Google login initiation failed" }));
       throw new Error(err.detail || "Google login initiation failed");

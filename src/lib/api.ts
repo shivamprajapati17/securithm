@@ -1,10 +1,22 @@
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL !== undefined
-    ? process.env.NEXT_PUBLIC_API_URL
-    : process.env.NODE_ENV === "production"
-    ? ""
-    : "http://localhost:8000";
+export function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+    if (!isLocal) {
+      const envUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (envUrl && envUrl.startsWith("https://")) {
+        return envUrl.replace(/\/$/, "");
+      }
+      return "";
+    }
+  }
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8000";
+}
+
 
 
 // Kept for backward-compat (API key auth / SDK usage)
@@ -99,7 +111,7 @@ export async function request<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE}${path}`;
+  const url = `${getApiBase()}${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -149,7 +161,7 @@ async function downloadFile(url: string, filename: string): Promise<void> {
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
   }
-  const response = await fetch(`${API_BASE}${url}`, { headers });
+  const response = await fetch(`${getApiBase()}${url}`, { headers });
   if (!response.ok) {
     const error = await response
       .json()
@@ -872,7 +884,7 @@ export async function downloadAttestation(
   attestationId: string,
   format: "json" | "pdf"
 ): Promise<void> {
-  const url = `${API_BASE}/api/v1/solvency/attestation/${attestationId}/export?format=${format}`;
+  const url = `${getApiBase()}/api/v1/solvency/attestation/${attestationId}/export?format=${format}`;
   const headers: Record<string, string> = {};
   if (authToken) {
     headers["Authorization"] = `Bearer ${authToken}`;
