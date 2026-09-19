@@ -2,12 +2,14 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { setAuthToken } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 function CallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -19,40 +21,28 @@ function CallbackHandler() {
       return;
     }
 
-    // Handle PKCE code exchange (Supabase OAuth callback)
-    const code = searchParams.get("code");
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
-        if (exchangeError) {
-          setError(exchangeError.message);
-          setTimeout(() => router.push("/auth/login"), 2000);
-        } else {
-          router.push("/dashboard");
-        }
+    const token = searchParams.get("token");
+    if (token) {
+      localStorage.setItem("securithm_token", token);
+      setAuthToken(token);
+      refreshUser().then(() => {
+        router.push("/dashboard");
       });
       return;
     }
 
-    // Check if session already exists (hash fragment / auto-detected by supabase-js)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    // Check if token already stored in localStorage
+    const existing = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
+    if (existing) {
+      setAuthToken(existing);
+      refreshUser().then(() => {
         router.push("/dashboard");
-      } else {
-        // Wait a moment for Supabase to process any auth params
-        const timeout = setTimeout(() => {
-          supabase.auth.getSession().then(({ data: { session: s } }) => {
-            if (s) {
-              router.push("/dashboard");
-            } else {
-              setError("No authentication token received");
-              setTimeout(() => router.push("/auth/login"), 2000);
-            }
-          });
-        }, 1500);
-        return () => clearTimeout(timeout);
-      }
-    });
-  }, [router, searchParams]);
+      });
+    } else {
+      setError("No authentication token received");
+      setTimeout(() => router.push("/auth/login"), 2000);
+    }
+  }, [router, searchParams, refreshUser]);
 
   if (error) {
     return (
@@ -68,7 +58,7 @@ function CallbackHandler() {
   return (
     <div className="min-h-screen bg-[var(--color-term-bg)] flex items-center justify-center p-4">
       <div className="w-full max-w-sm border border-[var(--color-term-border)] p-4 text-center">
-        <p className="text-xs text-[var(--color-term-fg)] font-mono">AUTHENTICATING...</p>
+        <p className="text-xs text-[var(--color-term-fg)] font-mono">AUTHENTICATING WITH GOOGLE...</p>
         <p className="text-[9px] text-[var(--color-term-muted)] font-mono mt-2 animate-blink">▌</p>
       </div>
     </div>
@@ -88,3 +78,4 @@ export default function AuthCallbackPage() {
     </Suspense>
   );
 }
+

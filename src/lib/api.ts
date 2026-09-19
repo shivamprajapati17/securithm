@@ -1,4 +1,3 @@
-import { supabase } from "./supabase";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL !== undefined
@@ -88,6 +87,14 @@ export interface MonitoredContract {
   last_checked: string | null;
 }
 
+export function getAuthToken(): string | null {
+  if (authToken) return authToken;
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("securithm_token");
+  }
+  return null;
+}
+
 export async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -97,20 +104,11 @@ export async function request<T>(
     "Content-Type": "application/json",
   };
 
-  // Prefer Supabase session token, fall back to manual authToken (API keys)
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-      headers["Authorization"] = `Bearer ${session.access_token}`;
-    } else if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
-  } catch {
-    // Supabase not available (SSR or test) — use manual token
-    if (authToken) {
-      headers["Authorization"] = `Bearer ${authToken}`;
-    }
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
+
 
   if (options.headers) {
     Object.assign(headers, options.headers);
