@@ -8,15 +8,7 @@
   },
   "rewrites": [
     {
-      "source": "/api/v1/auth/(.*)",
-      "destination": "/api/v1/auth/$1"
-    },
-    {
-      "source": "/api/v1/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/api/(.*)",
+      "source": "/api/v1/((?!auth).*)",
       "destination": "/api/index.py"
     }
   ]
