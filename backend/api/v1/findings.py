@@ -5,8 +5,10 @@ from uuid import UUID
 from typing import Optional
 
 from ...core.database import get_db
-from ...models.scan import Finding, FindingStatus, FindingSeverity
+from ...models.scan import Finding, FindingStatus, FindingSeverity, ScanJob
+from ...models.user import User
 from ...schemas.scan import FindingResponse, FindingUpdate
+from ..v1.auth import get_optional_user
 
 router = APIRouter(prefix="/findings", tags=["findings"])
 
@@ -18,6 +20,7 @@ async def list_findings(
     status: Optional[FindingStatus] = None,
     assigned_to: Optional[UUID] = None,
     db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
 ):
     """List findings with optional filters.
 
@@ -31,6 +34,18 @@ async def list_findings(
 
     if scan_id:
         query = query.where(Finding.scan_id == scan_id)
+
+    # Per-login isolation: only expose findings that belong to the caller's scans
+    if current_user is not None:
+        query = query.where(
+            Finding.scan_job.has(
+                (ScanJob.user_id == current_user.id)
+                | (ScanJob.org_id == current_user.org_id)
+            )
+        )
+    else:
+        query = query.where(ScanJob.user_id.is_(None))
+
     if severity:
         query = query.where(Finding.severity == severity)
     if status:
