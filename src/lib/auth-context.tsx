@@ -105,15 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      let foundToken: string | null = null;
+
       // 1. Check URL hash (#access_token=...)
       if (window.location.hash) {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const hashToken = hashParams.get("access_token");
         if (hashToken) {
+          foundToken = hashToken;
           localStorage.setItem("securithm_token", hashToken);
           setAuthToken(hashToken);
-          // Clean hash from URL without full reload
-          window.history.replaceState(null, "", window.location.pathname + window.location.search);
         }
       }
 
@@ -121,11 +122,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const searchParams = new URLSearchParams(window.location.search);
       const queryToken = searchParams.get("token");
       if (queryToken) {
+        foundToken = queryToken;
         localStorage.setItem("securithm_token", queryToken);
         setAuthToken(queryToken);
       }
+
+      const activeToken = foundToken || localStorage.getItem("securithm_token");
+      if (activeToken) {
+        const localUser = parseJwtLocally(activeToken);
+        if (localUser) setUser(localUser);
+        const pathname = window.location.pathname;
+        if (pathname.startsWith("/auth/")) {
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 200);
+        }
+      }
     }
     refreshUser();
+  }, [refreshUser]);
+
+  // ── Supabase Auth State Change Listener ──
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.access_token) {
+        localStorage.setItem("securithm_token", session.access_token);
+        setAuthToken(session.access_token);
+        const localUser = parseJwtLocally(session.access_token);
+        if (localUser) setUser(localUser);
+        await refreshUser();
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/auth/")) {
+          window.location.href = "/dashboard";
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [refreshUser]);
 
   // ── Email / Password Login ──
