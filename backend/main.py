@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .core.config import get_settings
 from .core.database import engine, Base, SessionLocal, sync_database_schema
-from .api.v1 import v1_router
+from .api.v1 import v1_router, root_v1_router
 from .api.v1.api_keys import (
     get_api_key_from_header,
     check_api_key_rate_limit,
@@ -154,6 +154,7 @@ async def health_check():
 
 # Register API routes
 app.include_router(v1_router)
+app.include_router(root_v1_router)
 
 
 # Global exception handler
