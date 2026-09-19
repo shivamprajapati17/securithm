@@ -47,22 +47,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Restore token on mount
   useEffect(() => {
     const stored = getStoredToken();
-    if (stored) {
-      setToken(stored);
-      api.setAuthToken(stored);
-      // Fetch user profile
-      api.getMe()
-        .then((userData) => setUser(userData))
-        .catch(() => {
-          // Token invalid, clear it
-          setStoredToken(null);
-          setToken(null);
-          api.setAuthToken(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
+    if (!stored) {
       setLoading(false);
+      return;
     }
+    setToken(stored);
+    api.setAuthToken(stored);
+
+    let cancelled = false;
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+    (async () => {
+      // Retry once and always resolve the gate — a hung profile request
+      // must never trap the user behind the AUTHENTICATING screen.
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const userData = await Promise.race([
+            api.getMe(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("profile timeout")), 8000)
+            ),
+          ]);
+          if (!cancelled) setUser(userData);
+          break;
+        } catch {
+          if (attempt === 0 && !cancelled) {
+            await wait(1200);
+            continue;
+          }
+          // Token invalid or unreachable — clear it and let the gate release
+          if (!cancelled) {
+            setStoredToken(null);
+            setToken(null);
+            api.setAuthToken(null);
+          }
+        }
+      }
+      if (!cancelled) setLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

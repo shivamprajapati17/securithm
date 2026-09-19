@@ -8,7 +8,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-[16px] border border-[var(--color-ax-border)] bg-[var(--color-ax-surface)]",
+      "rounded-[2px] border border-[var(--color-ex-ash)] bg-[var(--color-ex-paper)]",
       className
     )}
     {...props}
@@ -23,7 +23,7 @@ const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "border-b border-[var(--color-ax-border)] px-5 py-3 flex items-center",
+      "border-b border-[var(--color-ex-ash)] px-5 py-3 flex items-center",
       className
     )}
     {...props}
@@ -38,7 +38,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-sm font-semibold text-[var(--color-ax-text)] font-[family-name:var(--font-display)]",
+      "text-sm font-semibold text-[var(--color-ex-obsidian)] font-[family-name:var(--font-display)]",
       className
     )}
     {...props}
@@ -53,7 +53,7 @@ const CardDescription = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-xs text-[var(--color-ax-muted)] mt-1",
+      "text-xs text-[var(--color-ex-graphite)] mt-1",
       className
     )}
     {...props}
@@ -76,7 +76,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "border-t border-[var(--color-ax-border)] px-5 py-3 flex items-center",
+      "border-t border-[var(--color-ex-ash)] px-5 py-3 flex items-center",
       className
     )}
     {...props}

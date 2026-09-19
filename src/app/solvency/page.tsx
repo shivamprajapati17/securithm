@@ -24,9 +24,13 @@ export default function SolvencyLandingPage() {
 
   const checkDemo = useCallback(async () => {
     try {
-      await getPublicDashboard("auditai-demo");
+      // Seed on demand first — the endpoint is idempotent (reuses the demo org),
+      // so a fresh database gets a valid slug instead of a guaranteed 404.
+      const res = await seedSolvencyDemo().catch(() => null);
+      const slug: string = res?.orgSlug ?? "auditai-demo";
+      await getPublicDashboard(slug);
       setHasDemo(true);
-      setDemoUrl("/solvency/auditai-demo");
+      setDemoUrl(res?.public_url ?? `/solvency/${slug}`);
     } catch {
       setHasDemo(false);
     }

@@ -513,7 +513,7 @@ export default function ReposPage() {
                         [ COPY ]
                       </Button>
                     </div>
-                    <pre className="border border-[var(--color-term-border)] bg-[#050505] text-[var(--color-term-fg)] p-2 overflow-x-auto text-[9px] leading-relaxed">
+                    <pre className="border border-[var(--color-term-border)] bg-[var(--color-ex-obsidian)] text-[#e8ebe8] p-2 overflow-x-auto text-[9px] leading-relaxed rounded-[2px]">
                       <code>{"name: AUDITAI_SCAN\non: [push, pull_request]\njobs:\n  security-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: auditai/action@v1\n        with:\n          threshold: HIGH\n          token: ${{ secrets.AUDITAI_TOKEN }}"}</code>
                     </pre>
                   </div>

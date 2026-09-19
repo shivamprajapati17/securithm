@@ -1,52 +1,49 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   AXIOM PROTOCOL DESIGN SYSTEM — AuditAI
-   "Cyber-Minimalist Web3"
-   Deep void backgrounds · Monad purple · Electric blue
+   EXANTE DESIGN SYSTEM — AuditAI
+   "neon greenhouse at midnight"
+   Obsidian dark hero · white canvas · single Neon Mint accent
+   2px architectural radii · Geist Mono eyebrow labels · no shadows
    ═══════════════════════════════════════════════ */
 
 @theme {
-  /* ── Axiom Core Palette ── */
-  --color-ax-base: #0a0a0f;
-  --color-ax-surface: #13141c;
-  --color-ax-primary: #6c5ce7;
-  --color-ax-primary-hover: #7d6cf0;
-  --color-ax-glow: #3a86ff;
-  --color-ax-text: #f8f9fa;
-  --color-ax-muted: #8b92a5;
-  --color-ax-border: #1f2233;
-  --color-ax-void: #0c0820;
+  /* ── Exante Core Palette ── */
+  --color-ex-obsidian: #1e211e;
+  --color-ex-paper: #ffffff;
+  --color-ex-black: #000000;
+  --color-ex-graphite: #4b4d4b;
+  --color-ex-ash: #d2d3d2;
+  --color-ex-mint: #90fc95;
 
-  /* ── Legacy token bridge (term-* used across dashboard/pages) ──
-     Remapped to the Axiom palette so the whole app re-themes at once. */
-  --color-term-bg: #0a0a0f;
-  --color-term-fg: #f8f9fa;
-  --color-term-secondary: #8338ec;
-  --color-term-muted: #8b92a5;
-  --color-term-accent: #8338ec;
-  --color-term-error: #ff4d6d;
-  --color-term-warning: #ffb020;
-  --color-term-medium: #ffd166;
-  --color-term-border: #1f2233;
-  --color-term-dim: #13141c;
+  /* ── Legacy token bridge (term-* consumed across dashboard/pages).
+        Remapped to the Exante light system → whole app re-themes at once. ── */
+  --color-term-bg: #ffffff;
+  --color-term-fg: #1e211e;
+  --color-term-secondary: #1e211e;
+  --color-term-muted: #4b4d4b;
+  --color-term-accent: #1e211e;
+  --color-term-error: #e5484d;
+  --color-term-warning: #e5a13d;
+  --color-term-medium: #d9b13f;
+  --color-term-border: #d2d3d2;
+  --color-term-dim: #f7f8f7;
 
-  /* Severity */
-  --color-severity-critical: #ff4d6d;
-  --color-severity-high: #ffb020;
-  --color-severity-medium: #ffd166;
-  --color-severity-low: #3a86ff;
-  --color-severity-info: #8b92a5;
+  /* Severity — kept functional, muted for the light canvas */
+  --color-severity-critical: #e5484d;
+  --color-severity-high: #e5a13d;
+  --color-severity-medium: #d9b13f;
+  --color-severity-low: #4b4d4b;
+  --color-severity-info: #8b9291;
 
-  /* Risk grades */
-  --color-risk-a: #3dd68c;
-  --color-risk-b: #7ee2a8;
+  /* Risk grades — AA contrast on white */
+  --color-risk-a: #0b7a4b;
+  --color-risk-b: #2f9464;
 
   /* ── Typography ── */
-  --font-display: "Inter", system-ui, sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "Consolas", "Courier New", monospace;
-  --font-space: "Space Mono", "Courier New", monospace;
+  --font-display: "Archivo", "Geist", system-ui, sans-serif;
+  --font-sans: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", "Consolas", monospace;
 }
 
 /* ── Base ── */
@@ -64,15 +61,15 @@
   }
 
   body {
-    background-color: var(--color-ax-base);
-    color: var(--color-ax-text);
+    background-color: var(--color-ex-paper);
+    color: var(--color-ex-obsidian);
     font-family: var(--font-sans);
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
     min-height: 100vh;
   }
 
-  /* Display headings — Space Grotesk, no forced uppercase */
   h1,
   h2,
   h3,
@@ -81,10 +78,10 @@
   h6 {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    color: var(--color-ex-obsidian);
   }
 
-  /* Financial / tabular data */
   .font-mono,
   code,
   pre,
@@ -98,8 +95,8 @@
   }
 
   ::selection {
-    background: var(--color-ax-primary);
-    color: #fff;
+    background: var(--color-ex-mint);
+    color: var(--color-ex-obsidian);
   }
 
   ::-webkit-scrollbar {
@@ -107,21 +104,20 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--color-ax-base);
+    background: var(--color-ex-paper);
   }
   ::-webkit-scrollbar-thumb {
-    background: #262a3d;
-    border-radius: 8px;
-    border: 2px solid var(--color-ax-base);
+    background: var(--color-ex-ash);
+    border-radius: 2px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #3a3f58;
+    background: var(--color-ex-graphite);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ax-primary);
+    outline: 2px solid var(--color-ex-obsidian);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 2px;
   }
 
   a {
@@ -130,17 +126,18 @@
   }
 
   pre {
-    background: #08080d;
-    border: 1px solid var(--color-ax-border);
-    border-radius: 12px;
+    background: var(--color-ex-obsidian);
+    border: 1px solid var(--color-ex-obsidian);
+    border-radius: 2px;
     padding: 1rem;
     overflow-x: auto;
+    color: #e8ebe8;
   }
 
   code {
-    background: rgba(131, 56, 236, 0.12);
+    background: rgba(30, 33, 30, 0.06);
     padding: 0.15em 0.35em;
-    border-radius: 4px;
+    border-radius: 2px;
   }
   pre code {
     background: none;
@@ -153,171 +150,114 @@
   }
   th,
   td {
-    border: 1px solid var(--color-ax-border);
+    border: 1px solid var(--color-ex-ash);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
   th {
-    background: var(--color-ax-surface);
+    background: var(--color-term-dim);
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--color-ax-muted);
+    color: var(--color-ex-graphite);
   }
 
   hr {
     border: none;
-    border-top: 1px solid var(--color-ax-border);
+    border-top: 1px solid var(--color-ex-ash);
     margin: 1rem 0;
   }
 }
 
-/* ── Legacy Terminal Utilities (remapped to Axiom) ── */
+/* Safety aliases in case any file still references old variable names */
+:root {
+  --color-ax-primary: #1e211e;
+  --color-ax-surface: #f7f8f7;
+  --color-ax-border: #d2d3d2;
+  --color-ax-text: #1e211e;
+  --color-ax-muted: #4b4d4b;
+  --color-ax-base: #ffffff;
+}
+
+/* ── Legacy Terminal Utilities (remapped to Exante light) ── */
 @layer utilities {
   .term-pane {
-    border: 1px solid var(--color-ax-border);
-    background: var(--color-ax-surface);
-    border-radius: 12px;
+    border: 1px solid var(--color-ex-ash);
+    background: var(--color-ex-paper);
+    border-radius: 2px;
   }
   .term-invert {
-    background: var(--color-ax-primary);
-    color: #fff;
+    background: var(--color-ex-obsidian);
+    color: var(--color-ex-paper);
   }
   .term-invert-amber {
-    background: var(--color-ax-glow);
-    color: #fff;
+    background: var(--color-ex-mint);
+    color: var(--color-ex-obsidian);
   }
   .term-progress-fill {
-    background: var(--color-ax-primary);
+    background: var(--color-ex-obsidian);
   }
   .term-progress-bg {
-    background: #1a1c29;
+    background: #eceeed;
   }
   .term-separator {
     border: none;
-    border-top: 1px dashed #2a2e44;
+    border-top: 1px dashed var(--color-ex-ash);
   }
   .term-border {
-    border: 1px solid var(--color-ax-border);
+    border: 1px solid var(--color-ex-ash);
   }
   .term-border-dashed {
-    border: 1px dashed #2a2e44;
+    border: 1px dashed var(--color-ex-ash);
   }
   .term-dot-ok {
-    background: #3dd68c;
-    box-shadow: 0 0 6px rgba(61, 214, 140, 0.6);
+    background: #0b7a4b;
   }
   .term-dot-warn {
-    background: #ffb020;
-    box-shadow: 0 0 6px rgba(255, 176, 32, 0.6);
+    background: #e5a13d;
   }
   .term-dot-err {
-    background: #ff4d6d;
-    box-shadow: 0 0 6px rgba(255, 77, 109, 0.6);
+    background: #e5484d;
   }
   .term-dot-idle {
-    background: #3a3f58;
+    background: var(--color-ex-ash);
   }
   .term-grade-a {
-    color: #3dd68c;
+    color: #0b7a4b;
   }
   .term-grade-b {
-    color: #7ee2a8;
+    color: #2f9464;
   }
   .term-grade-c {
-    color: #ffd166;
+    color: #b58a1c;
   }
   .term-grade-d {
-    color: #ffb020;
+    color: #c26a1f;
   }
   .term-grade-e {
-    color: #ff8f5e;
+    color: #d14a2e;
   }
   .term-grade-f {
-    color: #ff4d6d;
+    color: #e5484d;
   }
   .term-row-hover:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--color-term-dim);
   }
   .term-prompt::before {
     content: "user@auditai:~$ ";
-    color: var(--color-ax-muted);
+    color: var(--color-ex-graphite);
   }
 }
 
-/* ── Axiom Utilities (@utility so hover: / variants work in TW v4) ── */
-@utility ax-glass {
-  background: rgba(19, 20, 28, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-}
-@utility ax-glass-strong {
-  background: rgba(19, 20, 28, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-}
-@utility ax-glass-nav {
-  background: rgba(19, 20, 28, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-@utility ax-glow {
-  box-shadow: 0 0 15px rgba(108, 92, 231, 0.4);
-}
-@utility ax-glow-text {
-  text-shadow: 0 0 24px rgba(108, 92, 231, 0.5);
-}
-@utility ax-gradient {
-  background: linear-gradient(135deg, #6c5ce7 0%, #3a86ff 100%);
-}
-@utility ax-gradient-text {
-  background: linear-gradient(135deg, #7d6cf0 0%, #3a86ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-@utility ax-skeleton {
-  position: relative;
-  overflow: hidden;
-  background: #161826;
-  border-radius: 8px;
-}
-.ax-skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.05),
-    transparent
-  );
-  animation: ax-shimmer 1.6s infinite;
-}
-@keyframes ax-shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-@utility ax-press {
-  transition: transform 150ms ease-in-out;
-}
-.ax-press:active {
-  transform: scale(0.98);
-}
-
-/* Legacy glow aliases used across dashboard pages */
+/* Legacy glow aliases (now crisp — the system rejects glow/shadows) */
 .term-glow {
-  text-shadow: 0 0 18px rgba(131, 56, 236, 0.45);
+  text-shadow: none;
 }
 .term-glow-amber {
-  text-shadow: 0 0 18px rgba(58, 134, 255, 0.45);
+  text-shadow: none;
+}
+.term-glow-error {
+  text-shadow: none;
 }
 
 /* Legacy animations still referenced by app pages */
@@ -354,66 +294,161 @@
   animation: ax-glitch 4s linear infinite;
 }
 
-/* CRT scanline overlay — disabled under Axiom (class kept for layout.tsx) */
+/* CRT scanline overlay — disabled under Exante (class kept in layout) */
 .scanlines::before {
   content: none;
 }
 
+/* Skeleton shimmer (light surface version) */
+.ax-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eceeed;
+  border-radius: 2px;
+}
+.ax-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(30, 33, 30, 0.05),
+    transparent
+  );
+  animation: ax-shimmer 1.6s infinite;
+}
+@keyframes ax-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* ═══════════════════════════════════════════════
-   CINEMATIC LANDING LAYER (fw-*)
-   Recolored to Axiom: void base · purple · electric blue
+   EXANTE LANDING LAYER (ex-*)
+   Dark obsidian hero · white canvas · mint wireframe geometry
    ═══════════════════════════════════════════════ */
 
-.fw-root {
-  background: #0a0a0f;
-  color: #f8f9fa;
-  font-family: "Inter", system-ui, sans-serif;
+.ex-root {
+  background: var(--color-ex-paper);
+  color: var(--color-ex-obsidian);
+  font-family: var(--font-sans);
   overflow-x: clip;
 }
 
-/* Neutralize legacy base rules inside the landing page.
-   Lives in @layer base so Tailwind utilities still win on top of it. */
-@layer base {
-  .fw-root :where(*) {
-    font-family: inherit;
-  }
-  .fw-root :where(a) {
-    color: inherit;
-    text-decoration: none;
-    background: transparent;
-  }
-  .fw-root :where(a:hover) {
-    background: transparent;
-  }
-  .fw-root :where(h1, h2, h3, h4, h5, h6) {
-    text-transform: none;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
+.ex-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
-.fw-root .fw-mono,
-.fw-root .fw-mono :where(*) {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-}
-.fw-root ::selection {
-  background: #8338ec;
-  color: #fff;
-}
-.fw-root a,
-.fw-root button {
-  cursor: pointer;
-}
-.fw-cursor-on .fw-root,
-.fw-cursor-on .fw-root a,
-.fw-cursor-on .fw-root button {
-  cursor: none;
+.ex-display-light {
+  font-weight: 300;
 }
 
+/* Eyebrow label — the system's editorial signature */
+.ex-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ex-mono {
+  font-family: var(--font-mono);
+}
+
+/* 2px architectural radius aliases */
+.ex-card {
+  border-radius: 2px;
+}
+
+/* ── Wireframe cube geometry (1px strokes, bleeds off edges) ── */
+.ex-cube {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--color-ex-mint);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.ex-cube-obsidian {
+  stroke: var(--color-ex-obsidian);
+}
+.ex-cube-band {
+  opacity: 0.55;
+  animation: ex-drift 14s ease-in-out infinite alternate;
+}
+@keyframes ex-drift {
+  to {
+    transform: translateY(-18px);
+  }
+}
+.ex-cube-spin {
+  animation: ex-rotate 26s linear infinite;
+  transform-origin: center;
+}
+@keyframes ex-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mint band decorative dashed cubes */
+.ex-dash {
+  stroke-dasharray: 4 4;
+}
+
+/* FAQ divider row — the line IS the component */
+.ex-row {
+  border-bottom: 1px solid var(--color-ex-ash);
+}
+
+/* Press feedback (no shadows — scale only) */
+.ex-press {
+  transition: transform 150ms ease-in-out, background-color 200ms ease-in-out,
+    color 200ms ease-in-out, border-color 200ms ease-in-out;
+}
+.ex-press:active {
+  transform: scale(0.98);
+}
+
+/* Scroll reveal initial state (JS animates in) */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Reduced motion: keep everything visible & static */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  .ex-cube-band,
+  .ex-cube-spin,
+  .ax-skeleton::after {
+    animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CINEMATIC LAYER (fw-*) — minimal legacy kept for effects
+   Recolored: obsidian · mint
+   ═══════════════════════════════════════════════ */
+
+.fw-root {
+  background: #1e211e;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
 .fw-mono {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-family: var(--font-mono);
 }
 
-/* ── Grain overlay (SVG fractal turbulence) ── */
 .fw-grain {
   position: fixed;
   inset: 0;
@@ -424,7 +459,6 @@
   background-size: 300px 300px;
 }
 
-/* ── Split-word mask reveal targets ── */
 .fw-mask {
   display: inline-block;
   overflow: hidden;
@@ -435,20 +469,17 @@
   will-change: transform;
 }
 
-/* ── Marquee ── */
 .fw-marquee-track {
   display: flex;
   width: max-content;
   will-change: transform;
 }
 
-/* ── Tilt cards ── */
 .fw-tilt {
   transform-style: preserve-3d;
   will-change: transform;
 }
 
-/* ── Image hover zoom (features) ── */
 .fw-img-hover {
   overflow: hidden;
 }
@@ -459,7 +490,6 @@
   transform: scale(1.1);
 }
 
-/* ── Viewfinder mock ── */
 .fw-focus-frame {
   animation: fw-focus 4s ease-in-out infinite;
 }
@@ -487,19 +517,16 @@
   }
 }
 
-/* ── FAQ accordion ── */
 .fw-faq-content {
   height: 0;
   overflow: hidden;
 }
 
-/* ── Scroll progress bar ── */
 .fw-progress {
   transform-origin: 0 50%;
   transform: scaleX(0);
 }
 
-/* ── Preloader orbit ── */
 .fw-orbit {
   animation: fw-spin 1.4s linear infinite;
 }
@@ -509,7 +536,6 @@
   }
 }
 
-/* ── Reduced motion: keep everything visible & static ── */
 @media (prefers-reduced-motion: reduce) {
   .fw-mask > span {
     transform: none !important;
@@ -518,140 +544,5 @@
   .fw-float,
   .fw-orbit {
     animation: none !important;
-  }
-  .ax-skeleton::after {
-    animation: none !important;
-  }
-  .ax-orb,
-  .ax-marquee,
-  .ax-marquee-rev,
-  .ax-bar {
-    animation: none !important;
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   AXIOM EDITORIAL LAYER (ref: axiom-ten-xi)
-   Light Swiss base · void bands · violet accents
-   ═══════════════════════════════════════════════ */
-.ax-editorial {
-  background: #fdfdfa;
-  color: #0a0a0a;
-  font-family: "Inter", system-ui, sans-serif;
-}
-.ax-editorial ::selection {
-  background: #6c5ce7;
-  color: #fff;
-}
-.ax-space {
-  font-family: "Space Mono", "Courier New", monospace;
-}
-
-/* Dotted grids */
-@utility ax-dots-dark {
-  background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.13) 1px,
-    transparent 1px
-  );
-  background-size: 26px 26px;
-}
-@utility ax-dots-light {
-  background-image: radial-gradient(
-    circle,
-    rgba(10, 10, 20, 0.16) 1px,
-    transparent 1px
-  );
-  background-size: 26px 26px;
-}
-
-/* Striped hero bars (vertical, animated drift) */
-.ax-bar {
-  background: repeating-linear-gradient(
-    180deg,
-    #0a0a0a 0 5px,
-    transparent 5px 11px
-  );
-  background-size: 100% 22px;
-  animation: ax-bar-drift 2.4s linear infinite;
-}
-@keyframes ax-bar-drift {
-  to {
-    background-position-y: 22px;
-  }
-}
-.ax-bar-light {
-  background: repeating-linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.9) 0 5px,
-    transparent 5px 11px
-  );
-  background-size: 100% 22px;
-  animation: ax-bar-drift 2.4s linear infinite;
-}
-
-/* Breathing violet orb */
-.ax-orb {
-  border-radius: 9999px;
-  background:
-    radial-gradient(
-      circle at 38% 32%,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 255, 255, 0) 28%
-    ),
-    radial-gradient(
-      circle at 45% 40%,
-      #c9b8ff 0%,
-      #9d7bfa 38%,
-      #6c5ce7 68%,
-      #4b34b8 100%
-    );
-  box-shadow:
-    0 0 120px 30px rgba(124, 108, 240, 0.45),
-    0 0 260px 80px rgba(108, 92, 231, 0.25);
-  animation: ax-breathe 6s ease-in-out infinite;
-}
-@keyframes ax-breathe {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.04);
-  }
-}
-
-/* Dashed guide circle */
-.ax-dashed-ring {
-  border: 1px dashed rgba(10, 10, 20, 0.25);
-  border-radius: 9999px;
-}
-.ax-dashed-ring-light {
-  border: 1px dashed rgba(255, 255, 255, 0.25);
-  border-radius: 9999px;
-}
-
-/* Word marquees (plug-and-play rows) */
-.ax-marquee {
-  animation: ax-marquee 42s linear infinite;
-}
-.ax-marquee-rev {
-  animation: ax-marquee 52s linear infinite reverse;
-}
-@keyframes ax-marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* Scroll reveal initial state (JS animates in) */
-[data-reveal] {
-  opacity: 0;
-  transform: translateY(24px);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
-    opacity: 1;
-    transform: none;
   }
 }

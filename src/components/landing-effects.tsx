@@ -52,14 +52,14 @@ export function Preloader() {
   return (
     <div
       ref={ref}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#140a05]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1e211e]"
     >
       <div className="flex flex-col items-center gap-8">
         {/* Orbit spinner */}
         <div className="pl-orbit relative h-12 w-12">
           <span className="absolute inset-0 rounded-full border border-white/15" />
-          <span className="absolute inset-0 rounded-full border-t border-[#a56bff]" />
-          <span className="absolute left-1/2 top-0 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#a56bff]" />
+          <span className="absolute inset-0 rounded-full border-t border-[#90fc95]" />
+          <span className="absolute left-1/2 top-0 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#90fc95]" />
         </div>
 
         {/* Word reveal */}
@@ -70,7 +70,7 @@ export function Preloader() {
           <span className="pl-word fw-mask">
             <span>every</span>
           </span>{" "}          <span className="pl-word fw-mask">
-            <span className="text-[#a56bff]">frame</span>
+            <span className="text-[#90fc95]">byte</span>
           </span>{""}
           <span className="pl-word fw-mask">
             <span>of</span>
@@ -85,7 +85,7 @@ export function Preloader() {
 
         {/* Progress line */}
         <div className="h-px w-48 overflow-hidden bg-white/10">
-          <div className="pl-bar h-full w-full origin-left ax-gradient" />
+          <div className="pl-bar h-full w-full origin-left bg-[var(--color-ex-mint)]" />
         </div>
       </div>
     </div>
@@ -164,7 +164,7 @@ export function CustomCursor() {
       />
       <div
         ref={labelRef}
-        className="fw-mono pointer-events-none fixed left-0 top-0 z-[96] ml-5 mt-4 rounded-[4px] bg-[#8338ec] px-2 py-0.5 text-[10px] uppercase tracking-widest text-white opacity-0"
+        className="fw-mono pointer-events-none fixed left-0 top-0 z-[96] ml-5 mt-4 rounded-[2px] bg-[#1e211e] px-2 py-0.5 text-[10px] uppercase tracking-widest text-white opacity-0"
         style={{ transform: "translate(-100px,-100px)" }}
       />
     </>
@@ -210,9 +210,9 @@ export function AuraCanvas() {
       const COUNT = 1100;
       const pos = new Float32Array(COUNT * 3);
       const col = new Float32Array(COUNT * 3);
-      const violet = new THREE.Color("#a56bff");
-      const blue = new THREE.Color("#3a86ff");
-      const dim = new THREE.Color("#2b2350");
+      const violet = new THREE.Color("#90fc95");
+      const blue = new THREE.Color("#0b7a4b");
+      const dim = new THREE.Color("#2f4a33");
       for (let i = 0; i < COUNT; i++) {
         pos[i * 3] = (Math.random() - 0.5) * 26;
         pos[i * 3 + 1] = (Math.random() - 0.5) * 16;
@@ -315,8 +315,8 @@ export function ScrollProgress() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5 bg-white/5">
-      <div ref={ref} className="fw-progress ax-gradient h-full w-full" />
+    <div className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5 bg-black/[0.06]">
+      <div ref={ref} className="fw-progress h-full w-full bg-[var(--color-ex-obsidian)]" />
     </div>
   );
 }

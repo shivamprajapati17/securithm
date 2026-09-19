@@ -102,13 +102,13 @@ export default function InstallCommand() {
   return (
     <div ref={containerRef} className="w-full max-w-2xl mx-auto">
       {/* Terminal window chrome */}
-      <div className="border border-[var(--color-term-border)] bg-[#050505]">
+      <div className="border border-[var(--color-ex-obsidian)] bg-[var(--color-ex-obsidian)]">
         {/* Title bar */}
-        <div className="flex items-center gap-2 border-b border-[var(--color-term-border)] px-3 py-1.5 bg-[var(--color-term-dim)]">
+        <div className="flex items-center gap-2 border-b border-white/15 px-3 py-1.5 bg-[#242824]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 border border-[var(--color-term-muted)] bg-[var(--color-term-muted)]" />
-            <span className="w-2.5 h-2.5 border border-[var(--color-term-secondary)] bg-[var(--color-term-secondary)]" />
-            <span className="w-2.5 h-2.5 border border-[var(--color-term-fg)] bg-[var(--color-term-fg)]" />
+            <span className="w-2.5 h-2.5 border border-[var(--color-ex-ash)] bg-[var(--color-ex-ash)]" />
+            <span className="w-2.5 h-2.5 border border-[var(--color-ex-mint)] bg-[var(--color-ex-mint)]" />
+            <span className="w-2.5 h-2.5 border border-white bg-white" />
           </div>
           <span className="text-[9px] text-[var(--color-term-muted)] font-mono ml-2">
             terminal — bash

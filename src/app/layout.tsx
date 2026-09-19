@@ -4,11 +4,11 @@ import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
   title: {
-    default: "AUDITAI — SMART CONTRACT SECURITY AUDITS",
-    template: "%s | AUDITAI",
+    default: "AuditAI — Smart Contract Security, Architecturally Sharp",
+    template: "%s | AuditAI",
   },
   description:
-    "AI-POWERED SMART CONTRACT SECURITY ANALYSIS. SHIP SECURE CONTRACTS BEFORE THE HACKERS FIND THE BUGS.",
+    "AI-powered smart contract security audits. Static analysis, symbolic execution and AI reasoning — ship secure contracts before the hackers find the bugs.",
   keywords: [
     "smart contract audit",
     "solidity security",
@@ -18,13 +18,9 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -33,7 +29,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
