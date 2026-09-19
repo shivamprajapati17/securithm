@@ -143,9 +143,18 @@ def get_optional_user(
         user_id = payload.get("sub")
         if user_id:
             try:
-                return db.get(User, UUID(user_id))
+                user = db.get(User, UUID(user_id))
+                if user:
+                    return user
             except (ValueError, AttributeError):
-                return None
+                pass
+            user = (
+                db.query(User)
+                .filter((User.email == user_id) | (User.auth_id == user_id))
+                .first()
+            )
+            if user:
+                return user
 
     # Try Supabase JWT
     claims = _decode_jwt_payload(token)
@@ -181,10 +190,49 @@ async def get_current_user(
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid token payload")
-        user = db.get(User, UUID(user_id))
+        user = None
+        try:
+            user = db.get(User, UUID(user_id))
+        except (ValueError, AttributeError):
+            pass
         if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-        return user
+            user = (
+                db.query(User)
+                .filter((User.email == user_id) | (User.auth_id == user_id))
+                .first()
+            )
+        email = payload.get("email") or (user_id if "@" in str(user_id) else None)
+        if not user and email:
+            user = db.query(User).filter(User.email == email).first()
+        if not user and email:
+            # Auto-create user if signed via Next.js auth
+            display_name = payload.get("name") or email.split("@")[0]
+            free_plan = db.query(Plan).filter(Plan.name == "Free").first()
+            if not free_plan:
+                free_plan = Plan(
+                    name="Free",
+                    max_scans_per_month=50,
+                    max_monitored_contracts=1,
+                    price_usd=0.0,
+                )
+                db.add(free_plan)
+                db.flush()
+            org = Organization(name=f"{display_name}'s Org", plan_id=free_plan.id)
+            db.add(org)
+            db.flush()
+            user = User(
+                email=email,
+                display_name=display_name,
+                auth_id=str(user_id),
+                org_id=org.id,
+                role="member",
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        if user:
+            return user
+        raise HTTPException(status_code=401, detail="User not found")
 
     # ── Try Supabase JWT ──
     claims = _decode_jwt_payload(token)

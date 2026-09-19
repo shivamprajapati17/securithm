@@ -7,10 +7,10 @@ const docSections = [
   {
     icon: Terminal,
     title: "QUICK START",
-    description: "Get started with AuditAI in minutes. Scan your first contract.",
+    description: "Get started with Securithm in minutes. Scan your first contract.",
     items: [
-      "Install the CLI: npm install auditai -g",
-      "Scan a contract: auditai scan ./contract.sol",
+      "Install the CLI: npm install securithm -g",
+      "Scan a contract: securithm scan ./contract.sol",
       "View results in the dashboard",
       "Set up CI/CD integration",
     ],
@@ -40,7 +40,7 @@ const docSections = [
   {
     icon: Zap,
     title: "API REFERENCE",
-    description: "Programmatic access to all AuditAI features.",
+    description: "Programmatic access to all Securithm features.",
     items: [
       "POST /api/v1/scans — Submit new contract for analysis",
       "GET /api/v1/scans/{id} — Retrieve scan results",

@@ -61,6 +61,17 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
       router.push("/book-demo");
       return;
     }
+
+    // Check free scan count paywall (2 scans max for free tier)
+    const scanCount = typeof window !== "undefined"
+      ? parseInt(localStorage.getItem("securithm_free_scans_used") || "0", 10)
+      : 0;
+
+    if (scanCount >= 2) {
+      router.push("/pricing?paywall=limit_reached");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -71,6 +82,9 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
           contract_name: undefined,
           input_mode: "code",
         });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("securithm_free_scans_used", (scanCount + 1).toString());
+        }
         onScan?.(code, chain);
         router.push(`/dashboard/scans?id=${result.id}`);
       } else if (inputMode === "address") {
@@ -80,10 +94,13 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
           chain,
           input_mode: "address",
         });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("securithm_free_scans_used", (scanCount + 1).toString());
+        }
         onScan?.(code, chain);
         router.push(`/dashboard/scans?id=${result.id}`);
       } else {
-        // GitHub mode - just navigate to repos page
+        // GitHub mode - navigate to repos page
         router.push("/dashboard/repos");
       }
     } catch (e) {

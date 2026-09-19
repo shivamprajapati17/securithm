@@ -44,7 +44,7 @@ async def list_findings(
             )
         )
     else:
-        query = query.where(ScanJob.user_id.is_(None))
+        query = query.where(Finding.scan_job.has(ScanJob.user_id.is_(None)))
 
     if severity:
         query = query.where(Finding.severity == severity)

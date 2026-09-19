@@ -1,24 +1,43 @@
-from sqlalchemy import create_engine
+import os
+import tempfile
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from .config import get_settings
 
 settings = get_settings()
 
-if settings.database_url.startswith("sqlite"):
-    engine = create_engine(
-        settings.database_url,
-        echo=settings.database_echo,
-        connect_args={"check_same_thread": False},
-    )
-else:
-    engine = create_engine(
-        settings.database_url,
-        echo=settings.database_echo,
-        pool_pre_ping=True,
-        pool_size=20,
-        max_overflow=10,
-    )
+def create_db_engine():
+    db_url = settings.database_url
+    try:
+        if db_url.startswith("sqlite"):
+            eng = create_engine(
+                db_url,
+                echo=settings.database_echo,
+                connect_args={"check_same_thread": False},
+            )
+        else:
+            eng = create_engine(
+                db_url,
+                echo=settings.database_echo,
+                pool_pre_ping=True,
+                pool_size=5,
+                max_overflow=5,
+                connect_args={"connect_timeout": 3},
+            )
+            # Test immediate connectivity
+            with eng.connect() as conn:
+                conn.execute(text("SELECT 1"))
+        return eng
+    except Exception as e:
+        print(f"[WARN] Database connection failed for {db_url}: {e}. Falling back to SQLite.")
+        tmp_db = os.path.join(tempfile.gettempdir(), "securithm.db")
+        return create_engine(
+            f"sqlite:///{tmp_db}",
+            echo=settings.database_echo,
+            connect_args={"check_same_thread": False},
+        )
 
+engine = create_db_engine()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
