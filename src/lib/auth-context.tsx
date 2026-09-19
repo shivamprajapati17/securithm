@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { supabase } from "./supabase";
-import type { Session } from "@supabase/supabase-js";
+import { setAuthToken } from "./api";
 
 interface User {
   id: string;
@@ -16,14 +15,13 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, display_name?: string, invite_id?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginWithGithub: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,8 +33,7 @@ const API_BASE =
     ? ""
     : "http://localhost:8000";
 
-
-/** Fetch the user profile from the backend (auto-creates user if needed). */
+/** Fetch the user profile from the backend. */
 async function fetchBackendProfile(accessToken: string): Promise<User | null> {
   try {
     const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
@@ -51,88 +48,104 @@ async function fetchBackendProfile(accessToken: string): Promise<User | null> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for Supabase auth state changes (handles initial session + login/logout)
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        setSession(newSession);
-
-        if (newSession?.access_token) {
-          // Fetch the backend user profile (auto-creates on first login)
-          const profile = await fetchBackendProfile(newSession.access_token);
-          setUser(profile);
-        } else {
-          setUser(null);
-        }
-
-        setLoading(false);
+  const refreshUser = useCallback(async () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
+    if (token) {
+      setAuthToken(token);
+      const profile = await fetchBackendProfile(token);
+      if (profile) {
+        setUser(profile);
+      } else {
+        localStorage.removeItem("securithm_token");
+        setAuthToken(null);
+        setUser(null);
       }
-    );
-
-    return () => subscription.unsubscribe();
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    refreshUser();
+  }, [refreshUser]);
 
   // ── Email / Password Login ──
   const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
-  }, []);
+    const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Login failed" }));
+      throw new Error(err.detail || "Login failed");
+    }
+    const data = await res.json();
+    if (data.access_token) {
+      localStorage.setItem("securithm_token", data.access_token);
+      setAuthToken(data.access_token);
+      await refreshUser();
+    }
+  }, [refreshUser]);
 
   // ── Email / Password Register ──
   const register = useCallback(
-    async (email: string, password: string, display_name?: string, _invite_id?: string) => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: display_name || email.split("@")[0] },
-        },
+    async (email: string, password: string, display_name?: string, invite_id?: string) => {
+      const res = await fetch(`${API_BASE}/api/v1/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, display_name, invite_id }),
       });
-      if (error) throw new Error(error.message);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Registration failed" }));
+        throw new Error(err.detail || "Registration failed");
+      }
+      const data = await res.json();
+      if (data.access_token) {
+        localStorage.setItem("securithm_token", data.access_token);
+        setAuthToken(data.access_token);
+        await refreshUser();
+      }
     },
-    []
+    [refreshUser]
   );
 
-  // ── Google OAuth ──
+  // ── Google OAuth Login ──
   const loginWithGoogle = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) throw new Error(error.message);
-  }, []);
-
-  // ── GitHub OAuth ──
-  const loginWithGithub = useCallback(async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
-    if (error) throw new Error(error.message);
+    const res = await fetch(`${API_BASE}/api/v1/auth/login/google`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: "Google login initiation failed" }));
+      throw new Error(err.detail || "Google login initiation failed");
+    }
+    const data = await res.json();
+    if (data.authorization_url) {
+      window.location.href = data.authorization_url;
+    }
   }, []);
 
   // ── Logout ──
-  const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+  const logout = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("securithm_token");
+    }
+    setAuthToken(null);
     setUser(null);
-    setSession(null);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        session,
         loading,
         login,
         register,
         loginWithGoogle,
-        loginWithGithub,
         logout,
         isAuthenticated: !!user,
+        refreshUser,
       }}
     >
       {children}
@@ -147,3 +160,4 @@ export function useAuth() {
   }
   return context;
 }
+
