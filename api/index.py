@@ -18,12 +18,12 @@ if _project_root not in sys.path:
 # ── Environment defaults ──
 os.environ.setdefault("DEBUG", "true")
 
-# ── Create database tables on cold start if DEBUG ──
+# ── Create database tables on cold start ──
 try:
-    if os.environ.get("DEBUG", "").lower() in ("true", "1", "yes"):
-        from backend.core.database import engine, Base, sync_database_schema
-        from backend.models import *  # noqa: F401, F403
-        sync_database_schema(engine, Base)
+    from backend.core.database import engine, Base, sync_database_schema
+    from backend.models import *  # noqa: F401, F403
+    sync_database_schema(engine, Base)
+    print("[INFO] Database schema synced successfully")
 except Exception as e:
     print(f"[WARN] DB table creation skipped: {e}")
 

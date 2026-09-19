@@ -15,18 +15,24 @@ from .demo import router as demo_router
 from .solvency import router as solvency_router
 
 v1_router = APIRouter(prefix="/api/v1")
-v1_router.include_router(scans_router)
-v1_router.include_router(public_findings_router)
-v1_router.include_router(findings_router)
-v1_router.include_router(monitoring_router)
-v1_router.include_router(risk_score_router)
-v1_router.include_router(auth_router)
-v1_router.include_router(nft_router)
-v1_router.include_router(token_router)
-v1_router.include_router(payments_router)
-v1_router.include_router(api_keys_router)
-v1_router.include_router(team_router)
-v1_router.include_router(demo_router)
-v1_router.include_router(solvency_router)
+root_v1_router = APIRouter()
 
-__all__ = ["v1_router"]
+for r in [
+    scans_router,
+    public_findings_router,
+    findings_router,
+    monitoring_router,
+    risk_score_router,
+    auth_router,
+    nft_router,
+    token_router,
+    payments_router,
+    api_keys_router,
+    team_router,
+    demo_router,
+    solvency_router,
+]:
+    v1_router.include_router(r)
+    root_v1_router.include_router(r)
+
+__all__ = ["v1_router", "root_v1_router"]
