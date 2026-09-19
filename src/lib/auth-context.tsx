@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import * as api from "./api";
+import { supabase } from "./supabase";
+import type { Session } from "@supabase/supabase-js";
 
 interface User {
   id: string;
@@ -15,115 +16,121 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
+  session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, display_name?: string, invite_id?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithGithub: () => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("auditai_token");
-}
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL !== undefined
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NODE_ENV === "production"
+    ? ""
+    : "http://localhost:8000";
 
-function setStoredToken(token: string | null) {
-  if (typeof window === "undefined") return;
-  if (token) {
-    localStorage.setItem("auditai_token", token);
-  } else {
-    localStorage.removeItem("auditai_token");
+
+/** Fetch the user profile from the backend (auto-creates user if needed). */
+async function fetchBackendProfile(accessToken: string): Promise<User | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/auth/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore token on mount
+  // Listen for Supabase auth state changes (handles initial session + login/logout)
   useEffect(() => {
-    const stored = getStoredToken();
-    if (!stored) {
-      setLoading(false);
-      return;
-    }
-    setToken(stored);
-    api.setAuthToken(stored);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        setSession(newSession);
 
-    let cancelled = false;
-    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-    (async () => {
-      // Retry once and always resolve the gate — a hung profile request
-      // must never trap the user behind the AUTHENTICATING screen.
-      for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-          const userData = await Promise.race([
-            api.getMe(),
-            new Promise<never>((_, reject) =>
-              setTimeout(() => reject(new Error("profile timeout")), 8000)
-            ),
-          ]);
-          if (!cancelled) setUser(userData);
-          break;
-        } catch {
-          if (attempt === 0 && !cancelled) {
-            await wait(1200);
-            continue;
-          }
-          // Token invalid or unreachable — clear it and let the gate release
-          if (!cancelled) {
-            setStoredToken(null);
-            setToken(null);
-            api.setAuthToken(null);
-          }
+        if (newSession?.access_token) {
+          // Fetch the backend user profile (auto-creates on first login)
+          const profile = await fetchBackendProfile(newSession.access_token);
+          setUser(profile);
+        } else {
+          setUser(null);
         }
+
+        setLoading(false);
       }
-      if (!cancelled) setLoading(false);
-    })();
+    );
 
-    return () => {
-      cancelled = true;
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
+  // ── Email / Password Login ──
   const login = useCallback(async (email: string, password: string) => {
-    const result = await api.login(email, password);
-    setStoredToken(result.access_token);
-    setToken(result.access_token);
-    api.setAuthToken(result.access_token);
-    const userData = await api.getMe();
-    setUser(userData);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
   }, []);
 
-  const register = useCallback(async (email: string, password: string, display_name?: string, invite_id?: string) => {
-    const result = await api.register(email, password, display_name, invite_id);
-    setStoredToken(result.access_token);
-    setToken(result.access_token);
-    api.setAuthToken(result.access_token);
-    const userData = await api.getMe();
-    setUser(userData);
+  // ── Email / Password Register ──
+  const register = useCallback(
+    async (email: string, password: string, display_name?: string, _invite_id?: string) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { display_name: display_name || email.split("@")[0] },
+        },
+      });
+      if (error) throw new Error(error.message);
+    },
+    []
+  );
+
+  // ── Google OAuth ──
+  const loginWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw new Error(error.message);
   }, []);
 
-  const logout = useCallback(() => {
-    setStoredToken(null);
-    setToken(null);
-    api.setAuthToken(null);
+  // ── GitHub OAuth ──
+  const loginWithGithub = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw new Error(error.message);
+  }, []);
+
+  // ── Logout ──
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
+        session,
         loading,
         login,
         register,
+        loginWithGoogle,
+        loginWithGithub,
         logout,
         isAuthenticated: !!user,
       }}

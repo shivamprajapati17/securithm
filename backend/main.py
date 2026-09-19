@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .core.config import get_settings
-from .core.database import engine, Base, SessionLocal
+from .core.database import engine, Base, SessionLocal, sync_database_schema
 from .api.v1 import v1_router
 from .api.v1.api_keys import (
     get_api_key_from_header,
@@ -96,10 +96,10 @@ async def lifespan(app: FastAPI):
     On startup: create database tables if possible (dev only — use Alembic in production).
     On shutdown: clean up resources.
     """
-    # Create tables in dev mode (gracefully handle missing DB)
+    # Create tables and sync schema in dev mode (gracefully handle missing DB)
     if settings.debug:
         try:
-            Base.metadata.create_all(bind=engine)
+            sync_database_schema(engine, Base)
         except Exception as e:
             print(f"[WARN] Could not create database tables: {e}")
     yield

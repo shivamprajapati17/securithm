@@ -21,11 +21,12 @@ os.environ.setdefault("DEBUG", "true")
 # ── Create database tables on cold start if DEBUG ──
 try:
     if os.environ.get("DEBUG", "").lower() in ("true", "1", "yes"):
-        from backend.core.database import engine, Base
+        from backend.core.database import engine, Base, sync_database_schema
         from backend.models import *  # noqa: F401, F403
-        Base.metadata.create_all(bind=engine)
+        sync_database_schema(engine, Base)
 except Exception as e:
     print(f"[WARN] DB table creation skipped: {e}")
+
 
 # ── Import the FastAPI app ──
 _app = None

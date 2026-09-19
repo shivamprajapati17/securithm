@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 from uuid import UUID
 from httpx import AsyncClient
 import secrets
+import base64
+import json
 
 from ...core.database import get_db
 from ...core.config import get_settings
@@ -23,6 +25,102 @@ settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+# ─── JWT Helpers ─────────────────────────────────────────
+
+def _decode_jwt_payload(token: str) -> dict | None:
+    """Decode JWT payload without signature verification (for claim inspection only)."""
+    try:
+        payload_b64 = token.split(".")[1]
+        payload_b64 += "=" * (4 - len(payload_b64) % 4)
+        return json.loads(base64.b64decode(payload_b64))
+    except Exception:
+        return None
+
+
+async def _verify_supabase_token(token: str) -> dict | None:
+    """Verify a Supabase JWT by calling the Supabase auth API.
+
+    Returns the Supabase user dict on success, None on failure.
+    """
+    if not settings.supabase_url or not settings.supabase_service_role_key:
+        return None
+
+    async with AsyncClient() as client:
+        resp = await client.get(
+            f"{settings.supabase_url}/auth/v1/user",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": settings.supabase_service_role_key,
+            },
+            timeout=10.0,
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        return None
+
+
+def _auto_create_user_from_supabase(supabase_user: dict, db: Session) -> User:
+    """Create a local User + Org for a Supabase-authenticated user."""
+    email = supabase_user.get("email", "")
+    user_metadata = supabase_user.get("user_metadata", {})
+    display_name = (
+        user_metadata.get("full_name")
+        or user_metadata.get("name")
+        or user_metadata.get("display_name")
+        or email.split("@")[0]
+    )
+    avatar_url = user_metadata.get("avatar_url") or user_metadata.get("picture") or ""
+
+    # Ensure a Free plan exists
+    free_plan = db.query(Plan).filter(Plan.name == "Free").first()
+    if not free_plan:
+        free_plan = Plan(
+            name="Free",
+            max_scans_per_month=50,
+            max_monitored_contracts=1,
+            price_usd=0.0,
+        )
+        db.add(free_plan)
+        db.flush()
+
+    org = Organization(
+        name=f"{display_name}'s Org",
+        plan_id=free_plan.id,
+    )
+    db.add(org)
+    db.flush()
+
+    user = User(
+        email=email,
+        display_name=display_name,
+        avatar_url=avatar_url,
+        auth_id=supabase_user["id"],
+        org_id=org.id,
+        role="member",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def _is_supabase_token(claims: dict | None) -> bool:
+    """Check if decoded claims indicate a Supabase auth token."""
+    if not claims or not isinstance(claims, dict):
+        return False
+    iss = str(claims.get("iss", "")).lower()
+    aud = str(claims.get("aud", ""))
+    role = str(claims.get("role", ""))
+    return (
+        "supabase" in iss
+        or iss == "supabase"
+        or aud == "authenticated"
+        or role in ("authenticated", "anon", "service_role")
+    )
+
+
+# ─── Auth Dependencies ───────────────────────────────────
+
 def get_optional_user(
     authorization: str = Header(default=None),
     db: Session = Depends(get_db),
@@ -37,24 +135,38 @@ def get_optional_user(
     scheme, _, token = authorization.partition(" ")
     if scheme.lower() != "bearer" or not token:
         return None
+
+    # Try legacy JWT first (fast, no network call)
     payload = verify_token(token)
-    if not payload:
-        return None
-    user_id = payload.get("sub")
-    if not user_id:
-        return None
-    try:
-        user_uuid = UUID(user_id)
-    except (ValueError, AttributeError):
-        return None
-    return db.get(User, user_uuid)
+    if payload:
+        user_id = payload.get("sub")
+        if user_id:
+            try:
+                return db.get(User, UUID(user_id))
+            except (ValueError, AttributeError):
+                return None
+
+    # Try Supabase JWT
+    claims = _decode_jwt_payload(token)
+    if _is_supabase_token(claims):
+        supabase_user_id = claims.get("sub")
+        if supabase_user_id:
+            user = db.query(User).filter(User.auth_id == supabase_user_id).first()
+            if user:
+                return user
+
+    return None
 
 
 async def get_current_user(
     authorization: str = Header(default=None),
     db: Session = Depends(get_db),
 ) -> User:
-    """Dependency to get the current authenticated user from a JWT token."""
+    """Dependency to get the current authenticated user.
+
+    Supports both legacy JWTs (python-jose) and Supabase JWTs.
+    For Supabase users, auto-creates a local User record on first login.
+    """
     if not authorization:
         raise HTTPException(status_code=401, detail="Not authenticated")
 
@@ -62,20 +174,51 @@ async def get_current_user(
     if scheme.lower() != "bearer" or not token:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
+    # ── Try legacy JWT first (fast, no HTTP call) ──
     payload = verify_token(token)
-    if not payload:
+    if payload:
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        user = db.get(User, UUID(user_id))
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+
+    # ── Try Supabase JWT ──
+    claims = _decode_jwt_payload(token)
+    if not _is_supabase_token(claims):
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
-    user_id = payload.get("sub")
-    if not user_id:
+    supabase_user_id = claims.get("sub")
+    if not supabase_user_id:
         raise HTTPException(status_code=401, detail="Invalid token payload")
 
-    user = db.get(User, UUID(user_id))
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+    # Fast path: look up existing user by auth_id
+    user = db.query(User).filter(User.auth_id == supabase_user_id).first()
+    if user:
+        return user
 
+    # Check by email (user registered via legacy and is now using Supabase)
+    email = claims.get("email", "")
+    if email:
+        user = db.query(User).filter(User.email == email).first()
+        if user:
+            user.auth_id = supabase_user_id
+            db.commit()
+            db.refresh(user)
+            return user
+
+    # Verify token with Supabase API and auto-create user
+    supabase_user = await _verify_supabase_token(token)
+    if not supabase_user:
+        raise HTTPException(status_code=401, detail="Invalid Supabase token")
+
+    user = _auto_create_user_from_supabase(supabase_user, db)
     return user
 
+
+# ─── Auth Endpoints ──────────────────────────────────────
 
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(

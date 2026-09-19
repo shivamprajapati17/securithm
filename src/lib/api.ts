@@ -1,5 +1,14 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { supabase } from "./supabase";
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL !== undefined
+    ? process.env.NEXT_PUBLIC_API_URL
+    : process.env.NODE_ENV === "production"
+    ? ""
+    : "http://localhost:8000";
+
+
+// Kept for backward-compat (API key auth / SDK usage)
 let authToken: string | null = null;
 
 export function setAuthToken(token: string | null) {
@@ -88,8 +97,19 @@ export async function request<T>(
     "Content-Type": "application/json",
   };
 
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
+  // Prefer Supabase session token, fall back to manual authToken (API keys)
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      headers["Authorization"] = `Bearer ${session.access_token}`;
+    } else if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
+  } catch {
+    // Supabase not available (SSR or test) — use manual token
+    if (authToken) {
+      headers["Authorization"] = `Bearer ${authToken}`;
+    }
   }
 
   if (options.headers) {
