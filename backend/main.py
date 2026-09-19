@@ -140,6 +140,8 @@ app.add_middleware(ApiKeyRateLimitMiddleware)
 
 # Health check endpoint
 @app.get("/health", tags=["system"])
+@app.get("/api/health", tags=["system"])
+@app.get("/api/v1/health", tags=["system"])
 async def health_check():
     """System health check endpoint."""
     return {
@@ -147,6 +149,7 @@ async def health_check():
         "service": settings.app_name,
         "version": settings.app_version,
     }
+
 
 
 # Register API routes
