@@ -166,7 +166,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Email / Password Login ──
   const login = useCallback(async (email: string, password: string) => {
-    // 1. Try Supabase Auth directly
+    // 1. Primary: Native API login
+    try {
+      const res = await fetch(`${getApiBase()}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.access_token) {
+          localStorage.setItem("securithm_token", data.access_token);
+          setAuthToken(data.access_token);
+          const localUser = parseJwtLocally(data.access_token);
+          if (localUser) setUser(localUser);
+          await refreshUser();
+          return;
+        }
+      }
+    } catch (apiErr) {
+      console.warn("API login failed, attempting Supabase auth:", apiErr);
+    }
+
+    // 2. Fallback: Supabase Auth
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -180,34 +202,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await refreshUser();
         return;
       }
-    } catch (sbErr) {
-      console.warn("Supabase password sign in error, trying API route:", sbErr);
-    }
-
-    // 2. Fallback to API route
-    const res = await fetch(`${getApiBase()}/api/v1/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Login failed" }));
-      throw new Error(err.detail || "Login failed");
-    }
-    const data = await res.json();
-    if (data.access_token) {
-      localStorage.setItem("securithm_token", data.access_token);
-      setAuthToken(data.access_token);
-      const localUser = parseJwtLocally(data.access_token);
-      if (localUser) setUser(localUser);
-      await refreshUser();
+      if (error) throw error;
+    } catch (sbErr: any) {
+      throw new Error(sbErr.message || "Login failed. Please check your credentials.");
     }
   }, [refreshUser]);
 
   // ── Email / Password Register ──
   const register = useCallback(
     async (email: string, password: string, display_name?: string, invite_id?: string) => {
-      // 1. Try Supabase Auth Sign Up
+      // 1. Primary: Native API registration
+      try {
+        const res = await fetch(`${getApiBase()}/api/v1/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, display_name, invite_id }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.access_token) {
+            localStorage.setItem("securithm_token", data.access_token);
+            setAuthToken(data.access_token);
+            const localUser = parseJwtLocally(data.access_token);
+            if (localUser) setUser(localUser);
+            await refreshUser();
+            return;
+          }
+        }
+      } catch (apiErr) {
+        console.warn("API register failed, attempting Supabase auth:", apiErr);
+      }
+
+      // 2. Fallback: Supabase Auth
       try {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -227,27 +253,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           await refreshUser();
           return;
         }
-      } catch (sbErr) {
-        console.warn("Supabase sign up error, trying API route:", sbErr);
-      }
-
-      // 2. Fallback to API route
-      const res = await fetch(`${getApiBase()}/api/v1/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, display_name, invite_id }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: "Registration failed" }));
-        throw new Error(err.detail || "Registration failed");
-      }
-      const data = await res.json();
-      if (data.access_token) {
-        localStorage.setItem("securithm_token", data.access_token);
-        setAuthToken(data.access_token);
-        const localUser = parseJwtLocally(data.access_token);
-        if (localUser) setUser(localUser);
-        await refreshUser();
+        if (error) throw error;
+      } catch (sbErr: any) {
+        throw new Error(sbErr.message || "Registration failed. Please try again.");
       }
     },
     [refreshUser]

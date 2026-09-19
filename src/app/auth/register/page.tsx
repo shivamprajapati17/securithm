@@ -43,7 +43,7 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, displayName || undefined, inviteId || undefined);
-      router.push("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
