@@ -63,6 +63,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      // 1. Check URL hash (#access_token=...)
+      if (window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashToken = hashParams.get("access_token");
+        if (hashToken) {
+          localStorage.setItem("securithm_token", hashToken);
+          setAuthToken(hashToken);
+          // Clean hash from URL without full reload
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+      }
+
+      // 2. Check query params (?token=...)
+      const searchParams = new URLSearchParams(window.location.search);
+      const queryToken = searchParams.get("token");
+      if (queryToken) {
+        localStorage.setItem("securithm_token", queryToken);
+        setAuthToken(queryToken);
+      }
+    }
     refreshUser();
   }, [refreshUser]);
 
