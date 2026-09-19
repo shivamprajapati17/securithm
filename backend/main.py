@@ -160,8 +160,8 @@ app.include_router(v1_router)
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler for unhandled errors."""
-    # Include CORS headers explicitly because BaseHTTPMiddleware interactions
-    # can strip them from error responses as they pass back through the stack.
+    import traceback
+    traceback.print_exc()
     origin = request.headers.get("origin", "")
     headers = {
         "Access-Control-Allow-Origin": origin if origin else "*",
@@ -170,7 +170,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={
-            "detail": "An unexpected error occurred",
+            "detail": f"{exc.__class__.__name__}: {str(exc)}" if str(exc) else "An unexpected error occurred",
             "type": exc.__class__.__name__,
         },
         headers=headers,
