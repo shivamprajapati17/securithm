@@ -5,11 +5,5 @@
   "regions": ["iad1"],
   "github": {
     "silent": true
-  },
-  "rewrites": [
-    {
-      "source": "/api/v1/((?!auth).*)",
-      "destination": "/api/index.py"
-    }
-  ]
+  }
 }
