@@ -32,7 +32,7 @@ function CallbackHandler() {
         localStorage.setItem("securithm_token", token);
         setAuthToken(token);
         await refreshUser();
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
         return;
       }
 
@@ -45,7 +45,7 @@ function CallbackHandler() {
           localStorage.setItem("securithm_token", hashToken);
           setAuthToken(hashToken);
           await refreshUser();
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
           return;
         }
       }
@@ -58,7 +58,7 @@ function CallbackHandler() {
           localStorage.setItem("securithm_token", session.access_token);
           setAuthToken(session.access_token);
           await refreshUser();
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
           return;
         }
       } catch (err) {
@@ -71,13 +71,15 @@ function CallbackHandler() {
         handled = true;
         setAuthToken(existing);
         await refreshUser();
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
         return;
       }
 
       if (!handled) {
         setError("No authentication token received");
-        setTimeout(() => router.push("/auth/login"), 2500);
+        setTimeout(() => {
+          window.location.href = "/auth/login";
+        }, 2000);
       }
     }
 
