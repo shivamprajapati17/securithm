@@ -40,6 +40,43 @@ async function fetchBackendProfile(accessToken: string): Promise<User | null> {
   }
 }
 
+function parseJwtLocally(token: string): User | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length >= 2) {
+      const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      const payload = JSON.parse(jsonPayload);
+      const userMeta = payload.user_metadata || {};
+      return {
+        id: payload.sub || "user_default",
+        email: payload.email || userMeta.email || payload.sub || "user@securithm.dev",
+        display_name:
+          payload.name ||
+          payload.display_name ||
+          userMeta.full_name ||
+          userMeta.name ||
+          (payload.email ? payload.email.split("@")[0] : "Securithm User"),
+        avatar_url:
+          payload.picture ||
+          payload.avatar_url ||
+          userMeta.avatar_url ||
+          userMeta.picture ||
+          null,
+        role: payload.role || "admin",
+        org_name: "Securithm Security",
+        org_id: "org_default",
+      };
+    }
+  } catch {}
+  return null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,10 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
     if (token) {
       setAuthToken(token);
+      const localUser = parseJwtLocally(token);
+      if (localUser) {
+        setUser(localUser);
+      }
       const profile = await fetchBackendProfile(token);
       if (profile) {
         setUser(profile);
-      } else {
+      } else if (!localUser) {
         localStorage.removeItem("securithm_token");
         setAuthToken(null);
         setUser(null);
