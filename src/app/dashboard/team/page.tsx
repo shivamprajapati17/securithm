@@ -22,7 +22,6 @@ import {
   Mail,
   User,
   Users,
-  Crown,
   Eye,
   X,
   ChevronDown,
@@ -59,16 +58,12 @@ const columnConfig = [
   { id: "in_progress", title: "FIXING", color: "bg-[var(--color-term-warning)]" },
   { id: "resolved", title: "RESOLVED", color: "bg-[var(--color-term-fg)]" },
   { id: "wont_fix", title: "WONT_FIX", color: "bg-[var(--color-term-muted)]" },
-];
-
-const roleIcon: Record<string, React.ComponentType<{ className?: string }>> = {
-  admin: Crown,
+];  const roleIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   member: User,
   viewer: Eye,
 };
 
 const roleColors: Record<string, string> = {
-  admin: "text-yellow-400",
   member: "text-[var(--color-term-fg)]",
   viewer: "text-[var(--color-term-muted)]",
 };
@@ -152,7 +147,8 @@ export default function TeamPage() {
     }, ...prev]);
   }, []);
 
-  const isAdmin = user?.role === "admin";
+  // Admin concept removed — every member can manage the organization.
+  const isAdmin = true;
 
   // Pre-compute per-member finding severity stats
   const memberFindingStats = new Map<string, Record<string, number>>();
@@ -724,7 +720,7 @@ export default function TeamPage() {
                             <select
                               value={member.role}
                               onChange={async (e) => {
-                                const newRole = e.target.value as "admin" | "member" | "viewer";
+                const newRole = e.target.value as "member" | "viewer";
                                 try {
                                   const token = localStorage.getItem("auditai_token");
                                   if (token) api.setAuthToken(token);
@@ -736,7 +732,6 @@ export default function TeamPage() {
                               }}
                               className="appearance-none bg-transparent border border-[var(--color-term-border)] text-[var(--color-term-fg)] text-[9px] font-mono px-1.5 py-0.5 outline-none cursor-pointer hover:border-[var(--color-term-fg)]"
                             >
-                              <option value="admin">ADMIN</option>
                               <option value="member">MEMBER</option>
                               <option value="viewer">VIEWER</option>
                             </select>

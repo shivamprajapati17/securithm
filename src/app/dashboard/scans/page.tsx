@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useScans, useScan } from "@/lib/hooks";
 import { formatRelativeTime } from "@/lib/utils";
+import * as api from "@/lib/api";
+import { DiffPreview } from "@/components/diff-preview";
 import {
   Search,
   Clock,
@@ -16,7 +18,45 @@ import {
   Download,
   ArrowLeft,
   FileText,
+  Bot,
+  Wrench,
+  Eye,
+  GitCompare,
 } from "lucide-react";
+
+const CATEGORY_GROUPS: Record<string, string[]> = {
+  "Access & Auth": ["Reentrancy", "tx.origin Authentication", "Missing Access Control"],
+  "Fund Safety": ["Unprotected Selfdestruct", "Dangerous delegatecall", "Centralization Risk"],
+  "Logic & Data": ["Integer Overflow/Underflow", "Timestamp Dependence", "Weak Source of Randomness"],
+  "Hygiene": ["Unchecked Return Value", "Gas Griefing"],
+};
+
+function categoryToGroup(category: string): string {
+  const base = category.split(" · ")[0].trim();
+  for (const [group, cats] of Object.entries(CATEGORY_GROUPS)) {
+    if (cats.includes(base)) return group;
+  }
+  return "Other";
+}
+
+function categoryBase(category: string): string {
+  return category.split(" · ")[0].trim();
+}
+
+/** Categories the agent engine can auto-fix (must mirror backend rule set). */
+const AUTO_FIXABLE = new Set([
+  "Reentrancy",
+  "tx.origin Authentication",
+  "Unprotected Selfdestruct",
+  "Dangerous delegatecall",
+  "Unchecked Return Value",
+  "Gas Griefing",
+  "Integer Overflow/Underflow",
+]);
+
+function isFixable(category: string): boolean {
+  return AUTO_FIXABLE.has(categoryBase(category));
+}
 
 const severityConfig = {
   critical: {
@@ -133,15 +173,53 @@ function ScanList({
 export default function ScansPage() {
   const [selectedScanId, setSelectedScanId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const [diffPreview, setDiffPreview] = useState<api.DiffPreviewResponse | null>(null);
+  const [diffLoading, setDiffLoading] = useState(false);
   const { data: scansData, loading: scansLoading, error: scansError } = useScans({ page_size: 50 });
   const { data: scanDetail, loading: detailLoading, error: detailError } = useScan(selectedScanId);
 
+  const handleDownload = async (fn: () => Promise<void>, key: string) => {
+    setDownloading(key);
+    try {
+      await fn();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  const toggleDiffPreview = async () => {
+    if (diffPreview) {
+      setDiffPreview(null);
+      return;
+    }
+    if (!selectedScanId) return;
+    setDiffLoading(true);
+    try {
+      const data = await api.getDiffPreview(selectedScanId);
+      setDiffPreview(data);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Failed to load diff preview");
+    } finally {
+      setDiffLoading(false);
+    }
+  };
+
   const allScans = scansData?.items || [];
-  const filteredScans = searchQuery
-    ? allScans.filter((s) =>
-        (s.contract_name || "").toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : allScans;
+  const filteredScans = allScans
+    .filter((s) =>
+      searchQuery
+        ? (s.contract_name || "").toLowerCase().includes(searchQuery.toLowerCase())
+        : true
+    )
+    .filter((s) =>
+      categoryFilter === "all"
+        ? true
+        : (s.findings || []).some((f) => categoryToGroup(f.category) === categoryFilter)
+    );
 
   // Detail view with error handling
   if (detailError) {
@@ -213,14 +291,61 @@ export default function ScansPage() {
               <span>{scanDetail.chain || "ethereum"}</span>
               <span>{findings.length} FINDINGS</span>
             </div>
-          </div>              <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
-              const blob = new Blob([JSON.stringify(scanDetail, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a'); a.href = url; a.download = `${scanDetail.contract_name || 'scan'}-${scanDetail.id.slice(0,8)}.json`; a.click();
-              URL.revokeObjectURL(url);
-            }}>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={downloading === "fixed"}
+              onClick={() =>
+                handleDownload(
+                  () => api.downloadFixedContract(scanDetail.id, scanDetail.contract_name),
+                  "fixed"
+                )
+              }
+            >
+              <Wrench className="h-3 w-3" />
+              {downloading === "fixed" ? "FIXING..." : "FIXED .SOL"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              disabled={downloading === "patch"}
+              onClick={() =>
+                handleDownload(
+                  () => api.downloadFullPatch(scanDetail.id, scanDetail.contract_name),
+                  "patch"
+                )
+              }
+            >
               <Download className="h-3 w-3" />
+              {downloading === "patch" ? "PATCH..." : "FULL PATCH"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={toggleDiffPreview}
+            >
+              <GitCompare className="h-3 w-3" />
+              {diffLoading ? "LOADING..." : diffPreview ? "HIDE DIFF" : "VIEW DIFF"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(scanDetail, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${scanDetail.contract_name || "scan"}-${scanDetail.id.slice(0, 8)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               [ EXPORT ]
             </Button>
           </div>
@@ -288,22 +413,47 @@ export default function ScansPage() {
                         </div>
                         <div className="text-[9px] text-[var(--color-term-muted)] mt-0.5 font-mono">
                           LINE {finding.line_number || "N/A"}
+                          {" · "}
+                          {categoryBase(finding.category).toUpperCase()}
+                          {isFixable(finding.category) ? " · AUTO-FIX READY" : " · MANUAL REVIEW"}
                           {finding.remediation_sla && ` · SLA: ${new Date(finding.remediation_sla).toLocaleDateString()}`}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      {isFixable(finding.category) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[9px] h-6 gap-1"
+                          disabled={downloading === finding.id}
+                          onClick={() =>
+                            handleDownload(
+                              () => api.downloadFindingPatch(scanDetail.id, finding.id, finding.category),
+                              finding.id
+                            )
+                          }
+                        >
+                          <Download className="h-2.5 w-2.5" />
+                          {downloading === finding.id ? "..." : ".PATCH"}
+                        </Button>
+                      )}
                       <Button variant="ghost" size="sm" className="text-[9px] h-6" onClick={() => {
-                        const name = prompt('ASSIGN TO (ENTER EMAIL):');
+                        const name = prompt("ASSIGN TO (ENTER EMAIL):");
                         if (name) alert(`ASSIGNED TO ${name}`);
                       }}>ASSIGN</Button>
-                      <Button variant="outline" size="sm" className="text-[9px] h-6" onClick={() => alert('FIX SUGGESTION APPLIED. REVIEW AND COMMIT THE CHANGES.')}>[ FIX ]</Button>
                     </div>
                   </div>
 
                   <p className="text-xs text-[var(--color-term-muted)] mb-3 leading-relaxed font-mono">
                     {finding.description}
                   </p>
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <Bot className="h-3 w-3 text-[var(--color-term-muted)]" />
+                    <span className="text-[9px] font-mono text-[var(--color-term-muted)] uppercase tracking-wider">
+                      REPORTED BY {finding.category.includes(" · ") ? finding.category.split(" · ")[1] : "AGENT"}
+                    </span>
+                  </div>
 
                   <div className="space-y-2">
                     {finding.code_snippet && (
@@ -328,6 +478,16 @@ export default function ScansPage() {
             );
           })
         )}
+
+        {/* Before/after fixed-contract preview */}
+        {diffPreview && (
+          <DiffPreview
+            original={diffPreview.original}
+            fixed={diffPreview.fixed}
+            fixesApplied={diffPreview.fixesApplied}
+            fixesManual={diffPreview.fixesManual}
+          />
+        )}
       </div>
     );
   }
@@ -344,14 +504,28 @@ export default function ScansPage() {
             {allScans.length} TOTAL SCANS
           </p>
         </div>
-        <div className="relative flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2 w-48">
-          <Search className="h-3 w-3 text-[var(--color-term-muted)] mr-1" />
-          <input
-            placeholder="SEARCH..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5 placeholder:text-[var(--color-term-muted)]"
-          />
+        <div className="flex items-center gap-2">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="border border-[var(--color-term-border)] bg-[var(--color-term-bg)] text-[var(--color-term-fg)] font-mono text-xs px-2 py-2 outline-none"
+            aria-label="Filter by category"
+          >
+            <option value="all">ALL CATEGORIES</option>
+            <option value="Access & Auth">ACCESS & AUTH</option>
+            <option value="Fund Safety">FUND SAFETY</option>
+            <option value="Logic & Data">LOGIC & DATA</option>
+            <option value="Hygiene">HYGIENE</option>
+          </select>
+          <div className="relative flex items-center border border-[var(--color-term-border)] bg-[var(--color-term-bg)] px-2 w-48">
+            <Search className="h-3 w-3 text-[var(--color-term-muted)] mr-1" />
+            <input
+              placeholder="SEARCH..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent border-none outline-none text-[var(--color-term-fg)] font-mono text-xs py-1.5 placeholder:text-[var(--color-term-muted)]"
+            />
+          </div>
         </div>
       </div>
 

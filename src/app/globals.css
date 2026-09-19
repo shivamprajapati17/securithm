@@ -1,6 +1,200 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
+   METAMASK-STYLE HOMEPAGE LAYER (mm-*)
+   Warm peach workshop — giant violet display type, quiet controls.
+   Scoped to .mm-root so the Exante app theme is untouched.
+   ═══════════════════════════════════════════════ */
+
+.mm-root {
+  /* Colors */
+  --color-peach-cream: #fff1eb;
+  --color-ink-black: #0a0a0a;
+  --color-pure-white: #ffffff;
+  --color-cool-mist: #e9edf6;
+  --color-slate: #393d46;
+  --color-hairline: #c8ceda;
+  --color-deep-violet: #3d065f;
+  --color-midnight-plum: #190066;
+  --color-lime-wash: #e5ffc3;
+  --color-acid-lime: #baf24a;
+  --color-lilac-haze: #eac2ff;
+  --color-orchid-pop: #d075ff;
+  --color-sky-wash: #cce7ff;
+  --color-periwinkle: #89b0ff;
+  --color-apricot: #ffa680;
+  --color-burnt-sienna: #661800;
+
+  --font-mm-display: "Bebas Neue", "Oswald", var(--font-display);
+  --font-mm-sans: "Inter", var(--font-sans);
+  --font-mm-body: "DM Sans", "Inter", var(--font-sans);
+
+  background: var(--color-peach-cream);
+  color: var(--color-ink-black);
+  font-family: var(--font-mm-body);
+  overflow-x: clip;
+}
+
+.mm-container {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+/* Display type — the hero IS the headline */
+.mm-display {
+  font-family: var(--font-mm-display);
+  font-weight: 400;
+  color: var(--color-deep-violet);
+  line-height: 1.05;
+  letter-spacing: -0.006em;
+}
+
+.mm-eyebrow {
+  font-family: var(--font-mm-body);
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 0.8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-slate);
+}
+
+/* Black pill CTA — the single dark anchor on the cream canvas */
+.mm-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-ink-black);
+  color: var(--color-pure-white);
+  border-radius: 9999px;
+  padding: 11px 20px;
+  font-family: var(--font-mm-body);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+.mm-cta:hover {
+  opacity: 0.85;
+}
+.mm-cta:active {
+  transform: scale(0.98);
+}
+.mm-cta--light {
+  background: var(--color-pure-white);
+  color: var(--color-ink-black);
+  border: 1px solid var(--color-ink-black);
+}
+
+/* Accent wash feature cards — flat, no shadows, 12px radius */
+.mm-card {
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+}
+.mm-card--lime { background: var(--color-lime-wash); }
+.mm-card--lilac { background: var(--color-lilac-haze); }
+.mm-card--apricot { background: var(--color-apricot); }
+.mm-card--sky { background: var(--color-sky-wash); }
+
+/* Decorative fragments that break the card edge (signature) */
+.mm-burst {
+  position: absolute;
+  border-radius: 4px;
+  background: var(--color-deep-violet);
+}
+
+.mm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-family: var(--font-mm-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 0.8;
+  color: var(--color-ink-black);
+}
+
+/* Footer/subnav links sit directly on the canvas */
+.mm-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-slate);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.mm-link:hover {
+  color: var(--color-deep-violet);
+}
+
+/* Floating right-edge pill widget */
+.mm-widget {
+  position: fixed;
+  right: 0;
+  top: 40%;
+  width: 12px;
+  height: 80px;
+  background: var(--color-ink-black);
+  border-radius: 9999px 0 0 9999px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 50;
+}
+.mm-widget-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: var(--color-pure-white);
+}
+
+/* ── Hero terminal: dark phone-frame product mock, cream page contrast ── */
+.mm-terminal {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.65;
+  color: #e8e8e8;
+  min-height: 340px;
+}
+.mm-terminal .tok-key { color: #d075ff; }
+.mm-terminal .tok-str { color: #baf24a; }
+.mm-terminal .tok-com { color: #6b6b6b; }
+.mm-terminal .tok-fn { color: #89b0ff; }
+.mm-terminal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.mm-terminal-head span {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+
+@keyframes mm-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.mm-caret {
+  animation: mm-blink 1.1s step-end infinite;
+  color: var(--color-acid-lime);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-caret { animation: none; }
+  .mm-cta { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════
    EXANTE DESIGN SYSTEM — AuditAI
    "neon greenhouse at midnight"
    Obsidian dark hero · white canvas · single Neon Mint accent

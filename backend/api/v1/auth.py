@@ -23,6 +23,33 @@ settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def get_optional_user(
+    authorization: str = Header(default=None),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Like get_current_user but returns None instead of raising.
+
+    Used by scan endpoints to tag scan jobs to the logged-in account while
+    still allowing anonymous demo scans.
+    """
+    if not authorization:
+        return None
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        return None
+    payload = verify_token(token)
+    if not payload:
+        return None
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, AttributeError):
+        return None
+    return db.get(User, user_uuid)
+
+
 async def get_current_user(
     authorization: str = Header(default=None),
     db: Session = Depends(get_db),
@@ -130,7 +157,7 @@ async def register(
         display_name=user_in.display_name or user_in.email.split("@")[0],
         password_hash=get_password_hash(user_in.password),
         org_id=org.id,
-        role="admin",
+        role="member",
     )
     db.add(user)
     db.commit()

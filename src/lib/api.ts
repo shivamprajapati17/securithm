@@ -116,6 +116,98 @@ export async function request<T>(
 
 // ─── Scans ───────────────────────────────────────────────────
 
+export interface ScanCategoryGroup {
+  category: string;
+  agent: string;
+  count: number;
+  severities: Record<string, number>;
+  fixable: boolean;
+}
+
+// ─── Agent downloads (fixed contract + patches) ─────────────
+
+async function downloadFile(url: string, filename: string): Promise<void> {
+  const headers: Record<string, string> = {};
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+  const response = await fetch(`${API_BASE}${url}`, { headers });
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ detail: `HTTP ${response.status}` }));
+    throw new Error(error.detail || `Download failed: ${response.status}`);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
+/** Download the fully auto-fixed .sol file for a completed scan. */
+export async function downloadFixedContract(
+  scanId: string,
+  contractName?: string | null
+): Promise<void> {
+  const name = (contractName || "Contract").replace(/[^A-Za-z0-9_-]+/g, "_");
+  await downloadFile(
+    `/api/v1/scans/${scanId}/download/fixed`,
+    `${name}_fixed.sol`
+  );
+}
+
+/** Download a unified diff with ALL applied fixes. */
+export async function downloadFullPatch(
+  scanId: string,
+  contractName?: string | null
+): Promise<void> {
+  const name = (contractName || "Contract").replace(/[^A-Za-z0-9_-]+/g, "_");
+  await downloadFile(
+    `/api/v1/scans/${scanId}/download/patch`,
+    `${name}_auditai.patch`
+  );
+}
+
+/** Download a unified diff for a single finding (per-category patch). */
+export async function downloadFindingPatch(
+  scanId: string,
+  findingId: string,
+  category: string
+): Promise<void> {
+  const name = category.split(" · ")[0].replace(/[^A-Za-z0-9_-]+/g, "_");
+  await downloadFile(
+    `/api/v1/scans/${scanId}/findings/${findingId}/patch`,
+    `${name}_fix.patch`
+  );
+}
+
+export interface DiffPreviewResponse {
+  scanId: string;
+  contractName: string;
+  original: string;
+  fixed: string;
+  fixesApplied: number;
+  fixesManual: number;
+  appliedCategories: string[];
+}
+
+/** Original + fixed source for the in-app before/after diff preview. */
+export async function getDiffPreview(scanId: string): Promise<DiffPreviewResponse> {
+  return request<DiffPreviewResponse>(`/api/v1/scans/${scanId}/diff-preview`);
+}
+
+/** Category breakdown (agent, count, severities, fixable) for a scan. */
+export async function getScanCategories(
+  scanId: string
+): Promise<ScanCategoryGroup[]> {
+  return request<ScanCategoryGroup[]>(`/api/v1/scans/${scanId}/categories`);
+}
+
 export async function createScan(
   data: ScanCreateRequest
 ): Promise<Scan> {
@@ -281,7 +373,7 @@ export async function listTeamMembers(): Promise<TeamMember[]> {
 
 export async function changeMemberRole(
   userId: string,
-  role: "admin" | "member" | "viewer"
+  role: "member" | "viewer"
 ): Promise<TeamMember> {
   return request(`/api/v1/team/members/${userId}/role`, {
     method: "PATCH",
