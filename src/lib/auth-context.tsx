@@ -27,19 +27,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-/** Fetch the user profile from the backend. */
-async function fetchBackendProfile(accessToken: string): Promise<User | null> {
-  try {
-    const res = await fetch(`${getApiBase()}/api/v1/auth/me`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
+/** Decode a JWT locally for instant UI updates */
 function parseJwtLocally(token: string): User | null {
   try {
     const parts = token.split(".");
@@ -73,86 +61,120 @@ function parseJwtLocally(token: string): User | null {
         org_id: "org_default",
       };
     }
-  } catch {}
+  } catch {
+    // ignore parse errors
+  }
   return null;
+}
+
+/** Save token to localStorage and set the auth header */
+function persistToken(token: string) {
+  localStorage.setItem("securithm_token", token);
+  setAuthToken(token);
+}
+
+/** Clear token from localStorage and auth header */
+function clearToken() {
+  localStorage.removeItem("securithm_token");
+  setAuthToken(null);
+}
+
+/** Get token from localStorage */
+function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("securithm_token");
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // ── Refresh user from stored token ──
   const refreshUser = useCallback(async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
-    if (token) {
-      setAuthToken(token);
-      const localUser = parseJwtLocally(token);
-      if (localUser) {
-        setUser(localUser);
-      }
-      const profile = await fetchBackendProfile(token);
-      if (profile) {
-        setUser(profile);
-      } else if (!localUser) {
-        localStorage.removeItem("securithm_token");
-        setAuthToken(null);
-        setUser(null);
-      }
-    } else {
+    const token = getStoredToken();
+    if (!token) {
       setUser(null);
+      setLoading(false);
+      return;
     }
+
+    // Instant UI from JWT decode
+    persistToken(token);
+    const localUser = parseJwtLocally(token);
+    if (localUser) {
+      setUser(localUser);
+    }
+
+    // Try to get full profile from backend (non-blocking)
+    try {
+      const res = await fetch(`${getApiBase()}/api/v1/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const profile = await res.json();
+        if (profile && profile.email) {
+          setUser(profile);
+        }
+      }
+    } catch {
+      // Backend profile fetch failed - localUser from JWT is fine
+    }
+
     setLoading(false);
   }, []);
 
+  // ── Mount: check for tokens in URL or localStorage ──
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      let foundToken: string | null = null;
+    if (typeof window === "undefined") return;
 
-      // 1. Check URL hash (#access_token=...)
-      if (window.location.hash) {
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hashToken = hashParams.get("access_token");
-        if (hashToken) {
-          foundToken = hashToken;
-          localStorage.setItem("securithm_token", hashToken);
-          setAuthToken(hashToken);
-        }
-      }
+    let foundToken: string | null = null;
 
-      // 2. Check query params (?token=...)
-      const searchParams = new URLSearchParams(window.location.search);
-      const queryToken = searchParams.get("token");
-      if (queryToken) {
-        foundToken = queryToken;
-        localStorage.setItem("securithm_token", queryToken);
-        setAuthToken(queryToken);
-      }
-
-      const activeToken = foundToken || localStorage.getItem("securithm_token");
-      if (activeToken) {
-        const localUser = parseJwtLocally(activeToken);
-        if (localUser) setUser(localUser);
-        const pathname = window.location.pathname;
-        if (pathname.startsWith("/auth/")) {
-          setTimeout(() => {
-            window.location.href = "/dashboard";
-          }, 200);
-        }
+    // 1. Check URL hash (#access_token=...)
+    if (window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hashToken = hashParams.get("access_token");
+      if (hashToken) {
+        foundToken = hashToken;
+        persistToken(hashToken);
+        // Clean up hash from URL
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
       }
     }
+
+    // 2. Check query params (?token=...)
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryToken = searchParams.get("token");
+    if (queryToken) {
+      foundToken = queryToken;
+      persistToken(queryToken);
+    }
+
+    const activeToken = foundToken || getStoredToken();
+    if (activeToken) {
+      const localUser = parseJwtLocally(activeToken);
+      if (localUser) setUser(localUser);
+
+      // If on an auth page with a valid token, redirect to dashboard
+      if (window.location.pathname.startsWith("/auth/")) {
+        window.location.href = "/dashboard";
+        return;
+      }
+    }
+
     refreshUser();
   }, [refreshUser]);
 
-  // ── Supabase Auth State Change Listener ──
+  // ── Supabase Auth State Listener (for Google OAuth only) ──
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.access_token) {
-        localStorage.setItem("securithm_token", session.access_token);
-        setAuthToken(session.access_token);
+        persistToken(session.access_token);
         const localUser = parseJwtLocally(session.access_token);
         if (localUser) setUser(localUser);
-        await refreshUser();
+
+        // Redirect from auth pages to dashboard
         if (typeof window !== "undefined" && window.location.pathname.startsWith("/auth/")) {
           window.location.href = "/dashboard";
         }
@@ -162,109 +184,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [refreshUser]);
+  }, []);
 
-  // ── Email / Password Login ──
+  // ── Email / Password Login (Native API ONLY) ──
   const login = useCallback(async (email: string, password: string) => {
-    // 1. Primary: Native API login
-    try {
-      const res = await fetch(`${getApiBase()}/api/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.access_token) {
-          localStorage.setItem("securithm_token", data.access_token);
-          setAuthToken(data.access_token);
-          const localUser = parseJwtLocally(data.access_token);
-          if (localUser) setUser(localUser);
-          await refreshUser();
-          return;
-        }
-      }
-    } catch (apiErr) {
-      console.warn("API login failed, attempting Supabase auth:", apiErr);
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({ detail: "Login failed" }));
+      throw new Error(errBody.detail || `Login failed (${res.status})`);
     }
 
-    // 2. Fallback: Supabase Auth
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (!error && data?.session?.access_token) {
-        localStorage.setItem("securithm_token", data.session.access_token);
-        setAuthToken(data.session.access_token);
-        const localUser = parseJwtLocally(data.session.access_token);
-        if (localUser) setUser(localUser);
-        await refreshUser();
-        return;
-      }
-      if (error) throw error;
-    } catch (sbErr: any) {
-      throw new Error(sbErr.message || "Login failed. Please check your credentials.");
+    const data = await res.json();
+    if (!data.access_token) {
+      throw new Error("No access token received from server");
     }
-  }, [refreshUser]);
 
-  // ── Email / Password Register ──
+    persistToken(data.access_token);
+    const localUser = parseJwtLocally(data.access_token);
+    if (localUser) setUser(localUser);
+  }, []);
+
+  // ── Email / Password Register (Native API ONLY) ──
   const register = useCallback(
     async (email: string, password: string, display_name?: string, invite_id?: string) => {
-      // 1. Primary: Native API registration
-      try {
-        const res = await fetch(`${getApiBase()}/api/v1/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, display_name, invite_id }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.access_token) {
-            localStorage.setItem("securithm_token", data.access_token);
-            setAuthToken(data.access_token);
-            const localUser = parseJwtLocally(data.access_token);
-            if (localUser) setUser(localUser);
-            await refreshUser();
-            return;
-          }
-        }
-      } catch (apiErr) {
-        console.warn("API register failed, attempting Supabase auth:", apiErr);
+      const apiBase = getApiBase();
+      const res = await fetch(`${apiBase}/api/v1/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, display_name, invite_id }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ detail: "Registration failed" }));
+        throw new Error(errBody.detail || `Registration failed (${res.status})`);
       }
 
-      // 2. Fallback: Supabase Auth
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              display_name: display_name || email.split("@")[0],
-              full_name: display_name || email.split("@")[0],
-            },
-          },
-        });
-        if (!error && data?.session?.access_token) {
-          localStorage.setItem("securithm_token", data.session.access_token);
-          setAuthToken(data.session.access_token);
-          const localUser = parseJwtLocally(data.session.access_token);
-          if (localUser) setUser(localUser);
-          await refreshUser();
-          return;
-        }
-        if (error) throw error;
-      } catch (sbErr: any) {
-        throw new Error(sbErr.message || "Registration failed. Please try again.");
+      const data = await res.json();
+      if (!data.access_token) {
+        throw new Error("No access token received from server");
       }
+
+      persistToken(data.access_token);
+      const localUser = parseJwtLocally(data.access_token);
+      if (localUser) setUser(localUser);
     },
-    [refreshUser]
+    []
   );
 
   // ── Google OAuth Login ──
   const loginWithGoogle = useCallback(async () => {
+    const apiBase = getApiBase();
+
+    // 1. Try native Google OAuth (our own credentials)
     try {
-      const res = await fetch(`${getApiBase()}/api/v1/auth/login/google`);
+      const res = await fetch(`${apiBase}/api/v1/auth/login/google`);
       if (res.ok) {
         const data = await res.json();
         if (data.authorization_url) {
@@ -272,31 +251,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
       }
-    } catch (e) {
-      console.warn("Direct Google auth init failed, attempting fallback:", e);
+    } catch {
+      // Native Google OAuth not available, try Supabase
     }
 
-    // Fallback: Supabase Client OAuth
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      throw new Error(err.message || "Google login initiation failed");
+    // 2. Fallback: Supabase OAuth
+    const redirectTo = `${window.location.origin}/auth/callback`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+    if (error) {
+      throw new Error(error.message || "Google login failed");
     }
+    // Supabase will redirect to Google, then back to /auth/callback
   }, []);
 
   // ── Logout ──
   const logout = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("securithm_token");
-    }
-    setAuthToken(null);
+    clearToken();
     setUser(null);
+    // Also sign out from Supabase (fire and forget)
+    supabase.auth.signOut().catch(() => {});
   }, []);
 
   return (
@@ -324,4 +300,3 @@ export function useAuth() {
   }
   return context;
 }
-

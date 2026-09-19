@@ -10,14 +10,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      window.location.href = "/dashboard";
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -36,10 +30,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
+      // Login succeeded — token is stored, redirect now
       window.location.href = "/dashboard";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
+      setError(err instanceof Error ? err.message : "Login failed. Check your credentials.");
       setLoading(false);
     }
   };
