@@ -166,6 +166,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Email / Password Login ──
   const login = useCallback(async (email: string, password: string) => {
+    // 1. Try Supabase Auth directly
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (!error && data?.session?.access_token) {
+        localStorage.setItem("securithm_token", data.session.access_token);
+        setAuthToken(data.session.access_token);
+        const localUser = parseJwtLocally(data.session.access_token);
+        if (localUser) setUser(localUser);
+        await refreshUser();
+        return;
+      }
+    } catch (sbErr) {
+      console.warn("Supabase password sign in error, trying API route:", sbErr);
+    }
+
+    // 2. Fallback to API route
     const res = await fetch(`${getApiBase()}/api/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -179,6 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data.access_token) {
       localStorage.setItem("securithm_token", data.access_token);
       setAuthToken(data.access_token);
+      const localUser = parseJwtLocally(data.access_token);
+      if (localUser) setUser(localUser);
       await refreshUser();
     }
   }, [refreshUser]);
@@ -186,6 +207,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // ── Email / Password Register ──
   const register = useCallback(
     async (email: string, password: string, display_name?: string, invite_id?: string) => {
+      // 1. Try Supabase Auth Sign Up
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: display_name || email.split("@")[0],
+              full_name: display_name || email.split("@")[0],
+            },
+          },
+        });
+        if (!error && data?.session?.access_token) {
+          localStorage.setItem("securithm_token", data.session.access_token);
+          setAuthToken(data.session.access_token);
+          const localUser = parseJwtLocally(data.session.access_token);
+          if (localUser) setUser(localUser);
+          await refreshUser();
+          return;
+        }
+      } catch (sbErr) {
+        console.warn("Supabase sign up error, trying API route:", sbErr);
+      }
+
+      // 2. Fallback to API route
       const res = await fetch(`${getApiBase()}/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -199,6 +245,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.access_token) {
         localStorage.setItem("securithm_token", data.access_token);
         setAuthToken(data.access_token);
+        const localUser = parseJwtLocally(data.access_token);
+        if (localUser) setUser(localUser);
         await refreshUser();
       }
     },
