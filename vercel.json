@@ -2,16 +2,14 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "outputDirectory": ".next",
-  "regions": [
-    "iad1"
-  ],
+  "regions": ["iad1"],
   "github": {
     "silent": true
   },
   "rewrites": [
     {
       "source": "/api/v1/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/api/index"
     }
   ]
 }

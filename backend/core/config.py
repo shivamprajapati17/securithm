@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     github_client_secret: str = ""
     oauth_redirect_url: str = "http://localhost:8000/api/v1/auth/callback"
 
+    # Supabase
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+
     # Email (Resend)
     resend_api_key: str = ""
     resend_from_email: str = "Securithm <onboarding@resend.dev>"
@@ -51,6 +55,31 @@ class Settings(BaseSettings):
 
     # Sentry
     sentry_dsn: str = ""
+
+    # Solvency (Proof of Reserves & Solvency)
+    solvency_eth_rpc_urls: list[str] = [
+        "https://ethereum-rpc.publicnode.com",
+        "https://1rpc.io/eth",
+    ]
+    # Reference price fallbacks used when CoinGecko is unreachable.
+    # Keys are asset symbols, values are USD prices.
+    solvency_reference_prices: dict[str, float] = {
+        "ETH": 1850.00,
+        "WETH": 1850.00,
+        "USDC": 1.00,
+        "USDT": 1.00,
+        "DAI": 1.00,
+        "WBTC": 63000.00,
+    }
+    # Secret used to sign attestation payloads (HMAC-SHA256).
+    solvency_signing_secret: str = (
+        "change-me-in-production-securithm-solvency-signing-key"
+    )
+    # On-chain attestation publishing (blueprint section 16). Optional — the
+    # publish endpoint returns 400 until these are configured.
+    solvency_chain_rpc_url: str = ""
+    solvency_chain_signer_key: str = ""
+    solvency_chain_contract_address: str = ""
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "allow"}
 

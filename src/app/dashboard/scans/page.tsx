@@ -20,7 +20,6 @@ import {
   FileText,
   Bot,
   Wrench,
-  Eye,
   GitCompare,
 } from "lucide-react";
 

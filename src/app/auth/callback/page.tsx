@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import * as api from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -10,23 +10,48 @@ function CallbackHandler() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = searchParams.get("token");
     const errorParam = searchParams.get("error");
+    const errorDescription = searchParams.get("error_description");
 
     if (errorParam) {
-      setError(decodeURIComponent(errorParam));
+      setError(decodeURIComponent(errorDescription || errorParam));
       setTimeout(() => router.push("/auth/login"), 2000);
       return;
     }
 
-    if (token) {
-      localStorage.setItem("auditai_token", token);
-      api.setAuthToken(token);
-      router.push("/dashboard");
-    } else {
-      setError("No authentication token received");
-      setTimeout(() => router.push("/auth/login"), 2000);
+    // Handle PKCE code exchange (Supabase OAuth callback)
+    const code = searchParams.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: exchangeError }) => {
+        if (exchangeError) {
+          setError(exchangeError.message);
+          setTimeout(() => router.push("/auth/login"), 2000);
+        } else {
+          router.push("/dashboard");
+        }
+      });
+      return;
     }
+
+    // Check if session already exists (hash fragment / auto-detected by supabase-js)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.push("/dashboard");
+      } else {
+        // Wait a moment for Supabase to process any auth params
+        const timeout = setTimeout(() => {
+          supabase.auth.getSession().then(({ data: { session: s } }) => {
+            if (s) {
+              router.push("/dashboard");
+            } else {
+              setError("No authentication token received");
+              setTimeout(() => router.push("/auth/login"), 2000);
+            }
+          });
+        }, 1500);
+        return () => clearTimeout(timeout);
+      }
+    });
   }, [router, searchParams]);
 
   if (error) {
