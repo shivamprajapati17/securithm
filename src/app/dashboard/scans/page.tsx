@@ -55,7 +55,7 @@ const statusColors: Record<string, string> = {
 
 function CodeBlock({ code }: { code: string }) {
   return (
-    <pre className="border border-[var(--color-term-border)] bg-[#050505] text-[var(--color-term-fg)] p-3 overflow-x-auto text-xs leading-relaxed">
+    <pre className="border border-[var(--color-term-border)] bg-[var(--color-ex-obsidian)] text-[#e8ebe8] p-3 overflow-x-auto text-xs leading-relaxed rounded-[2px]">
       <code>{code}</code>
     </pre>
   );

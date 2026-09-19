@@ -2,81 +2,113 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Search,
-  X,
-  Shield,
-  Play,
-} from "lucide-react";
-
-const BANNER_KEY = "auditai_banner_dismissed";
+import { ArrowRight, Menu, X } from "lucide-react";
 
 const NAV = [
-  ["HOME", "/"],
-  ["SCAN", "/features"],
-  ["MONITOR", "/dashboard/monitoring"],
-  ["API", "/dashboard/api-console"],
-  ["DOCS", "/docs"],
+  ["Platform", "/features"],
+  ["Monitoring", "/dashboard/monitoring"],
+  ["Risk API", "/dashboard/api-console"],
+  ["Docs", "/docs"],
 ];
 
-const ADVANTAGE = [
-  {
-    n: "001",
-    tag: "PERFORMANCE",
-    title: "High Performance Engine",
-    body: "Experience lightning-fast analysis with absolute reliability, parallel engines, and sub-second verdicts on any contract.",
-    cta: "LEARN MORE",
-    href: "/features",
-    color: "#4fd1c5",
-  },
-  {
-    n: "002",
-    tag: "COVERAGE",
-    title: "True Multi-Chain Reach",
-    body: "Full visibility across Ethereum, Base, Arbitrum, Polygon, BSC and Solana — one scan, every chain that matters.",
-    cta: "EXPLORE CHAINS",
-    href: "/features",
-    color: "#e2498b",
-  },
-  {
-    n: "003",
-    tag: "COMMUNITY",
-    title: "Community Driven",
-    body: "Built for and by the community. Engage with developers, auditors, and researchers securing the future together.",
-    cta: "JOIN THE NETWORK",
-    href: "/whitepaper",
-    color: "#31c48d",
-  },
-];
+/* Isometric wireframe cubes — the brand's geometric mark.
+   1px strokes, mint on dark / obsidian on mint, bleeding off edges. */
+function WireCubes({
+  className = "",
+  variant = "mint",
+  rows = 3,
+}: {
+  className?: string;
+  variant?: "mint" | "obsidian";
+  rows?: number;
+}) {
+  const stroke = variant === "mint" ? "#90fc95" : "#1e211e";
+  const cube = (cx: number, cy: number, s: number, key: string) => (
+    <g key={key}>
+      {/* top face */}
+      <polygon
+        points={`${cx},${cy - s} ${cx + s * 0.87},${cy - s / 2} ${cx},${cy} ${
+          cx - s * 0.87
+        },${cy - s / 2}`}
+      />
+      {/* left face */}
+      <polygon
+        points={`${cx - s * 0.87},${cy - s / 2} ${cx},${cy} ${cx},${
+          cy + s
+        } ${cx - s * 0.87},${cy + s / 2}`}
+      />
+      {/* right face */}
+      <polygon
+        points={`${cx + s * 0.87},${cy - s / 2} ${cx},${cy} ${cx},${
+          cy + s
+        } ${cx + s * 0.87},${cy + s / 2}`}
+      />
+    </g>
+  );
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 400 520"
+      fill="none"
+      aria-hidden
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <g stroke={stroke} strokeWidth="1" vectorEffect="non-scaling-stroke">
+        {Array.from({ length: rows }).map((_, r) =>
+          Array.from({ length: 2 }).map((_, c) =>
+            cube(140 + c * 175 + (r % 2) * 60, 110 + r * 130, 82, `${r}-${c}`)
+          ),
+        )}
+      </g>
+    </svg>
+  );
+}
 
 const STATS = [
-  { v: "10,000+", l: "TRANSACTIONS PER SECOND", sub: "monitored events indexed" },
-  { v: "100%", l: "EVM-COMPATIBLE", sub: "solidity · vyper · anchor" },
-  { v: "0.4s", l: "FINALITY", sub: "from push to verdict" },
-  { v: "1s", l: "BLOCK TIMES", sub: "alert latency" },
+  {
+    eyebrow: "DETECTION SPEED",
+    value: "0.4s",
+    label: "from code push to full verdict",
+  },
+  {
+    eyebrow: "COVERAGE",
+    value: "6",
+    label: "chains monitored around the clock",
+  },
+  {
+    eyebrow: "SCAN THROUGHPUT",
+    value: "10k+",
+    label: "contracts analyzed every hour",
+  },
+  {
+    eyebrow: "FINDING ACCURACY",
+    value: "98.2%",
+    label: "precision across 500+ static rules",
+  },
 ];
 
-const PLUG_WORDS = [
-  "SMART CONTRACTS",
-  "TOOLS & SERVICES",
-  "SECURITY",
-  "RESEARCH",
-  "WALLETS",
-  "EVM ADDRESSES",
-  "STATIC ANALYSIS",
-  "SYMBOLIC EXECUTION",
-];
-
-const MARQUEE_ITEMS = [
-  "Static analysis",
-  "Symbolic execution",
-  "AI reasoning",
-  "Continuous monitoring",
-  "Risk scoring",
-  "Fix suggestions",
-  "CI/CD gating",
-  "6 chains supported",
+const MODULES = [
+  {
+    eyebrow: "AXIOM SCAN",
+    title: "Scan before you ship.",
+    body: "Paste a file, point at a repo, or drop a deployed address. Static rules, a Z3 symbolic solver and a security-tuned LLM cross-check every finding — verdicts in seconds, not weeks.",
+    cta: "Run a free scan",
+    href: "/dashboard/scans",
+  },
+  {
+    eyebrow: "AXIOM MONITOR",
+    title: "Watch what's live.",
+    body: "Deployed contracts are watched around the clock across six chains. Exploit attempts, governance anomalies and oracle drift trigger alerts in under a second.",
+    cta: "See monitoring",
+    href: "/dashboard/monitoring",
+  },
+  {
+    eyebrow: "AXIOM SCORE",
+    title: "Grade any contract.",
+    body: "One API call returns an A–F risk grade with contributing factors: exploit probability, liquidity risk, governance centralization and upgradeability.",
+    cta: "Open the API console",
+    href: "/dashboard/api-console",
+  },
 ];
 
 const FAQS = [
@@ -103,23 +135,16 @@ const FAQS = [
 ];
 
 export default function Home() {
-  const [banner, setBanner] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const revealRef = useRef<HTMLDivElement>(null!);
 
   useEffect(() => {
-    try {
-      setBanner(localStorage.getItem(BANNER_KEY) !== "1");
-    } catch {
-      setBanner(true);
-    }
-  }, []);
-
-  // Scroll reveal via IntersectionObserver
-  useEffect(() => {
     const els = revealRef.current?.querySelectorAll("[data-reveal]");
     if (!els?.length) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
     if (reduced) {
       els.forEach((el) => {
         (el as HTMLElement).style.opacity = "1";
@@ -139,215 +164,213 @@ export default function Home() {
           }
         });
       },
-      { threshold: 0.18 },
+      { threshold: 0.15 }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
 
-  const dismissBanner = () => {
-    setBanner(false);
-    try {
-      localStorage.setItem(BANNER_KEY, "1");
-    } catch {
-      /* noop */
-    }
-  };
-
   return (
-    <div className="ax-editorial min-h-screen" ref={revealRef}>
-      {/* ── TOP BANNER ── */}
-      {banner && (
-        <div className="relative z-[60] flex items-center justify-center gap-3 bg-[#6c5ce7] px-10 py-3 text-center">
-          <span className="ax-space rounded-full bg-black/25 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-white">
-            LIVE
-          </span>
-          <p className="text-sm font-medium text-white">
-            AuditAI is live — scan your first contract free{" "}
-            <Link href="/dashboard/scans" className="underline underline-offset-2">
-              Try it now →
-            </Link>
-          </p>
-          <button
-            onClick={dismissBanner}
-            aria-label="Dismiss"
-            className="absolute right-4 text-white/80 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* ── NAV (white) ── */}
-      <header className="sticky top-0 z-50 border-b border-black/5 bg-white">
-        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between px-10">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-6 w-6 rotate-45 items-center justify-center rounded-[6px] bg-[#6c5ce7]">
-              <span className="h-2 w-2 -rotate-45 rounded-full bg-white" />
+    <div className="ex-root min-h-screen" ref={revealRef}>
+      {/* ── NAV — flat paper bar, no shadow, no border ── */}
+      <header className="sticky top-0 z-50 bg-[var(--color-ex-paper)]">
+        <div className="mx-auto flex h-[68px] max-w-[1200px] items-center justify-between px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-[2px] bg-[var(--color-ex-obsidian)]">
+              <span className="block h-2.5 w-2.5 rounded-[1px] border border-[var(--color-ex-mint)]" />
             </span>
-            <span className="text-lg font-extrabold tracking-tight text-black">
-              AUDITAI
+            <span className="font-[family-name:var(--font-display)] text-[17px] font-semibold tracking-[-0.02em] text-[var(--color-ex-obsidian)]">
+              AuditAI
             </span>
           </Link>
-          <nav className="hidden items-center gap-8 lg:flex">
+
+          <nav className="hidden items-center gap-7 md:flex">
             {NAV.map(([label, href]) => (
               <Link
                 key={href}
                 href={href}
-                className="ax-space text-[13px] font-bold tracking-wide text-black transition-colors hover:text-[#6c5ce7]"
+                className="text-sm tracking-[-0.01em] text-[var(--color-ex-obsidian)] transition-colors hover:text-[var(--color-ex-graphite)]"
               >
                 {label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-4">
+
+          <div className="hidden items-center gap-3 md:flex">
             <Link
-              href="/docs"
-              aria-label="Search docs"
-              className="text-black/60 hover:text-black"
+              href="/auth/login"
+              className="ex-press rounded-[2px] border border-[var(--color-ex-obsidian)] px-4 py-2.5 text-sm text-[var(--color-ex-obsidian)] hover:bg-[var(--color-term-dim)]"
             >
-              <Search className="h-[18px] w-[18px]" />
+              Log in
             </Link>
             <Link
-              href="/dashboard"
-              className="ax-press rounded-full bg-[#6c5ce7] px-6 py-3 text-[13px] font-bold tracking-wide text-white transition-all duration-200 hover:bg-[#7d6cf0] hover:shadow-[0_8px_24px_rgba(108,92,231,0.32)]"
+              href="/book-demo"
+              className="ex-press rounded-[2px] bg-[var(--color-ex-obsidian)] px-4 py-2.5 text-sm text-[var(--color-ex-paper)] hover:bg-black"
             >
-              TRY AUDITAI
+              Request a Demo
             </Link>
           </div>
+
+          <button
+            className="rounded-[2px] border border-[var(--color-ex-ash)] p-2 md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Menu"
+          >
+            {menuOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
+          </button>
         </div>
+
+        {menuOpen && (
+          <div className="border-t border-[var(--color-ex-ash)] bg-white px-6 py-4 md:hidden">
+            {NAV.map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className="block py-2 text-sm text-[var(--color-ex-obsidian)]"
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="mt-3 flex gap-3">
+              <Link
+                href="/auth/login"
+                className="flex-1 rounded-[2px] border border-[var(--color-ex-obsidian)] px-4 py-2.5 text-center text-sm"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/book-demo"
+                className="flex-1 rounded-[2px] bg-[var(--color-ex-obsidian)] px-4 py-2.5 text-center text-sm text-white"
+              >
+                Request a Demo
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       <main>
-        {/* ── HERO — editorial headline + striped bars + floating card ── */}
-        <section className="relative overflow-hidden bg-[#fdfdfa] px-10 pb-24 pt-10">
-          <h1 className="mx-auto max-w-5xl text-center text-[56px] font-extrabold leading-[1.02] tracking-[-0.03em] text-black sm:text-[76px]">
-            The infrastructure the
-            <br />
-            software world has been
-            <br />
-            waiting for.
-          </h1>
-
-          {/* Corner brackets */}
-          <div className="relative mx-auto mt-4 max-w-[1360px]">
-            <span className="absolute left-0 top-6 h-12 w-12 border-b border-l border-black/25" />
-            <span className="absolute right-0 top-6 h-12 w-12 border-b border-r border-black/25" />
-
-            {/* Striped bars stage */}
-            <div className="relative mx-auto mt-2 flex h-[420px] max-w-[1200px] items-end justify-center gap-10 px-6">
-              {[150, 260, 340, 420, 420, 420, 340, 260, 150].map((h, i) => (
-                <div
-                  key={i}
-                  className="ax-bar w-[52px] rounded-[3px] opacity-90"
-                  style={{ height: h, animationDelay: `${i * 0.12}s` }}
-                />
-              ))}
-
-              {/* Floating stat card */}
+        {/* ── DARK HERO — obsidian canvas, wireframe geometry bleeding right ── */}
+        <section className="relative overflow-hidden bg-[var(--color-ex-obsidian)]">
+          <div className="mx-auto grid min-h-[640px] max-w-[1200px] items-center gap-8 px-6 py-24 lg:grid-cols-[minmax(0,560px)_1fr]">
+            <div>
+              <p
+                data-reveal
+                className="ex-eyebrow text-[var(--color-ex-mint)]"
+              >
+                Automate security, your way
+              </p>
+              <h1
+                data-reveal
+                className="ex-display ex-display-light mt-6 text-[44px] text-[var(--color-ex-paper)] sm:text-[64px] lg:text-[76px] lg:tracking-[-0.05em]"
+                style={{ transitionDelay: "80ms" }}
+              >
+                Security with
+                <br />
+                architectural
+                <br />
+                precision.
+              </h1>
+              <p
+                data-reveal
+                className="mt-7 max-w-[440px] text-[19px] leading-[1.5] tracking-[-0.02em] text-white/80"
+                style={{ transitionDelay: "160ms" }}
+              >
+                AuditAI finds vulnerabilities before attackers do — static
+                analysis, symbolic execution and AI reasoning, delivered in
+                seconds.
+              </p>
               <div
                 data-reveal
-                className="absolute left-[6%] top-[16%] w-[300px] rounded-[10px] border border-black/10 bg-white p-5 shadow-[0_24px_60px_rgba(0,0,0,0.12)]"
+                className="mt-9 flex flex-wrap gap-3"
+                style={{ transitionDelay: "240ms" }}
               >
-                <p className="ax-space text-[10px] tracking-wider text-black/50">
-                  LIVE THREAT FEED
-                </p>
-                <div className="mt-3 flex items-baseline justify-between">
-                  <span className="text-[28px] font-extrabold leading-none tracking-tight text-black">
-                    2,481
-                  </span>
-                  <span className="ax-space rounded-full bg-[#31c48d]/15 px-2 py-0.5 text-[10px] font-bold text-[#0f9960]">
-                    ▲ DEFENDED
-                  </span>
-                </div>
-                <div className="mt-4 space-y-2.5">
-                  {[
-                    ["Reentrancy", "blocked", "#e2498b"],
-                    ["Access control", "flagged", "#f2a33c"],
-                    ["Oracle drift", "resolved", "#4fd1c5"],
-                  ].map(([k, v, c]) => (
-                    <div
-                      key={k}
-                      className="flex items-center justify-between text-[12px]"
-                    >
-                      <span className="text-black/70">{k}</span>
-                      <span
-                        className="ax-space font-bold"
-                        style={{ color: c as string }}
-                      >
-                        {v}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="ax-space mt-4 border-t border-black/8 pt-3 text-[10px] tracking-wide text-black/45">
-                  INTELLIGENCE PROPAGATES FASTER THAN ATTACKS
-                </p>
+                <Link
+                  href="/dashboard/scans"
+                  className="ex-press rounded-[2px] bg-[var(--color-ex-paper)] px-5 py-3 text-sm font-medium text-[var(--color-ex-obsidian)] hover:bg-[var(--color-ex-mint)]"
+                >
+                  Scan a contract free
+                </Link>
+                <Link
+                  href="/docs"
+                  className="ex-press rounded-[2px] border border-white/50 px-5 py-3 text-sm font-medium text-[var(--color-ex-paper)] hover:border-white"
+                >
+                  Read the docs
+                </Link>
               </div>
+            </div>
+
+            {/* Wireframe cubes bleed off the right edge */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] lg:block">
+              <WireCubes className="h-full w-full" variant="mint" />
             </div>
           </div>
         </section>
 
-        {/* ── AXIOM ADVANTAGE ── */}
-        <section className="bg-[#fdfdfa] px-10 py-24">
-          <div className="mx-auto max-w-[1360px]">
-            <p data-reveal className="ax-space text-[12px] tracking-[0.1em] text-black/60">
-              {"//"} AXIOM ADVANTAGE <span className="text-black/25">————</span>
+        {/* ── PROOF STRIP — mono eyebrow + quiet metrics on white ── */}
+        <section className="bg-[var(--color-ex-paper)]">
+          <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-px bg-[var(--color-ex-ash)] md:grid-cols-4">
+            {[
+              ["0.4s", "TO VERDICT"],
+              ["500+", "STATIC RULES"],
+              ["6", "CHAINS WATCHED"],
+              ["24/7", "MONITORING"],
+            ].map(([v, l]) => (
+              <div
+                key={l}
+                data-reveal
+                className="bg-[var(--color-ex-paper)] px-5 py-6"
+              >
+                <div className="font-[family-name:var(--font-display)] text-[26px] font-medium leading-none tracking-[-0.03em] text-[var(--color-ex-obsidian)]">
+                  {v}
+                </div>
+                <div className="ex-eyebrow mt-2 text-[var(--color-ex-graphite)]">
+                  {l}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── MODULES — white canvas, eyebrow labels, editorial headings ── */}
+        <section className="bg-[var(--color-ex-paper)] px-6 py-28">
+          <div className="mx-auto max-w-[1200px]">
+            <p data-reveal className="ex-eyebrow text-[var(--color-ex-graphite)]">
+              One protocol, three instruments
             </p>
             <h2
               data-reveal
-              className="mt-4 text-[52px] font-extrabold leading-[1.05] tracking-[-0.02em] text-black sm:text-[64px]"
+              className="ex-display mt-4 max-w-[640px] text-[38px] text-[var(--color-ex-obsidian)] sm:text-[52px] sm:tracking-[-0.04em]"
             >
-              Built for scale.
+              Everything between your code and the exploit.
             </h2>
-            <p data-reveal className="mt-6 max-w-md text-[17px] leading-relaxed text-black/70">
-              Experience next-generation analysis capability without
-              compromising on decentralization or developer experience.
-            </p>
 
-            <div className="mt-14 grid gap-6 md:grid-cols-3">
-              {ADVANTAGE.map((c) => (
+            <div className="mt-16 grid gap-px border border-[var(--color-ex-ash)] bg-[var(--color-ex-ash)] md:grid-cols-3">
+              {MODULES.map((m) => (
                 <div
-                  key={c.n}
+                  key={m.eyebrow}
                   data-reveal
-                  className="group rounded-[10px] border border-black/10 bg-white p-7 transition-shadow duration-300 hover:shadow-[0_16px_48px_rgba(0,0,0,0.08)]"
+                  className="bg-[var(--color-ex-paper)] p-7"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="ax-space text-[12px] text-black/50">
-                      {"//"} {c.n}
-                    </span>
-                    <span className="ax-space rounded-[4px] bg-black/[0.05] px-2.5 py-1 text-[10px] font-bold tracking-wide text-black/60">
-                      {c.tag}
-                    </span>
-                  </div>
-                  {/* Icon frame with wireframe glyph */}
-                  <div className="mt-5 rounded-[6px] border border-black/8 bg-[#fafaf8] p-6">
-                    <div className="relative flex h-40 items-center justify-center rounded-[4px] border border-black/6 bg-white">
-                      <span className="absolute left-3 top-3 h-4 w-4 border-l border-t border-black/20" />
-                      <span className="absolute right-3 top-3 h-4 w-4 border-r border-t border-black/20" />
-                      <span className="absolute bottom-3 left-3 h-4 w-4 border-b border-l border-black/20" />
-                      <span className="absolute bottom-3 right-3 h-4 w-4 border-b border-r border-black/20" />
-                      {/* Wireframe orb glyph */}
-                      <span
-                        className="block h-16 w-16 animate-[ax-breathe_5s_ease-in-out_infinite] rounded-full border"
-                        style={{
-                          borderColor: c.color,
-                          background: `radial-gradient(circle at 35% 30%, ${c.color}22, transparent 60%)`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <h3 className="mt-6 text-[26px] font-bold tracking-tight text-black">
-                    {c.title}
+                  <p className="ex-eyebrow text-[var(--color-ex-graphite)]">
+                    {m.eyebrow}
+                  </p>
+                  <h3 className="ex-display mt-5 text-[28px] tracking-[-0.02em] text-[var(--color-ex-obsidian)]">
+                    {m.title}
                   </h3>
-                  <p className="mt-3 text-[14px] leading-relaxed text-black/60">
-                    {c.body}
+                  <p className="mt-4 text-base leading-[1.5] tracking-[-0.02em] text-[var(--color-ex-graphite)]">
+                    {m.body}
                   </p>
                   <Link
-                    href={c.href}
-                    className="ax-space mt-6 inline-flex items-center gap-2 text-[12px] font-bold tracking-wide text-black transition-colors group-hover:text-[#6c5ce7]"
+                    href={m.href}
+                    className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-ex-obsidian)] underline-offset-4 hover:underline"
                   >
-                    {c.cta} <ArrowRight className="h-3.5 w-3.5" />
+                    {m.cta} <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               ))}
@@ -355,422 +378,113 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── INTELLIGENCE STATEMENT (light band, left rail) ── */}
-        <section className="bg-[#fdfdfa] px-10 py-24">
-          <div className="mx-auto grid max-w-[1360px] gap-12 md:grid-cols-[280px_1fr]">
-            <aside className="border-t border-black/10 pt-6">
-              {["PERFORMANCE AT SCALE", "ZERO FRICTION", "TRULY DECENTRALIZED"].map(
-                (t, i) => (
-                  <p
-                    key={t}
-                    data-reveal
-                    className="ax-space mb-3 text-[12px] tracking-[0.08em] text-black/45"
-                    style={{ transitionDelay: `${i * 90}ms` }}
-                  >
-                    / {t}
-                  </p>
-                ),
-              )}
-            </aside>
-            <div>
-              <h2
-                data-reveal
-                className="text-[44px] font-extrabold leading-[1.06] tracking-[-0.02em] text-black sm:text-[56px]"
-              >
-                Intelligence without tradeoffs.
-                <br />
-                Defend <em className="font-extrabold italic">without limits.</em>
-              </h2>
-              <p
-                data-reveal
-                className="mt-8 max-w-xl text-[17px] leading-relaxed text-black/70"
-              >
-                AuditAI unlocks a new era of software reliability, enabling
-                capabilities that traditional audit tools have never delivered
-                before. When a vulnerability appears anywhere in the network,
-                the entire ecosystem learns and defends — instantly.
-              </p>
-              <p
-                data-reveal
-                className="mt-5 max-w-xl text-[17px] leading-relaxed text-black/70"
-              >
-                Built on parallel analysis — with <strong>10,000+ TPS</strong>{" "}
-                monitoring and <strong>0.4s finality</strong> — AuditAI&apos;s
-                intelligence propagates faster than any attack can spread.
-              </p>
-            </div>
+        {/* ── NEON MINT HIGHLIGHT BAND — white stat cards float on mint ── */}
+        <section className="relative overflow-hidden bg-[var(--color-ex-mint)] px-6 py-24">
+          {/* obsidian wireframe bleed, right edge */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[36%] opacity-60 lg:block">
+            <WireCubes className="h-full w-full" variant="obsidian" rows={2} />
           </div>
-        </section>
-
-        {/* ── STATS BAR (light, mono columns) ── */}
-        <section className="border-y border-black/8 bg-white px-10 py-12">
-          <div className="mx-auto grid max-w-[1360px] grid-cols-2 gap-8 md:grid-cols-4">
-            {STATS.map((s) => (
-              <div key={s.l} data-reveal className="text-center">
-                <div className="text-[40px] font-extrabold leading-none tracking-tight text-black">
-                  {s.v}
-                </div>
-                <div className="ax-space mt-3 text-[11px] font-bold tracking-[0.08em] text-black/60">
-                  {s.l}
-                </div>
-                <div className="ax-space mt-1 text-[10px] tracking-wide text-black/35">
-                  {s.sub}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── PLUG AND PLAY (tinted band + word marquees) ── */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-[#f4f2fc] via-[#efecfb] to-[#e9e5fa] px-10 py-28">
-          <div className="relative mx-auto max-w-[900px] text-center">
+          <div className="relative mx-auto max-w-[1200px]">
+            <p data-reveal className="ex-eyebrow text-[var(--color-ex-obsidian)]">
+              Measured, not promised
+            </p>
             <h2
               data-reveal
-              className="text-[56px] font-extrabold leading-[1.02] tracking-[-0.03em] text-black sm:text-[72px]"
+              className="ex-display mt-4 text-[38px] text-[var(--color-ex-obsidian)] sm:text-[52px] sm:tracking-[-0.04em]"
             >
-              Plug and play.
-            </h2>
-            <p data-reveal className="mt-7 text-[17px] leading-relaxed text-black/75">
-              AuditAI is{" "}
-              <strong className="font-bold text-black">
-                EVM-compatible at the bytecode level.
-              </strong>{" "}
-              That means Solidity contracts, EVM addresses, infra, tooling, and
-              libraries work out of the box.
-            </p>
-            <p data-reveal className="mt-4 text-[17px] text-black/75">
-              <strong className="font-bold text-black">
-                Focus on building great products
-              </strong>{" "}
-              — not learning a new stack.
-            </p>
-            <div data-reveal className="mt-10">
-              <Link
-                href="/docs"
-                className="ax-press inline-block rounded-full border border-black/15 bg-white px-8 py-4 text-[12px] font-bold tracking-wide text-black transition-all duration-200 hover:border-[#6c5ce7] hover:text-[#6c5ce7]"
-              >
-                CHECK THE DEVELOPER BRIEFING
-              </Link>
-            </div>
-          </div>
-
-          {/* Background word rows */}
-          <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-            {[12, 38, 64, 88].map((top, i) => (
-              <div
-                key={top}
-                className={`absolute flex w-max gap-14 whitespace-nowrap ${
-                  i % 2 ? "ax-marquee-rev" : "ax-marquee"
-                }`}
-                style={{ top: `${top}%`, opacity: 0.14 }}
-              >
-                {[0, 1].map((half) => (
-                  <div key={half} className="flex gap-14">
-                    {PLUG_WORDS.map((w) => (
-                      <span
-                        key={`${half}-${w}`}
-                        className="ax-space text-[15px] font-bold tracking-[0.14em] text-black"
-                      >
-                        {w}
-                      </span>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── DARK ORB BAND — Deploy an agent / defend the network ── */}
-        <section className="ax-dots-dark relative overflow-hidden bg-[#0c0820] px-10 py-32">
-          <div className="mx-auto grid max-w-[1360px] items-center gap-16 lg:grid-cols-2">
-            <div>
-              <h2
-                data-reveal
-                className="text-[52px] font-extrabold leading-[1.03] tracking-[-0.02em] text-white sm:text-[64px]"
-              >
-                Deploy an agent.
-                <br />
-                Defend the network.
-              </h2>
-              <p
-                data-reveal
-                className="mt-8 max-w-md text-[17px] leading-relaxed text-white/70"
-              >
-                AuditAI&apos;s custom fingerprint database and low system
-                requirements allow security agents to run on consumer-grade
-                hardware. Any developer can participate and strengthen the
-                network.
-              </p>
-              <div data-reveal className="mt-9">
-                <Link
-                  href="/whitepaper"
-                  className="block w-full max-w-[440px] rounded-full border border-white/25 px-8 py-4 text-center text-[12px] font-bold tracking-wide text-white transition-colors duration-200 hover:border-[#6c5ce7] hover:text-[#a996ff]"
-                >
-                  LEARN ABOUT THE DATABASE
-                </Link>
-              </div>
-              <p
-                data-reveal
-                className="mt-12 max-w-md text-[22px] font-semibold leading-snug text-white"
-              >
-                That&apos;s <span className="font-extrabold">real decentralization</span>{" "}
-                from day one — with a global network ready to scale as demand
-                grows.
-              </p>
-              <div data-reveal className="mt-9">
-                <Link
-                  href="/dashboard/monitoring"
-                  className="block w-full max-w-[440px] rounded-full border border-white/25 px-8 py-4 text-center text-[12px] font-bold tracking-wide text-white transition-colors duration-200 hover:border-[#6c5ce7] hover:text-[#a996ff]"
-                >
-                  LEARN HOW TO RUN A NODE
-                </Link>
-              </div>
-            </div>
-
-            {/* Glowing orb */}
-            <div className="relative flex items-center justify-center">
-              <div
-                data-reveal
-                className="ax-orb relative h-[420px] w-[420px] max-w-full"
-              >
-                <span className="absolute left-[30%] top-[26%] h-16 w-16 rounded-full bg-white/80 blur-xl" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── MARQUEE STRIP (dark) ── */}
-        <section className="overflow-hidden border-y border-white/10 bg-[#0c0820] py-5">
-          <div className="ax-marquee flex w-max">
-            {[0, 1].map((half) => (
-              <div key={half} className="flex shrink-0 items-center">
-                {MARQUEE_ITEMS.map((item) => (
-                  <span
-                    key={`${half}-${item}`}
-                    className="ax-space flex items-center whitespace-nowrap text-[13px] font-bold uppercase tracking-[0.22em] text-white/60"
-                  >
-                    <span className="px-6">{item}</span>
-                    <span className="text-[#6c5ce7]">✦</span>
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── LEGACY TRIANGLE (light, venn blur) ── */}
-        <section className="bg-[#f4f3ef] px-10 py-28">
-          <div className="mx-auto grid max-w-[1360px] items-center gap-14 lg:grid-cols-[1fr_1.2fr_0.9fr]">
-            <h2
-              data-reveal
-              className="text-[40px] font-extrabold leading-[1.08] tracking-[-0.02em] text-black sm:text-[48px]"
-            >
-              Legacy tools are forced to choose between security,
-              decentralization, and scalability.
+              Numbers with your money on them.
             </h2>
 
-            {/* Venn blur + dashed circle + labels */}
-            <div data-reveal className="relative mx-auto h-[380px] w-full max-w-[480px]">
-              <div
-                className="absolute inset-0 rounded-full opacity-70 blur-3xl"
-                style={{
-                  background:
-                    "radial-gradient(circle at 42% 42%, rgba(226,73,139,0.5) 0%, rgba(154,106,236,0.55) 55%, rgba(74,98,236,0.5) 100%)",
-                }}
-              />
-              <div className="ax-dashed-ring absolute inset-[12%]" />
-              <span className="ax-space absolute left-1/2 top-[2%] -translate-x-1/2 text-[11px] font-bold tracking-[0.14em] text-black/60">
-                SECURITY
-              </span>
-              <span className="ax-space absolute left-[4%] top-[36%] text-[11px] font-bold tracking-[0.14em] text-black/60">
-                DECENTRALIZATION
-              </span>
-              <span className="ax-space absolute bottom-[6%] right-[2%] text-[11px] font-bold tracking-[0.14em] text-black/60">
-                SCALABILITY
-              </span>
-            </div>
-
-            <div>
-              <h3
-                data-reveal
-                className="text-[30px] font-semibold leading-tight tracking-tight text-black"
-              >
-                AuditAI <em className="italic">rewrites</em> the rules.
-              </h3>
-              <p
-                data-reveal
-                className="mt-5 text-[15px] leading-relaxed text-black/65"
-              >
-                By combining semantic fingerprints with parallel consensus
-                analysis, AuditAI delivers real-time security coordination
-                without exposing a single line of raw data.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── ALL IN ONE (dark gradient statement) ── */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-[#0c0820] via-[#1b1440] to-[#4a3ab0] px-10 py-40 text-center">
-          <h2
-            data-reveal
-            className="text-[64px] font-extrabold tracking-[-0.02em] text-white sm:text-[80px]"
-          >
-            All in one.
-          </h2>
-          <p data-reveal className="mx-auto mt-6 max-w-lg text-[17px] text-white/75">
-            Scan, monitor, score and fix — the full security lifecycle in a
-            single protocol.
-          </p>
-        </section>
-
-        {/* ── TWO BIG CARDS (dark, dotted) ── */}
-        <section className="ax-dots-dark bg-[#0c0820] px-10 py-24">
-          <div className="mx-auto grid max-w-[1360px] gap-6 md:grid-cols-2">
-            {/* Ecosystem card */}
-            <div
-              data-reveal
-              className="group overflow-hidden rounded-[14px] border border-white/10 bg-[#141028]"
-            >
-              <div className="relative h-[300px] overflow-hidden">
-                <img
-                  src="/axiom/app-dashboard.png"
-                  alt="AuditAI dashboard"
-                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="border-t border-white/8 p-8">
-                <h3 className="text-[22px] font-bold tracking-tight text-white">
-                  Explore the Dashboard
-                </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/60">
-                  Live scans, findings and fix suggestions across every chain —
-                  built for the speed AuditAI delivers.
-                </p>
-              </div>
-            </div>
-            {/* Start building card */}
-            <div
-              data-reveal
-              className="group overflow-hidden rounded-[14px] border border-white/10 bg-[#141028]"
-            >
-              <div className="relative h-[300px] overflow-hidden">
-                <img
-                  src="/axiom/app-scans.png"
-                  alt="AuditAI scans"
-                  className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
-                />
-              </div>
-              <div className="border-t border-white/8 p-8">
-                <h3 className="text-[22px] font-bold tracking-tight text-white">
-                  Start Building
-                </h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-white/60">
-                  Explore programs, resources, and a world-class community for
-                  founders and developers securing on-chain finance.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── AUDITAI MEDIA (light) ── */}
-        <section className="bg-white px-10 py-24">
-          <div className="mx-auto max-w-[1360px]">
-            <div className="grid items-end gap-8 md:grid-cols-[1fr_1fr]">
-              <h2
-                data-reveal
-                className="text-[56px] font-extrabold tracking-[-0.03em] text-black sm:text-[68px]"
-              >
-                AuditAI Media.
-              </h2>
-              <div data-reveal>
-                <p className="text-[15px] leading-relaxed text-black/65">
-                  Stay close to what&apos;s happening in the ecosystem. Explore
-                  the live product, learn from builders, hear from founders.
-                  Read, listen, and explore.
-                </p>
-                <Link
-                  href="/book-demo"
-                  className="ax-press mt-5 inline-flex items-center gap-2 rounded-full bg-[#6c5ce7] px-6 py-3 text-[12px] font-bold tracking-wide text-white transition-all duration-200 hover:bg-[#7d6cf0]"
-                >
-                  <Play className="h-3.5 w-3.5" /> TRY AUDITAI LIVE
-                </Link>
-              </div>
-            </div>
-
-            <div className="mt-14 grid gap-6 md:grid-cols-2">
-              {[
-                {
-                  img: "/axiom/app-monitoring.png",
-                  kicker: "PRODUCT DEEP DIVE",
-                  title: "Inside continuous monitoring",
-                  desc: "How AuditAI watches deployed contracts and alerts in under a second.",
-                },
-                {
-                  img: "/axiom/app-scans.png",
-                  kicker: "BUILDER STORY",
-                  title: "From F to A in one click",
-                  desc: "Fix suggestions that rewrite vulnerable functions — automatically.",
-                },
-              ].map((m) => (
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {STATS.map((s) => (
                 <div
-                  key={m.title}
+                  key={s.eyebrow}
                   data-reveal
-                  className="group overflow-hidden rounded-[14px] border border-black/10 bg-white transition-shadow duration-300 hover:shadow-[0_20px_56px_rgba(0,0,0,0.10)]"
+                  className="rounded-[2px] bg-[var(--color-ex-paper)] p-6"
                 >
-                  <div className="relative h-[260px] overflow-hidden border-b border-black/8">
-                    <img
-                      src={m.img}
-                      alt={m.title}
-                      className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
-                    />
+                  <p className="ex-eyebrow text-[var(--color-ex-graphite)]">
+                    {s.eyebrow}
+                  </p>
+                  <div className="ex-display ex-display-light mt-4 text-[52px] leading-none tracking-[-0.04em] text-[var(--color-ex-obsidian)] sm:text-[64px]">
+                    {s.value}
                   </div>
-                  <div className="p-7">
-                    <p className="ax-space text-[10px] font-bold tracking-[0.14em] text-[#6c5ce7]">
-                      {m.kicker}
-                    </p>
-                    <h3 className="mt-3 text-[20px] font-bold tracking-tight text-black">
-                      {m.title}
-                    </h3>
-                    <p className="mt-2 text-[14px] leading-relaxed text-black/60">
-                      {m.desc}
-                    </p>
-                  </div>
+                  <p className="mt-4 text-base tracking-[-0.02em] text-[var(--color-ex-graphite)]">
+                    {s.label}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ── FAQ (light) ── */}
-        <section className="bg-[#fdfdfa] px-10 py-24">
-          <div className="mx-auto max-w-3xl">
-            <p data-reveal className="ax-space text-[12px] tracking-[0.1em] text-black/60">
-              {"//"} FAQ <span className="text-black/25">————</span>
+        {/* ── DARK INTERVAL — statement section (the two-mood rhythm) ── */}
+        <section className="relative overflow-hidden bg-[var(--color-ex-obsidian)] px-6 py-28">
+          <div className="mx-auto max-w-[1200px]">
+            <p data-reveal className="ex-eyebrow text-[var(--color-ex-mint)]">
+              The two-mood rhythm
             </p>
             <h2
               data-reveal
-              className="mt-4 text-[44px] font-extrabold tracking-[-0.02em] text-black sm:text-[52px]"
+              className="ex-display ex-display-light mt-6 max-w-[720px] text-[36px] leading-[1.1] text-[var(--color-ex-paper)] sm:text-[52px] sm:tracking-[-0.04em]"
             >
-              Questions, answered.
+              Most tools choose between depth and speed. We refuse the
+              tradeoff — parallel engines give you both.
             </h2>
-            <div className="mt-10 divide-y divide-black/8 border-y border-black/10">
+            <div
+              data-reveal
+              className="mt-10 flex flex-wrap gap-3"
+            >
+              <Link
+                href="/whitepaper"
+                className="ex-press rounded-[2px] border border-white/50 px-5 py-3 text-sm font-medium text-white hover:border-white"
+              >
+                Read the whitepaper
+              </Link>
+              <Link
+                href="/solvency"
+                className="ex-press rounded-[2px] bg-[var(--color-ex-paper)] px-5 py-3 text-sm font-medium text-[var(--color-ex-obsidian)] hover:bg-[var(--color-ex-mint)]"
+              >
+                Verify solvency
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ — the divider line IS the component ── */}
+        <section className="bg-[var(--color-ex-paper)] px-6 py-28">
+          <div className="mx-auto max-w-[800px]">
+            <p data-reveal className="ex-eyebrow text-[var(--color-ex-graphite)]">
+              Common questions
+            </p>
+            <h2
+              data-reveal
+              className="ex-display mt-4 text-[38px] text-[var(--color-ex-obsidian)] sm:text-[52px] sm:tracking-[-0.04em]"
+            >
+              Asked, answered.
+            </h2>
+
+            <div className="mt-12 border-t border-[var(--color-ex-ash)]">
               {FAQS.map((f, i) => {
                 const open = openFaq === i;
                 return (
-                  <div key={i} data-reveal>
+                  <div
+                    key={i}
+                    data-reveal
+                    className="ex-row border-b border-[var(--color-ex-ash)]"
+                  >
                     <button
                       onClick={() => setOpenFaq(open ? null : i)}
                       aria-expanded={open}
                       className="flex w-full items-center justify-between gap-6 py-6 text-left"
                     >
-                      <span className="text-[17px] font-semibold text-black">
+                      <span className="text-[19px] tracking-[-0.02em] text-[var(--color-ex-obsidian)]">
                         {f.q}
                       </span>
                       <span
-                        className={`ax-space shrink-0 text-[20px] font-bold transition-transform duration-300 ${
-                          open ? "rotate-45 text-[#6c5ce7]" : "text-black/40"
+                        className={`ex-mono shrink-0 text-xl leading-none transition-transform duration-300 ${
+                          open
+                            ? "rotate-45 text-[var(--color-ex-obsidian)]"
+                            : "text-[var(--color-ex-graphite)]"
                         }`}
                       >
                         +
@@ -781,7 +495,7 @@ export default function Home() {
                       style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
                     >
                       <div className="overflow-hidden">
-                        <p className="pb-6 pr-10 text-[15px] leading-relaxed text-black/65">
+                        <p className="pb-6 pr-10 text-base leading-[1.5] tracking-[-0.02em] text-[var(--color-ex-graphite)]">
                           {f.a}
                         </p>
                       </div>
@@ -793,60 +507,60 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── FOOTER CTA (dark) ── */}
-        <section className="relative overflow-hidden bg-[#0c0820] px-10 py-28 text-center">
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[110px]"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, rgba(108,92,231,0.6) 0%, transparent 70%)",
-            }}
-            aria-hidden
-          />
-          <h2
-            data-reveal
-            className="text-[48px] font-extrabold tracking-[-0.02em] text-white sm:text-[64px]"
-          >
-            Ship secure contracts.
-          </h2>
-          <p data-reveal className="mx-auto mt-5 max-w-md text-[16px] text-white/65">
-            Run your first scan free — no credit card, no signup.
-          </p>
-          <div
-            data-reveal
-            className="mt-10 flex flex-wrap items-center justify-center gap-4"
-          >
-            <Link
-              href="/auth/register"
-              className="ax-press inline-flex items-center gap-2 rounded-full bg-[#6c5ce7] px-8 py-4 text-[14px] font-bold text-white transition-all duration-200 hover:bg-[#7d6cf0] hover:shadow-[0_8px_24px_rgba(108,92,231,0.4)]"
+        {/* ── DARK CTA + FOOTER ── */}
+        <section className="relative overflow-hidden bg-[var(--color-ex-obsidian)] px-6 py-24 text-center">
+          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[30%] opacity-40 lg:block">
+            <WireCubes className="h-full w-full" variant="mint" rows={2} />
+          </div>
+          <div className="relative mx-auto max-w-[640px]">
+            <h2
+              data-reveal
+              className="ex-display ex-display-light text-[40px] text-[var(--color-ex-paper)] sm:text-[56px] sm:tracking-[-0.04em]"
             >
-              Start scanning <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/whitepaper"
-              className="inline-flex items-center gap-2 rounded-full border border-white/25 px-8 py-4 text-[14px] font-bold text-white transition-colors duration-200 hover:border-[#6c5ce7] hover:text-[#a996ff]"
+              Ship secure contracts.
+            </h2>
+            <p
+              data-reveal
+              className="mt-5 text-[19px] leading-[1.5] tracking-[-0.02em] text-white/80"
             >
-              Read the whitepaper
-            </Link>
+              Run your first scan free — no credit card, no signup.
+            </p>
+            <div
+              data-reveal
+              className="mt-9 flex flex-wrap items-center justify-center gap-3"
+            >
+              <Link
+                href="/auth/register"
+                className="ex-press rounded-[2px] bg-[var(--color-ex-paper)] px-5 py-3 text-sm font-medium text-[var(--color-ex-obsidian)] hover:bg-[var(--color-ex-mint)]"
+              >
+                Start scanning <span aria-hidden>→</span>
+              </Link>
+              <Link
+                href="/book-demo"
+                className="ex-press rounded-[2px] border border-white/50 px-5 py-3 text-sm font-medium text-white hover:border-white"
+              >
+                Request a demo
+              </Link>
+            </div>
           </div>
         </section>
       </main>
 
-      {/* ── FOOTER ── */}
-      <footer className="bg-[#0c0820] px-10 pb-10 pt-16">
-        <div className="mx-auto grid max-w-[1360px] gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      {/* ── FOOTER — paper, flat, hairline above ── */}
+      <footer className="border-t border-[var(--color-ex-ash)] bg-[var(--color-ex-paper)] px-6 pb-10 pt-14">
+        <div className="mx-auto grid max-w-[1200px] gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 rotate-45 items-center justify-center rounded-[6px] bg-[#6c5ce7]">
-                <Shield className="h-3.5 w-3.5 -rotate-45 text-white" />
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-[2px] bg-[var(--color-ex-obsidian)]">
+                <span className="block h-2.5 w-2.5 rounded-[1px] border border-[var(--color-ex-mint)]" />
               </span>
-              <span className="text-lg font-extrabold tracking-tight text-white">
-                AUDITAI
+              <span className="font-[family-name:var(--font-display)] text-[17px] font-semibold tracking-[-0.02em] text-[var(--color-ex-obsidian)]">
+                AuditAI
               </span>
             </div>
-            <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-white/50">
-              The high performance security network built for scale. Powered by
-              parallel analysis and AI.
+            <p className="mt-4 max-w-[300px] text-sm leading-[1.5] tracking-[-0.01em] text-[var(--color-ex-graphite)]">
+              AI-powered smart contract security. Static analysis, symbolic
+              execution and continuous monitoring for the on-chain economy.
             </p>
           </div>
           {[
@@ -879,7 +593,7 @@ export default function Home() {
             },
           ].map((col) => (
             <div key={col.head}>
-              <p className="ax-space text-[11px] font-bold tracking-[0.14em] text-white/40">
+              <p className="ex-eyebrow text-[var(--color-ex-graphite)]">
                 {col.head}
               </p>
               <ul className="mt-5 space-y-3">
@@ -887,7 +601,7 @@ export default function Home() {
                   <li key={href}>
                     <Link
                       href={href}
-                      className="text-[13px] text-white/60 transition-colors hover:text-white"
+                      className="text-sm tracking-[-0.01em] text-[var(--color-ex-obsidian)] transition-colors hover:text-[var(--color-ex-graphite)]"
                     >
                       {label}
                     </Link>
@@ -897,9 +611,9 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="ax-space mx-auto mt-14 flex max-w-[1360px] items-center justify-between border-t border-white/10 pt-6 text-[10px] tracking-[0.12em] text-white/35">
-          <span>© 2026 AUDITAI</span>
-          <span>INTELLIGENCE WITHOUT TRADEOFFS</span>
+        <div className="ex-mono mx-auto mt-12 flex max-w-[1200px] items-center justify-between border-t border-[var(--color-ex-ash)] pt-6 text-xs uppercase tracking-[0.06em] text-[var(--color-ex-graphite)]">
+          <span>© 2026 AuditAI</span>
+          <span className="hidden sm:inline">Security with architectural precision</span>
         </div>
       </footer>
     </div>
