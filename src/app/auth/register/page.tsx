@@ -15,14 +15,18 @@ export default function RegisterPage() {
   const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
 
-  // Detect invite token from URL
+  // Detect invite token and error from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const invite = params.get("invite");
     const inviteEmail = params.get("email");
+    const errParam = params.get("error");
     if (invite) {
       setInviteId(invite);
       if (inviteEmail) setEmail(inviteEmail);
+    }
+    if (errParam) {
+      setError(decodeURIComponent(errParam));
     }
   }, []);
 

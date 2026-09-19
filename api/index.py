@@ -41,11 +41,15 @@ except Exception as e:
     print(f"[ERROR] Failed to import backend.main: {e}")
     traceback.print_exc()
 
-from mangum import Mangum
+# ── Export app and handler for Vercel ──
+try:
+    from mangum import Mangum
+except ImportError:
+    Mangum = None
 
-# Create handler — either the real app or an error-returning stub
 if _app is not None and _import_error is None:
-    handler = Mangum(_app, lifespan="off")
+    app = _app
+    handler = Mangum(_app, lifespan="off") if Mangum else _app
 else:
     error_detail = {
         "error": str(_import_error) if _import_error else "App import returned None",
@@ -53,16 +57,19 @@ else:
         "sys_path": sys.path,
     }
 
-    async def error_app(scope, receive, send):
-        body = json.dumps(error_detail).encode()
-        await send(
-            {
-                "type": "http.response.start",
-                "status": 500,
-                "headers": [(b"content-type", b"application/json")],
-            }
-        )
-        await send({"type": "http.response.body", "body": body})
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
 
-    handler = Mangum(error_app, lifespan="off")
+    error_app = FastAPI()
+
+    @error_app.api_route(
+        "/{path:path}",
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+    )
+    async def catch_all(path: str):
+        return JSONResponse(status_code=500, content=error_detail)
+
+    app = error_app
+    handler = Mangum(error_app, lifespan="off") if Mangum else error_app
     print(f"[ERROR] Using error stub handler due to: {_import_error}")
+
