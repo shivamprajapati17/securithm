@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timezone, timedelta
 from uuid import UUID
 from httpx import AsyncClient
+import os
 import secrets
 import base64
 import json
@@ -359,158 +360,125 @@ async def update_me(
     return UserResponse.model_validate(current_user)
 
 
+# ─── Dynamic Host & OAuth Helpers ─────────────────────────
+
+
+def _get_base_url(request: Request | None = None) -> str:
+    """Determine frontend base URL dynamically from request or environment."""
+    if request:
+        proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+        if host:
+            return f"{proto}://{host}".rstrip("/")
+    vercel_url = os.environ.get("VERCEL_URL")
+    if vercel_url:
+        return f"https://{vercel_url}".rstrip("/")
+    if settings.frontend_url and not settings.frontend_url.startswith("http://localhost"):
+        return settings.frontend_url.rstrip("/")
+    return "http://localhost:3000"
+
+
+def _get_oauth_redirect_url(request: Request | None = None) -> str:
+    """Get the OAuth redirect URI matching Google Console registration."""
+    if settings.oauth_redirect_url and not settings.oauth_redirect_url.startswith("http://localhost"):
+        return settings.oauth_redirect_url
+    if request:
+        proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+        if host and ("vercel.app" in host or "securithm" in host):
+            return f"{proto}://{host}/api/v1/auth/callback"
+    vercel_url = os.environ.get("VERCEL_URL")
+    if vercel_url:
+        return f"https://{vercel_url}/api/v1/auth/callback"
+    return settings.oauth_redirect_url or "http://localhost:8000/api/v1/auth/callback"
+
+
 # ─── OAuth Endpoints ─────────────────────────────────────
 
 
-async def oauth_login(provider: str, db: Session) -> str:
+async def oauth_login(
+    provider: str, db: Session, request: Request | None = None
+) -> str:
     """
-    Redirect user to the OAuth provider's consent page.
-    Returns the provider's authorization URL.
-    Uses the `state` parameter (per OAuth 2.0 spec) to pass provider info
-    so the redirect_uri stays clean and matches exactly what's registered
-    in the provider's console.
+    Redirect user to Google OAuth consent page.
+    Returns the Google authorization URL.
     """
-    redirect_uri = (
-        settings.oauth_redirect_url
-    )  # No query params — exact match for provider console
-
-    if provider == "google":
-        if not settings.google_client_id:
-            raise HTTPException(status_code=501, detail="Google OAuth not configured")
-        return (
-            "https://accounts.google.com/o/oauth2/v2/auth"
-            f"?client_id={settings.google_client_id}"
-            f"&redirect_uri={redirect_uri}"
-            "&response_type=code"
-            "&scope=openid%20email%20profile"
-            f"&state={provider}"
+    if provider != "google":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported provider '{provider}'. Only Google OAuth is supported for identity login.",
         )
 
-    elif provider == "github":
-        if not settings.github_client_id:
-            raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
-        return (
-            "https://github.com/login/oauth/authorize"
-            f"?client_id={settings.github_client_id}"
-            f"&redirect_uri={redirect_uri}"
-            "&scope=read:user%20user:email"
-            f"&state={provider}"
+    if not settings.google_client_id:
+        raise HTTPException(status_code=501, detail="Google OAuth not configured")
+
+    redirect_uri = _get_oauth_redirect_url(request)
+
+    return (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        f"?client_id={settings.google_client_id}"
+        f"&redirect_uri={redirect_uri}"
+        "&response_type=code"
+        "&scope=openid%20email%20profile"
+        "&prompt=select_account"
+        "&state=google"
+    )
+
+
+async def oauth_callback(
+    state: str, code: str, db: Session, request: Request | None = None
+) -> TokenResponse:
+    """
+    Handle OAuth callback from Google.
+    Exchanges authorization code for access token, fetches profile, and returns app JWT.
+    """
+    if state != "google":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported login provider '{state}'. Only Google OAuth is supported.",
         )
 
-    raise HTTPException(status_code=400, detail=f"Unsupported provider: {provider}")
-
-
-async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
-    """
-    Handle OAuth callback from the provider.
-    The `state` parameter (per OAuth 2.0 spec) carries the provider name,
-    allowing the redirect_uri to stay clean and match exactly what's
-    registered in the provider's console.
-
-    Exchanges the authorization code for an access token,
-    fetches the user's profile, and creates/updates the local user.
-    """
-    provider = state  # state carries the provider name
+    redirect_uri = _get_oauth_redirect_url(request)
 
     async with AsyncClient() as client:
-        if provider == "google":
-            # Exchange code for tokens
-            token_resp = await client.post(
-                "https://oauth2.googleapis.com/token",
-                data={
-                    "client_id": settings.google_client_id,
-                    "client_secret": settings.google_client_secret,
-                    "code": code,
-                    "redirect_uri": settings.oauth_redirect_url,
-                    "grant_type": "authorization_code",
-                },
-            )
-            if token_resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400, detail="Failed to exchange Google auth code"
-                )
-
-            tokens = token_resp.json()
-            # Fetch user info
-            userinfo_resp = await client.get(
-                "https://www.googleapis.com/oauth2/v2/userinfo",
-                headers={"Authorization": f"Bearer {tokens['access_token']}"},
-            )
-            if userinfo_resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400, detail="Failed to fetch Google user info"
-                )
-
-            userinfo = userinfo_resp.json()
-            email = userinfo.get("email", "")
-            display_name = userinfo.get("name", "")
-            avatar_url = userinfo.get("picture", "")
-
-        elif provider == "github":
-            # Exchange code for access token
-            token_resp = await client.post(
-                "https://github.com/login/oauth/access_token",
-                data={
-                    "client_id": settings.github_client_id,
-                    "client_secret": settings.github_client_secret,
-                    "code": code,
-                },
-                headers={"Accept": "application/json"},
-            )
-            if token_resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400, detail="Failed to exchange GitHub auth code"
-                )
-
-            tokens = token_resp.json()
-            # Fetch user info
-            userinfo_resp = await client.get(
-                "https://api.github.com/user",
-                headers={
-                    "Authorization": f"Bearer {tokens['access_token']}",
-                    "Accept": "application/json",
-                },
-            )
-            if userinfo_resp.status_code != 200:
-                raise HTTPException(
-                    status_code=400, detail="Failed to fetch GitHub user info"
-                )
-
-            userinfo = userinfo_resp.json()
-            email = userinfo.get("email", "") or ""
-            display_name = userinfo.get("login", "")
-            avatar_url = userinfo.get("avatar_url", "")
-
-            # If email not in public profile, fetch emails separately
-            if not email:
-                emails_resp = await client.get(
-                    "https://api.github.com/user/emails",
-                    headers={
-                        "Authorization": f"Bearer {tokens['access_token']}",
-                        "Accept": "application/json",
-                    },
-                )
-                if emails_resp.status_code == 200:
-                    emails = emails_resp.json()
-                    primary = [e for e in emails if e.get("primary")]
-                    if primary:
-                        email = primary[0]["email"]
-                    elif emails:
-                        email = emails[0]["email"]
-        else:
+        token_resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": settings.google_client_id,
+                "client_secret": settings.google_client_secret,
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "grant_type": "authorization_code",
+            },
+        )
+        if token_resp.status_code != 200:
             raise HTTPException(
-                status_code=400, detail=f"Unsupported provider: {provider}"
+                status_code=400, detail="Failed to exchange Google auth code"
             )
+
+        tokens = token_resp.json()
+        userinfo_resp = await client.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {tokens.get('access_token', '')}"},
+        )
+        if userinfo_resp.status_code != 200:
+            raise HTTPException(
+                status_code=400, detail="Failed to fetch Google user info"
+            )
+
+        userinfo = userinfo_resp.json()
+        email = userinfo.get("email", "")
+        display_name = userinfo.get("name", "")
+        avatar_url = userinfo.get("picture", "")
 
     if not email:
         raise HTTPException(
-            status_code=400, detail="Could not retrieve email from provider"
+            status_code=400, detail="Could not retrieve email from Google"
         )
 
     # Find or create user
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        # Create new user with organization
         free_plan = db.query(Plan).filter(Plan.name == "Free").first()
         if not free_plan:
             free_plan = Plan(
@@ -537,8 +505,8 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
         )
         db.add(user)
     else:
-        # Update avatar and display name on re-login
-        user.display_name = user.display_name or display_name
+        if display_name and not user.display_name:
+            user.display_name = display_name
         if avatar_url:
             user.avatar_url = avatar_url
 
@@ -551,39 +519,40 @@ async def oauth_callback(state: str, code: str, db: Session) -> TokenResponse:
 
 
 @router.get("/login/{provider}")
-async def login_oauth(provider: str, db: Session = Depends(get_db)):
-    """Initiate OAuth login with a provider (google or github)."""
-    url = await oauth_login(provider, db)
+async def login_oauth(
+    provider: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Initiate OAuth login with Google."""
+    url = await oauth_login(provider, db, request)
     return {"authorization_url": url}
 
 
 @router.get("/callback")
 async def callback_oauth(
+    request: Request,
     state: str = "google",
     code: str = "",
     db: Session = Depends(get_db),
 ):
     """Handle OAuth callback from provider.
 
-    The `state` parameter (per OAuth 2.0 spec) carries the flow type:
+    The `state` parameter carries the flow type:
     - "google"         → Google identity login
-    - "github"          → GitHub identity login
-    - "github_repo"     → GitHub repo token connection (no JWT created)
-
-    This keeps the redirect_uri clean for registration in provider consoles.
+    - "github_repo_*"  → GitHub repo token connection
     """
-    if not code:
-        return RedirectResponse(url="/auth/login?error=missing_code")
+    frontend_url = _get_base_url(request)
 
-    frontend_url = settings.frontend_url
+    if not code:
+        return RedirectResponse(url=f"{frontend_url}/auth/login?error=missing_code")
 
     # ── Handle GitHub repo connection callback ──
     if state.startswith("github_repo"):
-        # Extract the connection_id from state: "github_repo_{connection_id}"
         parts = state.split("_", 2)
         connection_id = parts[2] if len(parts) >= 3 else ""
         redirect_url = (
-            await _handle_github_repo_callback(code, connection_id, db)
+            await _handle_github_repo_callback(code, connection_id, db, request)
             if connection_id
             else None
         )
@@ -595,7 +564,7 @@ async def callback_oauth(
 
     # ── Handle identity login callbacks ──
     try:
-        result = await oauth_callback(state, code, db)
+        result = await oauth_callback(state, code, db, request)
         redirect = f"{frontend_url}/auth/callback?token={result.access_token}"
         return RedirectResponse(url=redirect)
     except HTTPException as e:
@@ -603,15 +572,6 @@ async def callback_oauth(
 
 
 # ─── GitHub Repo Connection OAuth ──────────────────────
-# Uses the same redirect_uri as the login OAuth, differentiated via `state`:
-#   state="github"              → identity login (existing)
-#   state="github_repo_{cid}"   → repo token connection (cid = connection_id)
-#
-# The connection_id is a random UUID stored in memory, mapped to the authenticated
-# user's ID. This allows the callback to identify the user without requiring them
-# to have logged in via GitHub OAuth (works for email/password users too).
-
-# In-memory store for pending GitHub repo connections.
 # Maps {connection_id: (user_id_str, created_at)} — entries expire after 10 minutes.
 _pending_github_connections: dict[str, tuple[str, datetime]] = {}
 _PENDING_CONNECTION_TTL = timedelta(minutes=10)
@@ -630,23 +590,18 @@ def _cleanup_stale_connections():
 
 
 async def _handle_github_repo_callback(
-    code: str, connection_id: str, db: Session
+    code: str, connection_id: str, db: Session, request: Request | None = None
 ) -> str | None:
-    """Exchange the OAuth code for a GitHub access token, then look up the
-    local user via the connection_id stored in memory, and save the token.
-    Returns the frontend redirect URL or None on failure."""
-    # Clean up any stale entries before processing
+    """Exchange OAuth code for GitHub access token and save for repo scans."""
     _cleanup_stale_connections()
 
-    # Look up the user from our in-memory store
     entry = _pending_github_connections.pop(connection_id, None)
     if not entry:
-        return None  # Connection expired or invalid
+        return None
 
-    user_id_str = entry[0]  # tuple: (user_id, created_at)
+    user_id_str = entry[0]
 
     async with AsyncClient() as client:
-        # Exchange code for token
         token_resp = await client.post(
             "https://github.com/login/oauth/access_token",
             data={
@@ -664,7 +619,6 @@ async def _handle_github_repo_callback(
         if not gh_token:
             return None
 
-        # Fetch GitHub user info to get the login name
         userinfo_resp = await client.get(
             "https://api.github.com/user",
             headers={
@@ -679,7 +633,6 @@ async def _handle_github_repo_callback(
         github_id = str(userinfo.get("id", ""))
         github_login = userinfo.get("login", "")
 
-    # Find the local user by the connection_id's user_id
     try:
         user_uuid = UUID(user_id_str)
     except (ValueError, AttributeError):
@@ -689,42 +642,37 @@ async def _handle_github_repo_callback(
     if not user:
         return None
 
-    # Save the repo-scoped token and GitHub ID
     user.github_repo_token = gh_token
     if github_id:
         user.github_id = github_id
     db.commit()
 
-    frontend_url = settings.frontend_url
+    frontend_url = _get_base_url(request)
     return f"{frontend_url}/dashboard/repos?github_connected={github_login}"
 
 
 @router.get("/github/connect")
 async def github_connect(
+    request: Request,
     current_user: User = Depends(get_current_user),
 ):
-    """Initiate GitHub repo connection OAuth flow.
-    Returns the GitHub authorization URL. The frontend should redirect the user there.
-    Generates a random connection_id mapped to the authenticated user, so the
-    callback can identify the user regardless of how they logged in.
-    """
+    """Initiate GitHub repo connection OAuth flow."""
     if not settings.github_client_id:
         raise HTTPException(status_code=501, detail="GitHub OAuth not configured")
 
-    # Clean up stale entries before adding a new one
     _cleanup_stale_connections()
 
-    # Generate a random connection ID and store the user mapping with timestamp
     connection_id = secrets.token_hex(16)
     _pending_github_connections[connection_id] = (
         str(current_user.id),
         datetime.now(timezone.utc),
     )
 
+    redirect_uri = _get_oauth_redirect_url(request)
     url = (
         "https://github.com/login/oauth/authorize"
         f"?client_id={settings.github_client_id}"
-        f"&redirect_uri={settings.oauth_redirect_url}"
+        f"&redirect_uri={redirect_uri}"
         "&scope=repo%20read:user%20user:email"
         f"&state=github_repo_{connection_id}"
     )
