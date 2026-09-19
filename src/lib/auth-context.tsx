@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { setAuthToken, getApiBase } from "./api";
+import { supabase } from "./supabase";
 
 interface User {
   id: string;
@@ -108,14 +109,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ── Google OAuth Login ──
   const loginWithGoogle = useCallback(async () => {
-    const res = await fetch(`${getApiBase()}/api/v1/auth/login/google`);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ detail: "Google login initiation failed" }));
-      throw new Error(err.detail || "Google login initiation failed");
+    try {
+      const res = await fetch(`${getApiBase()}/api/v1/auth/login/google`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authorization_url) {
+          window.location.href = data.authorization_url;
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Direct Google auth init failed, attempting fallback:", e);
     }
-    const data = await res.json();
-    if (data.authorization_url) {
-      window.location.href = data.authorization_url;
+
+    // Fallback: Supabase Client OAuth
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      throw new Error(err.message || "Google login initiation failed");
     }
   }, []);
 

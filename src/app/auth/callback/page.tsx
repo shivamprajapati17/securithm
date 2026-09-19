@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -12,36 +13,75 @@ function CallbackHandler() {
   const { refreshUser } = useAuth();
 
   useEffect(() => {
-    const errorParam = searchParams.get("error");
-    const errorDescription = searchParams.get("error_description");
+    let handled = false;
 
-    if (errorParam) {
-      setError(decodeURIComponent(errorDescription || errorParam));
-      setTimeout(() => router.push("/auth/login"), 2000);
-      return;
-    }
+    async function processAuth() {
+      const errorParam = searchParams.get("error");
+      const errorDescription = searchParams.get("error_description");
 
-    const token = searchParams.get("token");
-    if (token) {
-      localStorage.setItem("securithm_token", token);
-      setAuthToken(token);
-      refreshUser().then(() => {
+      if (errorParam) {
+        setError(decodeURIComponent(errorDescription || errorParam));
+        setTimeout(() => router.push("/auth/login"), 2500);
+        return;
+      }
+
+      // 1. Check for token in search params
+      const token = searchParams.get("token");
+      if (token) {
+        handled = true;
+        localStorage.setItem("securithm_token", token);
+        setAuthToken(token);
+        await refreshUser();
         router.push("/dashboard");
-      });
-      return;
+        return;
+      }
+
+      // 2. Check for hash parameters (#access_token=...)
+      if (typeof window !== "undefined" && window.location.hash) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashToken = hashParams.get("access_token");
+        if (hashToken) {
+          handled = true;
+          localStorage.setItem("securithm_token", hashToken);
+          setAuthToken(hashToken);
+          await refreshUser();
+          router.push("/dashboard");
+          return;
+        }
+      }
+
+      // 3. Check for Supabase session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          handled = true;
+          localStorage.setItem("securithm_token", session.access_token);
+          setAuthToken(session.access_token);
+          await refreshUser();
+          router.push("/dashboard");
+          return;
+        }
+      } catch (err) {
+        console.warn("Supabase session lookup error:", err);
+      }
+
+      // 4. Check if token was already in localStorage
+      const existing = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
+      if (existing) {
+        handled = true;
+        setAuthToken(existing);
+        await refreshUser();
+        router.push("/dashboard");
+        return;
+      }
+
+      if (!handled) {
+        setError("No authentication token received");
+        setTimeout(() => router.push("/auth/login"), 2500);
+      }
     }
 
-    // Check if token already stored in localStorage
-    const existing = typeof window !== "undefined" ? localStorage.getItem("securithm_token") : null;
-    if (existing) {
-      setAuthToken(existing);
-      refreshUser().then(() => {
-        router.push("/dashboard");
-      });
-    } else {
-      setError("No authentication token received");
-      setTimeout(() => router.push("/auth/login"), 2000);
-    }
+    processAuth();
   }, [router, searchParams, refreshUser]);
 
   if (error) {
