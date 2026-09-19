@@ -12,14 +12,8 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [inviteId, setInviteId] = useState<string | null>(null);
-  const { register, loginWithGoogle, isAuthenticated } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      window.location.href = "/dashboard";
-    }
-  }, [isAuthenticated]);
 
   // Detect invite token and error from URL
   useEffect(() => {
@@ -43,10 +37,10 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, displayName || undefined, inviteId || undefined);
+      // Registration succeeded — token is stored, redirect now
       window.location.href = "/dashboard";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
-    } finally {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
       setLoading(false);
     }
   };
