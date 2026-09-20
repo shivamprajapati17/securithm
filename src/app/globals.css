@@ -1,266 +1,353 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   METAMASK-STYLE HOMEPAGE LAYER (mm-*)
-   Warm peach workshop — giant violet display type, quiet controls.
-   Scoped to .mm-root so the Exante app theme is untouched.
+   BRUTALIST HOMEPAGE LAYER (bx-*) — Swiss Industrial Print
+   Rigid compartments · massive condensed macro type · mono telemetry.
+   Built ON the existing light theme tokens: white paper canvas,
+   obsidian ink #1e211e, hazard red #e5484d, ash #d2d3d2 rules.
+   Scoped to .bx-root — the Exante app theme is untouched.
    ═══════════════════════════════════════════════ */
 
-.mm-root {
-  /* Colors */
-  --color-peach-cream: #fff1eb;
-  --color-ink-black: #0a0a0a;
-  --color-pure-white: #ffffff;
-  --color-cool-mist: #e9edf6;
-  --color-slate: #393d46;
-  --color-hairline: #c8ceda;
-  --color-deep-violet: #3d065f;
-  --color-midnight-plum: #190066;
-  --color-lime-wash: #e5ffc3;
-  --color-acid-lime: #baf24a;
-  --color-lilac-haze: #eac2ff;
-  --color-orchid-pop: #d075ff;
-  --color-sky-wash: #cce7ff;
-  --color-periwinkle: #89b0ff;
-  --color-apricot: #ffa680;
-  --color-burnt-sienna: #661800;
+@layer components {
 
-  --font-mm-display: "Bebas Neue", "Oswald", var(--font-display);
-  --font-mm-sans: "Inter", var(--font-sans);
-  --font-mm-body: "DM Sans", "Inter", var(--font-sans);
+.bx-root {
+  --bx-paper: #ffffff;
+  --bx-ink: #1e211e;
+  --bx-muted: #4b4d4b;
+  --bx-ash: #d2d3d2;
+  --bx-hazard: #e5484d;
+  --bx-dim: #f7f8f7;
 
-  background: var(--color-peach-cream);
-  color: var(--color-ink-black);
-  font-family: var(--font-mm-body);
+  --font-bx-macro: "Archivo Black", "Archivo", var(--font-display);
+  --font-bx-wide: "Archivo", var(--font-sans);
+  --font-bx-mono: "Geist Mono", "JetBrains Mono", var(--font-mono);
+
+  background: var(--bx-paper);
+  color: var(--bx-ink);
+  font-family: var(--font-bx-wide);
   overflow-x: clip;
 }
 
-.mm-container {
+/* Blueprint grid backdrop — faint modular intersections */
+.bx-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(30, 33, 30, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 33, 30, 0.05) 1px, transparent 1px);
+  background-size: 96px 96px;
+}
+
+.bx-container {
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: 24px;
 }
 
-/* Display type — the hero IS the headline */
-.mm-display {
-  font-family: var(--font-mm-display);
+/* Macro type — the structural voice. Heavy, uppercase, compressed. */
+.bx-macro {
+  font-family: var(--font-bx-macro);
   font-weight: 400;
-  color: var(--color-deep-violet);
-  line-height: 1.05;
-  letter-spacing: -0.006em;
-}
-
-.mm-eyebrow {
-  font-family: var(--font-mm-body);
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 0.8;
-  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-slate);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--bx-ink);
 }
 
-/* Black pill CTA — the single dark anchor on the cream canvas */
-.mm-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--color-ink-black);
-  color: var(--color-pure-white);
-  border-radius: 9999px;
-  padding: 11px 20px;
-  font-family: var(--font-mm-body);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  transition: transform 150ms ease, opacity 150ms ease;
-}
-.mm-cta:hover {
-  opacity: 0.85;
-}
-.mm-cta:active {
-  transform: scale(0.98);
-}
-.mm-cta--light {
-  background: var(--color-pure-white);
-  color: var(--color-ink-black);
-  border: 1px solid var(--color-ink-black);
+/* Mono telemetry label — the data voice. */
+.bx-label {
+  font-family: var(--font-bx-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bx-muted);
 }
 
-/* Accent wash feature cards — flat, no shadows, 12px radius */
-.mm-card {
-  border-radius: 12px;
-  padding: 24px;
+/* Hazard label — the single red voice in the system. */
+.bx-label--hazard {
+  color: var(--bx-hazard);
+}
+
+/* Registration crosshairs at panel corners. */
+.bx-brackets {
   position: relative;
 }
-.mm-card--lime { background: var(--color-lime-wash); }
-.mm-card--lilac { background: var(--color-lilac-haze); }
-.mm-card--apricot { background: var(--color-apricot); }
-.mm-card--sky { background: var(--color-sky-wash); }
-
-/* Decorative fragments that break the card edge (signature) */
-.mm-burst {
+.bx-brackets::before,
+.bx-brackets::after {
+  content: "+";
   position: absolute;
-  border-radius: 4px;
-  background: var(--color-deep-violet);
+  font-family: var(--font-bx-mono);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--bx-muted);
+}
+.bx-brackets::before {
+  top: -7px;
+  left: -6px;
+}
+.bx-brackets::after {
+  bottom: -7px;
+  right: -6px;
 }
 
-.mm-badge {
+/* Structural rules. */
+.bx-rule {
+  border-top: 2px solid var(--bx-ink);
+}
+.bx-rule--hazard {
+  border-top-color: var(--bx-hazard);
+}
+
+/* CTA — sharp block, zero radius. Hazard fill on hover. */
+.bx-cta {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-family: var(--font-mm-body);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 0.8;
-  color: var(--color-ink-black);
-}
-
-/* Footer/subnav links sit directly on the canvas */
-.mm-link {
-  font-size: 14px;
+  gap: 10px;
+  background: var(--bx-ink);
+  color: var(--bx-paper);
+  border: 1px solid var(--bx-ink);
+  padding: 14px 24px;
+  font-family: var(--font-bx-mono);
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-slate);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  transition: background 140ms linear, border-color 140ms linear,
+    color 140ms linear, transform 100ms ease;
+}
+.bx-cta:hover {
+  background: var(--bx-hazard);
+  border-color: var(--bx-hazard);
+  color: #ffffff;
+}
+.bx-cta:active {
+  transform: translate(1px, 1px);
+}
+.bx-cta--ghost {
+  background: transparent;
+  color: var(--bx-ink);
+}
+.bx-cta--ghost:hover {
+  background: var(--bx-ink);
+  border-color: var(--bx-ink);
+  color: var(--bx-paper);
+}
+.bx-cta--hazard {
+  background: var(--bx-hazard);
+  border-color: var(--bx-hazard);
+  color: #ffffff;
+}
+.bx-cta--hazard:hover {
+  background: var(--bx-ink);
+  border-color: var(--bx-ink);
+}
+
+/* Telemetry compartment — 1px wall, no radius, no shadow. */
+.bx-panel {
+  border: 1px solid var(--bx-ash);
+  background: var(--bx-paper);
+  position: relative;
+}
+.bx-panel--dim {
+  background: var(--bx-dim);
+}
+.bx-panel--ink {
+  background: var(--bx-ink);
+  color: #e8ebe8;
+}
+
+/* Mechanical hover: hard offset block, zero blur — print, not web. */
+.bx-panel--shift {
+  transition: transform 160ms steps(3, end), box-shadow 160ms steps(3, end);
+}
+.bx-panel--shift:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 3px 3px 0 0 var(--bx-ink);
+}
+
+/* Oversized index numeral — viewport-bleeding figure. */
+.bx-index {
+  font-family: var(--font-bx-macro);
+  line-height: 0.8;
+  color: var(--bx-ash);
+}
+
+/* Mono link. */
+.bx-link {
+  font-family: var(--font-bx-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--bx-ink);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--bx-ash);
 }
-.mm-link:hover {
-  color: var(--color-deep-violet);
-}
-
-/* Floating right-edge pill widget */
-.mm-widget {
-  position: fixed;
-  right: 0;
-  top: 40%;
-  width: 12px;
-  height: 80px;
-  background: var(--color-ink-black);
-  border-radius: 9999px 0 0 9999px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  z-index: 50;
-}
-.mm-widget-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 9999px;
-  background: var(--color-pure-white);
+.bx-link:hover {
+  color: var(--bx-hazard);
+  text-decoration-color: var(--bx-hazard);
 }
 
-/* ── Hero terminal: dark phone-frame product mock, cream page contrast ── */
-.mm-terminal {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 20px;
-  font-family: var(--font-mono);
+/* Barcode strip — decorative, mechanical. */
+.bx-barcode {
+  height: 16px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--bx-ink) 0 2px,
+    transparent 2px 5px,
+    var(--bx-ink) 5px 6px,
+    transparent 6px 10px
+  );
+}
+
+/* Hazard warning stripes. */
+.bx-stripes {
+  height: 10px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--bx-hazard) 0 10px,
+    transparent 10px 20px
+  );
+}
+
+/* ── CRT telemetry terminal — obsidian phosphor ── */
+.bx-terminal {
+  background: var(--bx-ink);
+  color: #e8ebe8;
+  font-family: var(--font-bx-mono);
   font-size: 12px;
-  line-height: 1.65;
-  color: #e8e8e8;
+  line-height: 1.7;
+  padding: 20px;
   min-height: 340px;
+  position: relative;
+  overflow: hidden;
 }
-.mm-terminal .tok-key { color: #d075ff; }
-.mm-terminal .tok-str { color: #baf24a; }
-.mm-terminal .tok-com { color: #6b6b6b; }
-.mm-terminal .tok-fn { color: #89b0ff; }
-.mm-terminal-head {
+.bx-terminal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0 1px,
+    transparent 1px 3px
+  );
+}
+.bx-terminal .tok-key {
+  color: #90fc95;
+}
+.bx-terminal .tok-str {
+  color: #90fc95;
+}
+.bx-terminal .tok-com {
+  color: #7b837b;
+}
+.bx-terminal .tok-fn {
+  color: #ff7b80;
+}
+.bx-terminal-head {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 14px;
+  color: #7b837b;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
-.mm-terminal-head span {
-  width: 10px;
-  height: 10px;
-  border-radius: 9999px;
-}
-
-@keyframes mm-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
-}
-.mm-caret {
-  animation: mm-blink 1.1s step-end infinite;
-  color: var(--color-acid-lime);
+.bx-terminal-head .bx-sig {
+  width: 8px;
+  height: 8px;
+  background: var(--bx-hazard);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .mm-caret { animation: none; }
-  .mm-cta { transition: none; }
-  .mm-marquee__track { animation: none; }
-  .mm-card, .mm-burst { transition: none; }
+@keyframes bx-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.bx-caret {
+  animation: bx-blink 1.1s step-end infinite;
+  color: #90fc95;
 }
 
-/* ── Motion layer — metamask-grade energy on the cream canvas ── */
-
-/* Card lift + decorative burst wiggle on hover */
-.mm-card {
-  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+/* ── Agent telemetry tape — seamless loop ── */
+@keyframes bx-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
-.mm-card:hover {
-  transform: translateY(-4px);
-}
-.mm-card .mm-burst {
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.mm-card:hover .mm-burst {
-  transform: rotate(8deg) scale(1.12);
-}
-
-/* Agent marquee — seamless loop, duplicated track, pauses on hover */
-@keyframes mm-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-.mm-marquee {
+.bx-marquee {
   overflow: hidden;
-  border-block: 1px solid var(--color-hairline);
-  padding-block: 14px;
+  border-block: 1px solid var(--bx-ash);
+  padding-block: 12px;
+  background: var(--bx-dim);
 }
-.mm-marquee__track {
+.bx-marquee__track {
   display: flex;
   width: max-content;
-  gap: 40px;
-  animation: mm-marquee 28s linear infinite;
+  gap: 48px;
+  animation: bx-marquee 30s linear infinite;
 }
-.mm-marquee:hover .mm-marquee__track {
+.bx-marquee:hover .bx-marquee__track {
   animation-play-state: paused;
 }
-.mm-marquee__item {
+.bx-marquee__item {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   white-space: nowrap;
-  font-family: var(--font-mm-body);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-deep-violet);
+  font-family: var(--font-bx-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bx-ink);
 }
-.mm-marquee__dot {
+.bx-marquee__dot {
   width: 8px;
   height: 8px;
-  border-radius: 9999px;
-  background: var(--color-acid-lime);
-  border: 1px solid var(--color-deep-violet);
+  background: var(--bx-hazard);
+  flex-shrink: 0;
 }
 
-/* Typed terminal — line entrance */
-@keyframes mm-line-in {
-  from { opacity: 0; transform: translateX(-6px); }
-  to { opacity: 1; transform: none; }
+/* Terminal line entrance. */
+@keyframes bx-line-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
-.mm-terminal .mm-line-in {
-  animation: mm-line-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+.bx-terminal .bx-line-in {
+  animation: bx-line-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mm-terminal .mm-line-in { animation: none; }
-  .mm-card, .mm-card .mm-burst { transition: none; }
+  .bx-caret {
+    animation: none;
+  }
+  .bx-marquee__track {
+    animation: none;
+  }
+  .bx-panel--shift,
+  .bx-cta {
+    transition: none;
+  }
+  .bx-terminal .bx-line-in {
+    animation: none;
+  }
+}
+
 }
 
 /* ═══════════════════════════════════════════════

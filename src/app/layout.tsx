@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700&family=Archivo+Black&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
