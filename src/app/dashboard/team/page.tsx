@@ -166,7 +166,7 @@ export default function TeamPage() {
   const loadMembers = useCallback(async () => {
     try {
       setLoadingMembers(true);
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (token) {
         api.setAuthToken(token);
         const [membersData, invitesData] = await Promise.all([
@@ -299,7 +299,7 @@ export default function TeamPage() {
                     onClick={async () => {
                       if (!inviteEmail) return;
                       try {
-                        const token = localStorage.getItem("auditai_token");
+                        const token = localStorage.getItem("securithm_token");
                         if (token) {
                           api.setAuthToken(token);
                           await api.inviteTeamMember({ email: inviteEmail });
@@ -460,7 +460,7 @@ export default function TeamPage() {
                                                 onClick={async () => {
                                                   if (!confirm(`UNASSIGN ${getMemberName(item.assigned_to)} FROM THIS FINDING?`)) return;
                                                   try {
-                                                    const token = localStorage.getItem("auditai_token");
+                                                    const token = localStorage.getItem("securithm_token");
                                                     if (token) api.setAuthToken(token);
                                                     await api.updateFinding(item.id, { assigned_to: null });
                                                     const uname = getMemberName(item.assigned_to) || "Unknown";
@@ -503,7 +503,7 @@ export default function TeamPage() {
                                             key={transition.status}
                                             onClick={async () => {
                                               try {
-                                                const token = localStorage.getItem("auditai_token");
+                                                const token = localStorage.getItem("securithm_token");
                                                 if (token) api.setAuthToken(token);
                                                 await api.updateFinding(item.id, { status: transition.status });
                                                 const statusLabel = columnConfig.find(c => c.id === transition.status)?.title || transition.status.toUpperCase();
@@ -620,7 +620,7 @@ export default function TeamPage() {
                   onClick={async () => {
                     if (!inviteEmail) return;
                     try {
-                      const token = localStorage.getItem("auditai_token");
+                      const token = localStorage.getItem("securithm_token");
                       if (token) {
                         api.setAuthToken(token);
                         await api.inviteTeamMember({ email: inviteEmail });
@@ -722,7 +722,7 @@ export default function TeamPage() {
                               onChange={async (e) => {
                 const newRole = e.target.value as "member" | "viewer";
                                 try {
-                                  const token = localStorage.getItem("auditai_token");
+                                  const token = localStorage.getItem("securithm_token");
                                   if (token) api.setAuthToken(token);
                                   await api.changeMemberRole(member.id, newRole);
                                   loadMembers();
@@ -746,7 +746,7 @@ export default function TeamPage() {
                             onClick={async () => {
                               if (!confirm(`REMOVE ${member.email} FROM ORGANIZATION?`)) return;
                               try {
-                                const token = localStorage.getItem("auditai_token");
+                                const token = localStorage.getItem("securithm_token");
                                 if (token) api.setAuthToken(token);
                                 await api.removeMember(member.id);
                                 loadMembers();
@@ -800,7 +800,7 @@ export default function TeamPage() {
                           className="h-5 w-5 p-0 text-[var(--color-term-error)]"
                           onClick={async () => {
                             try {
-                              const token = localStorage.getItem("auditai_token");
+                              const token = localStorage.getItem("securithm_token");
                               if (token) api.setAuthToken(token);
                               await api.cancelInvite(invite.id);
                               loadMembers();
@@ -860,7 +860,7 @@ export default function TeamPage() {
                         setAssigningMemberId(member.id);
                         setAssignLoading(true);
                         try {
-                          const token = localStorage.getItem("auditai_token");
+                          const token = localStorage.getItem("securithm_token");
                           if (token) api.setAuthToken(token);
                           await api.updateFinding(assigningFinding.id, {
                             assigned_to: member.id,

@@ -125,7 +125,7 @@ export default function ApiConsolePage() {
   const fetchApiKeys = async () => {
     setKeysLoading(true);
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) {
         setApiKeys([]);
         return;
@@ -152,7 +152,7 @@ export default function ApiConsolePage() {
       // Only refresh usage silently (don't show loading skeleton)
       const refreshUsage = async () => {
         try {
-          const token = localStorage.getItem("auditai_token");
+          const token = localStorage.getItem("securithm_token");
           if (!token) return;
           api.setAuthToken(token);
           const [keys, usage] = await Promise.all([
@@ -179,7 +179,7 @@ export default function ApiConsolePage() {
     setCreatedKey(null);
 
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) throw new Error("Not authenticated");
       api.setAuthToken(token);
 
@@ -207,7 +207,7 @@ export default function ApiConsolePage() {
   const handleRevokeKey = async (keyId: string) => {
     if (!confirm("REVOKE THIS API KEY? THIS ACTION CANNOT BE UNDONE.")) return;
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) return;
       api.setAuthToken(token);
       await api.request(`/api/v1/auth/api-keys/${keyId}`, { method: "DELETE" });
@@ -226,7 +226,7 @@ export default function ApiConsolePage() {
     }
     rateLimitTimers.current[keyId] = setTimeout(async () => {
       try {
-        const token = localStorage.getItem("auditai_token");
+        const token = localStorage.getItem("securithm_token");
         if (!token) return;
         api.setAuthToken(token);
         await api.request(`/api/v1/auth/api-keys/${keyId}`, {

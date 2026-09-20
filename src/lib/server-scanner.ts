@@ -250,6 +250,7 @@ const globalScans = globalThis as unknown as {
   __securithm_events?: Map<string, MonitoringEvent[]>;
   __securithm_api_keys?: Map<string, ApiKeyRecord>;
   __securithm_seeded?: boolean;
+  __securithm_invites?: Map<string, TeamInvite>;
 };
 
 function scansMap(): Map<string, Scan> {
@@ -427,4 +428,52 @@ export async function validateApiKey(key: string): Promise<ApiKeyRecord | null> 
     return record;
   }
   return null;
+}
+
+// ─── Team invites (memory-backed; email delivery not configured yet) ───────
+
+export interface TeamInvite {
+  id: string;
+  org_id: string;
+  email: string;
+  role: string;
+  status: "pending" | "accepted" | "declined";
+  invited_by: string | null;
+  message: string | null;
+  expires_at: string;
+  created_at: string;
+}
+
+function invitesMap(): Map<string, TeamInvite> {
+  globalScans.__securithm_invites ??= new Map();
+  return globalScans.__securithm_invites;
+}
+
+export function listTeamInvites(): TeamInvite[] {
+  return Array.from(invitesMap().values()).sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+}
+
+export function createTeamInvite(email: string, role: string, invitedBy: string | null, message: string | null): TeamInvite {
+  const invite: TeamInvite = {
+    id: crypto.randomUUID(),
+    org_id: "default-org",
+    email,
+    role,
+    status: "pending",
+    invited_by: invitedBy,
+    message,
+    expires_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+    created_at: new Date().toISOString(),
+  };
+  invitesMap().set(invite.id, invite);
+  return invite;
+}
+
+export function setInviteStatus(id: string, status: "accepted" | "declined"): TeamInvite | null {
+  const invite = invitesMap().get(id);
+  if (!invite) return null;
+  invite.status = status;
+  return invite;
 }

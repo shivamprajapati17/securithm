@@ -78,7 +78,7 @@ export default function ReposPage() {
     setReposLoading(true);
     setReposError(null);
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) return;
       api.setAuthToken(token);
 
@@ -104,7 +104,7 @@ export default function ReposPage() {
     setConnecting(true);
     setReposError(null);
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) throw new Error("Not authenticated");
       api.setAuthToken(token);
 
@@ -121,7 +121,7 @@ export default function ReposPage() {
   const handleDisconnect = async () => {
     setReposLoading(true);
     try {
-      const token = localStorage.getItem("auditai_token");
+      const token = localStorage.getItem("securithm_token");
       if (!token) return;
       api.setAuthToken(token);
       await api.request("/api/v1/auth/github/disconnect");

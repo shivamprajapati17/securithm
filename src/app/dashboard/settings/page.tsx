@@ -343,7 +343,7 @@ export default function SettingsPage() {
               const name = (document.getElementById('settings-display-name') as HTMLInputElement)?.value;
               const email = (document.getElementById('settings-email') as HTMLInputElement)?.value;
               try {
-                const token = localStorage.getItem('auditai_token');
+                const token = localStorage.getItem('securithm_token');
                 if (token) {
                   api.setAuthToken(token);
                   await api.getMe();

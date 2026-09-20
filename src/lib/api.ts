@@ -428,7 +428,7 @@ export async function inviteTeamMember(data: {
   message: string | null;
   created_at: string;
 }> {
-  return request("/api/v1/team/invite", {
+  return request("/api/v1/team/invites", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -453,7 +453,7 @@ export async function acceptInvite(inviteId: string): Promise<{
   status: string;
   message: string | null;
 }> {
-  return request(`/api/v1/team/invite/${inviteId}/accept`, {
+  return request(`/api/v1/team/invites/${inviteId}/accept`, {
     method: "PATCH",
   });
 }
@@ -464,13 +464,13 @@ export async function declineInvite(inviteId: string): Promise<{
   status: string;
   message: string | null;
 }> {
-  return request(`/api/v1/team/invite/${inviteId}/decline`, {
+  return request(`/api/v1/team/invites/${inviteId}/decline`, {
     method: "PATCH",
   });
 }
 
 export async function cancelInvite(inviteId: string): Promise<void> {
-  return request(`/api/v1/team/invite/${inviteId}`, {
+  return request(`/api/v1/team/invites/${inviteId}`, {
     method: "DELETE",
   });
 }

@@ -1,36 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { createTeamInvite, listTeamInvites } from "@/lib/server-scanner";
+import { getUserFromRequest } from "@/lib/auth-server";
 
-export async function GET() {
-  return NextResponse.json([]);
+export async function GET(request: NextRequest) {
+  return NextResponse.json(listTeamInvites());
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, role = "member" } = body;
+    const { email, role = "member", message = null } = body;
 
     if (!email) {
       return NextResponse.json({ detail: "Email is required" }, { status: 400 });
     }
 
-    return NextResponse.json(
-      {
-        id: crypto.randomUUID(),
-        org_id: "default-org",
-        email,
-        role,
-        status: "pending",
-        invited_by: "Shivam Prajapati",
-        expires_at: new Date(Date.now() + 86400000 * 7).toISOString(),
-        created_at: new Date().toISOString(),
-      },
-      { status: 201 }
-    );
-  } catch (err: any) {
-    return NextResponse.json(
-      { detail: err.message || "Failed to send invitation" },
-      { status: 500 }
-    );
+    const user = await getUserFromRequest(request);
+    const invite = createTeamInvite(email, role, user?.email ?? null, message);
+    return NextResponse.json(invite, { status: 201 });
+  } catch (err: unknown) {
+    const detail = err instanceof Error ? err.message : "Failed to create invite";
+    return NextResponse.json({ detail }, { status: 500 });
   }
 }
