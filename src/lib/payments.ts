@@ -126,18 +126,21 @@ export async function markOrderPaid(
 
 export async function activatePlan(userId: string, planId: string): Promise<void> {
   const sb = admin();
-  if (!sb) return;
-  try {
-    await (sb.from("user_plans") as unknown as {
-      upsert: (r: unknown) => PromiseLike<{ error: unknown }>;
-    }).upsert({
-      user_id: userId,
-      plan_id: planId,
-      unlimited: planId !== "free",
-      updated_at: new Date().toISOString(),
-    });
-  } catch {
-    /* ignore */
+  if (!sb) {
+    // A purchase must never silently no-op — without the service client the
+    // buyer would pay (or pass the paywall) and stay on the free plan.
+    throw new Error("Plan store unavailable — SUPABASE_SERVICE_ROLE_KEY is not configured");
+  }
+  const { error } = await (sb.from("user_plans") as unknown as {
+    upsert: (r: unknown) => PromiseLike<{ error: unknown }>;
+  }).upsert({
+    user_id: userId,
+    plan_id: planId,
+    unlimited: planId !== "free",
+    updated_at: new Date().toISOString(),
+  });
+  if (error) {
+    throw new Error(`Plan activation failed: ${JSON.stringify(error)}`);
   }
 }
 
