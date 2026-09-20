@@ -43,7 +43,7 @@
   overflow-x: clip;
 }
 
-./* Editorial serif accent — italic display voice for hero emphasis.
+/* Editorial serif accent — italic display voice for hero emphasis.
    .mm-root prefix raises specificity above .mm-display so the serif
    family wins when nested inside a display heading. */
 .mm-root .mm-serif {
