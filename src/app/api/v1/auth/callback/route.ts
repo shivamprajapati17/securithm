@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { getAppSecret } from "@/lib/app-secret";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
     const picture = userInfo.picture || "";
 
     // 3. Create HS256 JWT
-    const secret = process.env.SECRET_KEY || "87954f558f6abfc64ff21cbe420cd0be";
+    const secret = getAppSecret();
     const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
     const payload = Buffer.from(
       JSON.stringify({

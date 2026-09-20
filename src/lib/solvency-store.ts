@@ -6,6 +6,7 @@
  */
 
 import crypto from "crypto";
+import { getAppSecret } from "@/lib/app-secret";
 
 export interface SolvencyProfile {
   id: string;
@@ -169,7 +170,7 @@ function merkleRoot(leaves: string[]): string {
 }
 
 function signPayload(payload: string): string {
-  const secret = process.env.SECRET_KEY || "87954f558f6abfc64ff21cbe420cd0be";
+  const secret = getAppSecret();
   return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 

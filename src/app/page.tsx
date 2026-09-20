@@ -227,36 +227,6 @@ export default function Home() {
       {/* Ambient light — fixed layer behind everything */}
       <div className="mm-ambient" aria-hidden />
 
-      {/* Floating circle overlays — slow ambient bubbles on the canvas */}
-      <div className="mm-bubbles" aria-hidden>
-        {[
-          "mm-bubble--l lime",
-          "mm-bubble--s outline",
-          "mm-bubble--m lilac",
-          "mm-bubble--s sky",
-          "mm-bubble--l apricot",
-          "mm-bubble--m outline",
-          "mm-bubble--s lilac",
-          "mm-bubble--m lime",
-          "mm-bubble--s apricot",
-          "mm-bubble--l outline",
-        ].map((spec, i) => {
-          const [variant, color] = spec.split(" ");
-          return (
-            <span
-              key={i}
-              className={`mm-bubble ${variant} mm-bubble--${color}`}
-              style={{
-                left: `${(i * 11 + 4) % 94}%`,
-                animationDelay: `${i * 4.2}s`,
-                animationDuration: `${26 + (i % 5) * 6}s`,
-                "--mm-drift": `${(i % 2 === 0 ? 1 : -1) * (24 + (i % 3) * 22)}px`,
-              } as React.CSSProperties}
-            />
-          );
-        })
-        }
-      </div>
 
       {/* ── Top telemetry strip — quiet meta line on the canvas ── */}
       <div className="relative z-10 border-b border-[var(--color-hairline)]">

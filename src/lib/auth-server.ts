@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { NextRequest } from "next/server";
+import { getAppSecret } from "@/lib/app-secret";
 
 export interface RequestUser {
   id: string;
@@ -59,7 +60,7 @@ function verifyAppToken(token: string): boolean {
   const parts = token.split(".");
   if (parts.length !== 3) return false;
   const [header, payload, signature] = parts;
-  const secret = process.env.SECRET_KEY || "87954f558f6abfc64ff21cbe420cd0be";
+  const secret = getAppSecret();
   const expected = crypto
     .createHmac("sha256", secret)
     .update(`${header}.${payload}`)
