@@ -410,6 +410,68 @@
   .mm-marquee__track { animation: none; }
   .mm-terminal .mm-line-in { animation: none; }
   .mm-enter { animation: none; }
+  .mm-float { animation: none; }
+}
+
+/* ── Floating circle overlays — playful depth on the cream canvas ── */
+.mm-bubbles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.mm-bubble {
+  position: absolute;
+  bottom: -140px;
+  border-radius: 9999px;
+  opacity: 0.5;
+  animation: mm-rise linear infinite;
+  will-change: transform, opacity;
+}
+.mm-bubble::after {
+  /* small highlight dot — flat, in keeping with the no-shadow rule */
+  content: "";
+  position: absolute;
+  top: 18%;
+  left: 22%;
+  width: 22%;
+  height: 22%;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.55);
+}
+@keyframes mm-rise {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.5; }
+  92% { opacity: 0.5; }
+  100% { transform: translate3d(var(--mm-drift, 40px), -115vh, 0) rotate(340deg); opacity: 0; }
+}
+.mm-bubble--s { width: 14px; height: 14px; animation-duration: 26s; }
+.mm-bubble--m { width: 26px; height: 26px; animation-duration: 34s; }
+.mm-bubble--l { width: 44px; height: 44px; animation-duration: 46s; }
+.mm-bubble--lime { background: var(--color-acid-lime); }
+.mm-bubble--lilac { background: var(--color-orchid-pop); }
+.mm-bubble--sky { background: var(--color-periwinkle); }
+.mm-bubble--apricot { background: var(--color-apricot); }
+.mm-bubble--outline {
+  background: transparent;
+  border: 2px solid var(--color-deep-violet);
+  opacity: 0.35;
+}
+
+/* Gentle idle bobbing for accent shapes inside cards */
+.mm-float {
+  animation: mm-float 7s ease-in-out infinite alternate;
+}
+@keyframes mm-float {
+  from { transform: translateY(0) rotate(0deg); }
+  to { transform: translateY(-10px) rotate(4deg); }
+}
+.mm-float-slow { animation-duration: 11s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-bubble { animation: none; opacity: 0; }
+  .mm-float, .mm-float-slow { animation: none; }
 }
 
 }

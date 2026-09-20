@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,64 +16,6 @@ import {
 
 import * as api from "@/lib/api";
 
-const plans = [
-  {
-    name: "FREE",
-    price: "$0",
-    description: "FOR SOLO DEVELOPERS EXPLORING AUDITAI",
-    features: [
-      "50 SCANS/MONTH",
-      "BASIC MONITOR (1 CONTRACT)",
-      "GITHUB ACTION ACCESS",
-      "COMMUNITY SUPPORT",
-    ],
-    current: true,
-  },
-  {
-    name: "PRO",
-    price: "$29",
-    description: "FOR PROFESSIONAL TEAMS SHIPPING WEEKLY",
-    features: [
-      "500 SCANS/MONTH",
-      "10 MONITORED CONTRACTS",
-      "AI FIX SUGGESTIONS",
-      "TEAM SEATS (5 MEMBERS)",
-      "SLACK/DISCORD ALERTS",
-      "EMAIL SUPPORT",
-    ],
-    current: false,
-  },
-  {
-    name: "TEAM",
-    price: "$99",
-    description: "FOR PROTOCOL TEAMS NEEDING FULL COVERAGE",
-    features: [
-      "2,000 SCANS/MONTH",
-      "50 MONITORED CONTRACTS",
-      "REMEDIATION WORKFLOW",
-      "UNLIMITED TEAM SEATS",
-      "CUSTOM THRESHOLDS",
-      "PRIORITY SUPPORT",
-    ],
-    current: false,
-  },
-  {
-    name: "ENTERPRISE",
-    price: "CUSTOM",
-    description: "FOR INSTITUTIONS AND HIGH-VOLUME TEAMS",
-    features: [
-      "UNLIMITED SCANS",
-      "UNLIMITED MONITORING",
-      "RISK SCORE API ACCESS",
-      "SOC 2 COMPLIANCE DOCS",
-      "DEDICATED SLAS",
-      "99.95% UPTIME GUARANTEE",
-      "DEDICATED SUPPORT",
-    ],
-    current: false,
-  },
-];
-
 const notificationSettings = [
   { label: "SCAN_COMPLETED", description: "WHEN A SCAN FINISHES PROCESSING", enabled: true },
   { label: "CRITICAL_FINDING", description: "WHEN A CRITICAL SEVERITY ISSUE IS FOUND", enabled: true },
@@ -86,6 +29,32 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(notificationSettings);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const router = useRouter();
+  const [plans, setPlans] = useState<
+    Array<{
+      id: string;
+      name: string;
+      price_monthly: number | null;
+      features: string[];
+      highlight: boolean;
+    }>
+  >([]);
+  const [currentPlan, setCurrentPlan] = useState<string>("free");
+
+  useEffect(() => {
+    const token = localStorage.getItem("securithm_token");
+    if (token) api.setAuthToken(token);
+    api
+      .request<{ plans: Array<{ id: string; name: string; price_monthly: number | null; features: string[]; highlight: boolean }> }>(
+        "/api/v1/payments/plans"
+      )
+      .then((d) => setPlans(d.plans ?? []))
+      .catch(() => setPlans([]));
+    api
+      .request<{ plan_id: string }>("/api/v1/payments/plan")
+      .then((d) => setCurrentPlan(d.plan_id ?? "free"))
+      .catch(() => {});
+  }, []);
 
   const toggleNotification = (label: string) => {
     setNotifications(prev => prev.map(n => n.label === label ? { ...n, enabled: !n.enabled } : n));
@@ -107,59 +76,62 @@ export default function SettingsPage() {
           <CardTitle>{">"} PLAN_BILLING</CardTitle>
           <Badge variant="default" className="gap-1 text-[9px]">
             <CreditCard className="h-2.5 w-2.5" />
-            [FREE]
+            [{currentPlan.toUpperCase()}]
           </Badge>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-4 gap-3">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`p-3 border ${
-                  plan.current
-                    ? "border-[var(--color-term-fg)] bg-[var(--color-term-dim)]"
-                    : "border-[var(--color-term-border)]"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <h3 className="text-[11px] font-bold text-[var(--color-term-fg)] font-mono">{plan.name}</h3>
-                  {plan.current && (
-                    <Badge variant="default" className="text-[8px] px-1">
-                      [CURRENT]
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-sm font-bold text-[var(--color-term-fg)] term-glow mb-1">{plan.price}</div>
-                <p className="text-[9px] text-[var(--color-term-muted)] mb-2 font-mono">
-                  {plan.description}
-                </p>
-                <ul className="space-y-1 mb-3">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="text-[8px] text-[var(--color-term-muted)] font-mono flex items-center gap-1"
-                    >
-                      <span className="text-[var(--color-term-fg)]">+</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  variant={plan.current ? "outline" : "default"}
-                  size="sm"
-                  className="w-full text-[9px] h-7"
-                  disabled={plan.current}
-                  onClick={() => {
-                    if (!plan.current) {
-                      window.open('https://auditai.vercel.app/dashboard/settings?checkout=' + plan.name.toLowerCase(), '_blank');
-                      alert(`REDIRECTING TO ${plan.name} CHECKOUT...`);
-                    }
-                  }}
+          <div className="grid md:grid-cols-3 gap-3">
+            {plans.map((plan) => {
+              const isCurrent = plan.id === currentPlan;
+              const price =
+                plan.price_monthly == null
+                  ? "CUSTOM"
+                  : plan.price_monthly === 0
+                    ? "$0"
+                    : `$${plan.price_monthly}`;
+              return (
+                <div
+                  key={plan.id}
+                  className={`p-3 border ${
+                    isCurrent
+                      ? "border-[var(--color-term-fg)] bg-[var(--color-term-dim)]"
+                      : plan.highlight
+                        ? "border-[var(--color-term-fg)]"
+                        : "border-[var(--color-term-border)]"
+                  }`}
                 >
-                  {plan.current ? "[CURRENT]" : "[ UPGRADE ]"}
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h3 className="text-[11px] font-bold text-[var(--color-term-fg)] font-mono">{plan.name.toUpperCase()}</h3>
+                    {isCurrent && (
+                      <Badge variant="default" className="text-[8px] px-1">
+                        [CURRENT]
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-sm font-bold text-[var(--color-term-fg)] term-glow mb-1">{price}</div>
+                  <ul className="space-y-1 mb-3">
+                    {plan.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="text-[8px] text-[var(--color-term-muted)] font-mono flex items-center gap-1"
+                      >
+                        <span className="text-[var(--color-term-fg)]">+</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    variant={isCurrent ? "outline" : "default"}
+                    size="sm"
+                    className="w-full text-[9px] h-7"
+                    disabled={isCurrent}
+                    onClick={() => router.push(`/pricing?plan=${plan.id}`)}
+                  >
+                    {isCurrent ? "[CURRENT]" : "[ UPGRADE ]"}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

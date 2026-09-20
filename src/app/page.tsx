@@ -227,6 +227,37 @@ export default function Home() {
       {/* Ambient light — fixed layer behind everything */}
       <div className="mm-ambient" aria-hidden />
 
+      {/* Floating circle overlays — slow ambient bubbles on the canvas */}
+      <div className="mm-bubbles" aria-hidden>
+        {[
+          "mm-bubble--l lime",
+          "mm-bubble--s outline",
+          "mm-bubble--m lilac",
+          "mm-bubble--s sky",
+          "mm-bubble--l apricot",
+          "mm-bubble--m outline",
+          "mm-bubble--s lilac",
+          "mm-bubble--m lime",
+          "mm-bubble--s apricot",
+          "mm-bubble--l outline",
+        ].map((spec, i) => {
+          const [variant, color] = spec.split(" ");
+          return (
+            <span
+              key={i}
+              className={`mm-bubble ${variant} mm-bubble--${color}`}
+              style={{
+                left: `${(i * 11 + 4) % 94}%`,
+                animationDelay: `${i * 4.2}s`,
+                animationDuration: `${26 + (i % 5) * 6}s`,
+                "--mm-drift": `${(i % 2 === 0 ? 1 : -1) * (24 + (i % 3) * 22)}px`,
+              } as React.CSSProperties}
+            />
+          );
+        })
+        }
+      </div>
+
       {/* ── Top telemetry strip — quiet meta line on the canvas ── */}
       <div className="relative z-10 border-b border-[var(--color-hairline)]">
         <div className="mm-container flex h-9 items-center justify-between">
@@ -360,8 +391,8 @@ export default function Home() {
             style={{ transitionDelay: "320ms" }}
           >
             {/* purple fragments breaking out of the frame */}
-            <span className="mm-burst -left-4 top-10 h-20 w-6" aria-hidden />
-            <span className="mm-burst -right-6 bottom-14 h-6 w-24" aria-hidden />
+            <span className="mm-burst mm-float" aria-hidden />
+            <span className="mm-burst mm-float-slow -right-6 bottom-14 h-6 w-24" aria-hidden />
             <div className="mm-terminal text-left">
               <div className="mm-terminal-head">
                 <span style={{ background: "#e5484d" }} />
@@ -516,7 +547,7 @@ export default function Home() {
                 className={`mm-card ${m.wash}`}
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
-                <span className={`mm-burst ${m.burst}`} aria-hidden />
+                <span className={`mm-burst mm-float ${m.burst}`} aria-hidden />
                 <p className="mm-eyebrow">{m.eyebrow}</p>
                 <h3 className="mm-display mt-5 text-[34px] leading-[1.05]">
                   {m.title}

@@ -57,6 +57,9 @@ export default function ReposPage() {
   const [reposLoading, setReposLoading] = useState(false);
   const [reposError, setReposError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [patOpen, setPatOpen] = useState(false);
+  const [patValue, setPatValue] = useState("");
+  const [patMsg, setPatMsg] = useState<string | null>(null);
 
   // Check for github_connected param in URL (returned from OAuth callback)
   useEffect(() => {
@@ -99,20 +102,26 @@ export default function ReposPage() {
     fetchGithubRepos();
   }, []);
 
-  // Initiate GitHub OAuth for repo connection
+  // Connect GitHub via a personal access token (classic, repo scope).
+  // Works without the OAuth app being configured: the token is validated
+  // with GitHub, then stored server-side and never exposed again.
   const handleConnect = async () => {
+    setPatMsg(null);
     setConnecting(true);
-    setReposError(null);
     try {
       const token = localStorage.getItem("securithm_token");
       if (!token) throw new Error("Not authenticated");
       api.setAuthToken(token);
-
-      const data = await api.request<{ authorization_url: string }>("/api/v1/auth/github/connect");
-      // Redirect to GitHub OAuth page
-      window.location.href = data.authorization_url;
+      await api.request("/api/v1/auth/github/token", {
+        method: "POST",
+        body: JSON.stringify({ token: patValue.trim() }),
+      });
+      setPatOpen(false);
+      setPatValue("");
+      await fetchGithubRepos();
     } catch (e) {
-      setReposError(e instanceof Error ? e.message : "Failed to initiate connection");
+      setPatMsg(e instanceof Error ? e.message : "Failed to connect GitHub");
+    } finally {
       setConnecting(false);
     }
   };
@@ -180,15 +189,44 @@ export default function ReposPage() {
             <Button
               size="sm"
               className="gap-1.5 text-[9px]"
-              onClick={handleConnect}
-              disabled={connecting}
+              onClick={() => { setPatOpen((v) => !v); setPatMsg(null); }}
             >
               <Github className="h-3.5 w-3.5" />
-              {connecting ? "CONNECTING..." : "[ CONNECT GITHUB ]"}
+              [ CONNECT GITHUB ]
             </Button>
           )}
         </div>
       </div>
+
+      {patOpen && (
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="text-xs font-bold text-[var(--color-term-fg)] uppercase tracking-wider mb-2">
+              $ PASTE_GITHUB_TOKEN
+            </h3>
+            <p className="text-[10px] text-[var(--color-term-muted)] mb-3 font-mono">
+              CREATE A CLASSIC TOKEN WITH THE <span className="text-[var(--color-term-fg)]">repo</span> SCOPE AT
+              GITHUB.COM → SETTINGS → DEVELOPER SETTINGS → PERSONAL ACCESS TOKENS.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="password"
+                value={patValue}
+                onChange={(e) => setPatValue(e.target.value)}
+                placeholder="ghp_... (stored server-side, never shown again)"
+                className="flex-1 border border-[var(--color-term-border)] bg-[var(--color-paper,#fff)] px-3 py-2 font-mono text-[11px] outline-none focus:border-[var(--color-term-fg)]"
+                autoComplete="off"
+              />
+              <Button size="sm" onClick={handleConnect} disabled={connecting || patValue.trim().length < 20}>
+                {connecting ? "SAVING..." : "[ SAVE TOKEN ]"}
+              </Button>
+            </div>
+            {patMsg && (
+              <p className="mt-2 text-[10px] text-[var(--color-term-error)] font-mono">[!] {patMsg}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Setup Guide */}
       <Card className="border-[var(--color-term-fg)] bg-[var(--color-term-dim)]">
@@ -207,7 +245,7 @@ export default function ReposPage() {
               <ol className="space-y-1.5 text-[10px] text-[var(--color-term-muted)] font-mono">
                 <li className="flex items-start gap-2">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">1</span>
-                  <span>$ CLICK [CONNECT GITHUB] — AUTHORIZE VIA OAUTH (REPO SCOPE)</span>
+                  <span>$ CLICK [CONNECT GITHUB] AND PASTE A CLASSIC PAT (REPO SCOPE)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="flex h-4 w-4 shrink-0 items-center justify-center border border-[var(--color-term-fg)] text-[var(--color-term-fg)] text-[8px] font-bold">2</span>
@@ -278,11 +316,11 @@ export default function ReposPage() {
           <Card>
             <CardContent className="p-8 text-center text-xs text-[var(--color-term-muted)] font-mono">
               <Github className="h-8 w-8 mx-auto mb-3 opacity-30" />
-              NO GITHUB CONNECTION. CLICK [CONNECT GITHUB] ABOVE TO AUTHORIZE.
+              NO GITHUB CONNECTION. CLICK [CONNECT GITHUB] ABOVE AND PASTE A PERSONAL ACCESS TOKEN.
               <div className="mt-3 space-y-1 text-[9px] text-[var(--color-term-muted)]">
-                <div>1. YOU WILL BE REDIRECTED TO GITHUB OAUTH</div>
-                <div>2. GRANT ACCESS TO YOUR REPOS (REPO SCOPE)</div>
-                <div>3. WE WILL FETCH YOUR REPOS AND ENABLE CI/CD</div>
+                <div>1. CREATE A CLASSIC TOKEN WITH THE repo SCOPE</div>
+                <div>2. PASTE IT — WE VALIDATE IT WITH GITHUB INSTANTLY</div>
+                <div>3. YOUR REPOS LOAD AND CI/CD UNLOCKS</div>
               </div>
             </CardContent>
           </Card>
