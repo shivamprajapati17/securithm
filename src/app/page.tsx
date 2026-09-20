@@ -238,8 +238,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── NAV — flat transparent bar on the cream canvas ── */}
-      <header className="sticky top-0 z-50">
+      {/* ── NAV — solid cream bar, stays above content while scrolling ── */}
+      <header className="sticky top-0 z-50 border-b border-[var(--color-hairline)] bg-[var(--color-peach-cream)]/95 backdrop-blur-sm">
         <div className="mm-container flex h-[72px] items-center justify-between">            <Link href="/" className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-acid-lime)] shadow-[2px_2px_0_var(--nb-ink)]">
                 <PiIcon name="shield-check" size={15} className="text-[var(--color-deep-violet)]" />
@@ -537,7 +537,7 @@ export default function Home() {
         </section>
 
         {/* ── AGENTS — the trained roster, sky wash section ── */}
-        <section id="agents" className="mm-container pb-24 md:pb-32">
+        <section id="agents" className="mm-container scroll-mt-24 pb-24 md:pb-32">
           <div className="mm-card mm-card--sky">
             <span
               className="mm-burst -top-3 left-10 h-6 w-28"
@@ -705,7 +705,7 @@ export default function Home() {
         </section>
 
         {/* ── FAQ — borderless items, hairline dividers only ── */}
-        <section id="faq" className="mm-container pb-24 md:pb-32">
+        <section id="faq" className="mm-container scroll-mt-24 pb-24 md:pb-32">
           <div className="mx-auto max-w-4xl">
             <p data-reveal className="mm-eyebrow">
               Common questions

@@ -92,3 +92,10 @@ Securithm_Proof_of_Reserves_Solvency_Build_Blueprint.md
 
 # Freebuff session artifacts
 .freebuff/
+
+# Local-only legacy dirs and agent skill cache
+.agents/
+scripts/
+backend-api/
+backend-apiapi/
+venv/
