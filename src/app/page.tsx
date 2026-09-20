@@ -1,405 +1,863 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { PiIcon } from "@/components/pi-icon";
 
-/* ── Content ─────────────────────────────────────────────── */
-
-const NAV_LINKS = [
-  ["Skills", "#skills"],
-  ["Projects", "#projects"],
-  ["Experience", "#experience"],
-  ["Certifications", "#proof"],
+const NAV = [
+  ["Platform", "/features"],
+  ["Agents", "#agents"],
   ["Docs", "/docs"],
-] as const;
-
-const HERO_BODY = [
-  "Eleven trained agents scan your Solidity",
-  "for exploits, fix the flagged lines, and",
-  "hand back a patched file you can ship.",
+  ["Pricing", "/pricing"],
+  ["FAQ", "#faq"],
 ];
 
-const CODE_LINES = [
-  ['> ', 'const securithm = {'],
-  ['  ', 'scan', ':    ', "'Solidity'", ','],
-  ['  ', 'fix', ':    ', "'Auto-patch'", ','],
-  ['  ', 'watch', ':  ', "'6 chains'", ','],
-  ['  ', 'prove', ':  ', "'Solvency'", ','],
-  ['  ', 'passion', ': ', "'Solving problems'", ','],
-  ['}', ';'],
-];
-
-const SKILLS = [
-  ["SOL", "Solidity"],
-  ["VYP", "Vyper"],
-  ["RS", "Rust"],
-  ["TS", "TypeScript"],
-  ["NX", "Next.js"],
-  ["SB", "Supabase"],
-] as const;
-
-const PROJECTS = [
+const MODULES = [
   {
-    title: "Agent Scans",
-    desc: "Eleven rule agents sweep every line and grade the file A–F.",
-    tags: ["11 agents", "line-level", "A–F grade"],
+    eyebrow: "SCAN",
+    title: "Scan before you ship.",
+    body: "Paste a file, point at a repo, or drop a deployed address. A family of trained security agents reads your contract line-by-line and returns severity-tagged findings in seconds.",
+    cta: "Run a free scan",
     href: "/dashboard/scans",
+    wash: "mm-card--lime",
+    burst: "top-6 -right-3 h-16 w-24",
   },
   {
-    title: "Auto-Fix Patches",
-    desc: "Flagged lines are rewritten into a compilable fixed file.",
-    tags: ["unified diff", "per-category", "download"],
+    eyebrow: "FIX",
+    title: "Fixes, not lectures.",
+    body: "Every auto-fixable finding ships with a deterministic patch. Download the fully repaired .sol file, or a per-category unified diff you can apply in your repo.",
+    cta: "See a fixed contract",
     href: "/dashboard/scans",
+    wash: "mm-card--lilac",
+    burst: "bottom-6 -left-3 h-12 w-20",
   },
   {
-    title: "Live Monitoring",
-    desc: "Deployed contracts watched on six chains, alerts in <1s.",
-    tags: ["6 chains", "24/7", "alerts"],
+    eyebrow: "MONITOR",
+    title: "Watch what's live.",
+    body: "Deployed contracts are watched around the clock across six chains. Exploit attempts, governance anomalies and oracle drift trigger alerts in under a second.",
+    cta: "Open monitoring",
     href: "/dashboard/monitoring",
+    wash: "mm-card--apricot",
+    burst: "top-10 -right-4 h-14 w-14 rounded-full",
   },
 ];
 
-const PROOFS = [
-  { title: "PROOF OF RESERVES", sub: "Merkle attestations — live", href: "/solvency" },
-  { title: "WHITEPAPER", sub: "Engine architecture — v2.6", href: "/whitepaper" },
-  { title: "SOC 2", sub: "Controls & practices", href: "/soc2" },
+const AGENTS = [
+  ["SENTINEL-01", "ReentrancyAgent", "critical", "auto-fix"],
+  ["SENTINEL-02", "AuthAgent", "high", "auto-fix"],
+  ["SENTINEL-03", "LifecycleAgent", "critical", "auto-fix"],
+  ["SENTINEL-04", "ContextAgent", "high", "auto-fix"],
+  ["SENTINEL-05", "ReturnValueAgent", "low", "auto-fix"],
+  ["SENTINEL-06", "GasAgent", "low", "auto-fix"],
+  ["SENTINEL-07", "TemporalAgent", "medium", "review"],
+  ["SENTINEL-08", "EntropyAgent", "high", "review"],
+  ["SENTINEL-09", "PrivilegeAgent", "high", "review"],
+  ["SENTINEL-10", "ArithAgent", "medium", "auto-fix"],
+  ["SENTINEL-11", "GovernanceAgent", "medium", "review"],
+] as const;
+
+const SEV_COLOR: Record<string, string> = {
+  critical: "bg-[#e5484d]",
+  high: "bg-[#e5a13d]",
+  medium: "bg-[#d9b13f]",
+  low: "bg-[#89b0ff]",
+};
+
+const FAQS = [
+  {
+    q: "What exactly does the scanner read?",
+    a: "Anything written in Solidity, Vyper or Rust/Anchor — a pasted file, a GitHub repo, or a live deployed address. Trained rule agents plus static analysis cross-check every finding before it reaches you.",
+  },
+  {
+    q: "Do I need an account to run a scan?",
+    a: "No. The first 5 scans are free and require no signup. Creating an account keeps your scan history private to your login, unlocks fix downloads, CI/CD integration and team seats.",
+  },
+  {
+    q: "What happens after 5 free scans?",
+    a: "The scanner asks you to pick a plan. Complete checkout — payment handled by Razorpay — and an API key is generated on the spot. Paste it into the CLI or use it on the site and scanning continues, unlimited.",
+  },
+  {
+    q: "Can I download the fixed contract?",
+    a: "Yes. After a scan completes you get the fully auto-fixed .sol file, a unified diff with every applied fix, and a per-category patch for each individual finding.",
+  },
+  {
+    q: "Can it gate my CI/CD pipeline?",
+    a: "Yes. The GitHub Action scans every push and pull request, posts inline comments on findings, and fails the build above your configured severity threshold.",
+  },
 ];
 
-const TIMELINE = [
-  {
-    role: "CLI 1.1",
-    org: "NPM",
-    dates: "2026 — NOW",
-    lines: [
-      "securithm on npm: scan, fix, login, sync.",
-      "Five free scans, then one key unlocks all.",
-    ],
-  },
-  {
-    role: "AGENT ENGINE",
-    org: "11 RULES",
-    dates: "2026",
-    lines: [
-      "Every agent owns one vulnerability class",
-      "and reports with a line-level signature.",
-    ],
-  },
-  {
-    role: "SOLVENCY SUITE",
-    org: "MERKLE",
-    dates: "2026",
-    lines: [
-      "Signed proof-of-reserves attestations",
-      "with coverage thresholds and alerts.",
-    ],
-  },
+const SCAN_CMD = "securithm scan VulnerableVault.sol";
+
+const OUTPUT_LINES: Array<{ cls: string; text: string }> = [
+  { cls: "tok-key", text: "> dispatching 11 agents..." },
+  { cls: "tok-com", text: "  SENTINEL-01 ReentrancyAgent ... CRITICAL line 12" },
+  { cls: "tok-com", text: "  SENTINEL-02 AuthAgent      ... HIGH     line 31" },
+  { cls: "tok-com", text: "  SENTINEL-06 GasAgent       ... LOW      line 48" },
+  { cls: "tok-key", text: "> applying safe fixes..." },
+  { cls: "tok-str", text: "  [OK] nonReentrant() guard inserted" },
+  { cls: "tok-str", text: "  [OK] tx.origin -> msg.sender" },
+  { cls: "tok-str", text: "  [OK] loop bounded by MAX_BATCH" },
+  { cls: "tok-fn", text: "  grade: C -> A   ready: VulnerableVault_fixed.sol" },
 ];
 
-/* ── Projects column: arrows, card and dots share one state ── */
+const MARQUEE_ITEMS = [
+  "ReentrancyAgent",
+  "AuthAgent",
+  "LifecycleAgent",
+  "ContextAgent",
+  "ReturnValueAgent",
+  "GasAgent",
+  "TemporalAgent",
+  "EntropyAgent",
+  "PrivilegeAgent",
+  "ArithAgent",
+  "GovernanceAgent",
+];
 
-function ProjectsColumn() {
-  const [index, setIndex] = useState(0);
-  const count = PROJECTS.length;
-  const project = PROJECTS[index];
+/** Looping typewriter: types the scan command, streams agent output, restarts. */
+function useTerminalLoop(): { reduced: boolean; chars: number; lines: number } {
+  const [reduced, setReduced] = useState(false);
+  const [chars, setChars] = useState(0);
+  const [lines, setLines] = useState(0);
 
-  const prev = () => setIndex((i) => (i - 1 + count) % count);
-  const next = () => setIndex((i) => (i + 1) % count);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setReduced(true);
+      return;
+    }
+    let t: ReturnType<typeof setTimeout> | undefined;
+    if (chars < SCAN_CMD.length) {
+      t = setTimeout(() => setChars((c) => c + 1), 26 + Math.random() * 46);
+    } else if (lines < OUTPUT_LINES.length) {
+      t = setTimeout(() => setLines((l) => l + 1), lines === 0 ? 320 : 170 + Math.random() * 90);
+    } else {
+      t = setTimeout(() => {
+        setChars(0);
+        setLines(0);
+      }, 3600);
+    }
+    return () => clearTimeout(t);
+  }, [chars, lines]);
 
-  return (
-    <div
-      role="group"
-      aria-roledescription="carousel"
-      aria-label={`Featured projects — slide ${index + 1} of ${count}`}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") { e.preventDefault(); prev(); }
-        if (e.key === "ArrowRight") { e.preventDefault(); next(); }
-      }}
-      className="focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[var(--lime)] focus-visible:outline-offset-2"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="nb-h2">WHAT WE SHIP</h2>
-          <Link href="/features" className="nb-btn nb-btn--white mt-4">
-            VIEW ALL PROJECTS →
-          </Link>
-        </div>
-        <div className="flex gap-3">
-          <button type="button" className="nb-arrow" aria-label="Previous project" onClick={prev}>
-            ◀
-          </button>
-          <button type="button" className="nb-arrow" aria-label="Next project" onClick={next}>
-            ▶
-          </button>
-        </div>
-      </div>
-
-      <div className="nb-card mt-8">
-        <div className="nb-shot">
-          <div className="nb-shot-inner nb-grid-bg flex items-center justify-center">
-            <span className="nb-label">
-              {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
-            </span>
-          </div>
-        </div>
-        <div className="nb-pad">
-          <h3 className="nb-h3">{project.title}</h3>
-          <p className="nb-body mt-2 max-w-[52ch]">{project.desc}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {project.tags.map((t) => (
-              <span key={t} className="nb-chip">{t}</span>
-            ))}
-          </div>
-          <Link href={project.href} className="nb-btn nb-btn--white mt-6">
-            VIEW DETAILS →
-          </Link>
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-center gap-3">
-        {PROJECTS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            className="nb-dot"
-            aria-label={`Go to slide ${i + 1}`}
-            aria-current={i === index ? "true" : undefined}
-            onClick={() => setIndex(i)}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  return { reduced, chars, lines };
 }
 
-/* ── Page ────────────────────────────────────────────────── */
+/** Count up to `target` once `start` flips true. Respects reduced motion. */
+function useCountUp(target: number, start: boolean): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(target);
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - t0) / 950, 1);
+      const eased = 1 - Math.pow(1 - p, 4);
+      setValue(Math.round(eased * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [start, target]);
+  return value;
+}
 
 export default function Home() {
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const revealRef = useRef<HTMLDivElement>(null!);
+  const terminal = useTerminalLoop();
+  const [metricsSeen, setMetricsSeen] = useState(false);
+  const metricsRef = useRef<HTMLDivElement>(null!);
+  const agentsCount = useCountUp(11, metricsSeen);
+  const chainsCount = useCountUp(6, metricsSeen);
+
+  useEffect(() => {
+    const el = metricsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setMetricsSeen(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const els = revealRef.current?.querySelectorAll("[data-reveal]");
+    if (!els?.length) return;
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduced) {
+      els.forEach((el) => {
+        (el as HTMLElement).style.opacity = "1";
+        (el as HTMLElement).style.transform = "none";
+      });
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            (e.target as HTMLElement).style.transition =
+              "opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1)";
+            (e.target as HTMLElement).style.opacity = "1";
+            (e.target as HTMLElement).style.transform = "none";
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <div className="nb-scope min-h-screen bg-[var(--paper)] p-5 max-[599px]:p-2">
-      <div className="nb-frame">
-        {/* ── BAND 1 — NAV ─────────────────────────────── */}
-        <nav className="nb-band nb-nav" aria-label="Main">
-          <Link href="/" className="nb-nav__cell">
-            <span aria-hidden>&lt;/&gt;</span> SECURITHM
+    <div className="mm-root min-h-screen" ref={revealRef}>
+      {/* Ambient light — fixed layer behind everything */}
+      <div className="mm-ambient" aria-hidden />
+
+      {/* ── Top telemetry strip — quiet meta line on the canvas ── */}
+      <div className="relative z-10 border-b border-[var(--color-hairline)]">
+        <div className="mm-container flex h-9 items-center justify-between">
+          <span className="mm-label">SEC-2026 / CONTRACT SECURITY OPERATIONS</span>
+          <span className="mm-label mm-label--violet hidden sm:inline">
+            11 AGENTS ONLINE
+          </span>
+        </div>
+      </div>
+
+      {/* ── NAV — flat transparent bar on the cream canvas ── */}
+      <header className="sticky top-0 z-50">
+        <div className="mm-container flex h-[72px] items-center justify-between">            <Link href="/" className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-acid-lime)] shadow-[2px_2px_0_var(--nb-ink)]">
+                <PiIcon name="shield-check" size={15} className="text-[var(--color-deep-violet)]" />
+              </span>
+            <span className="mm-display text-[26px] leading-none">
+              AuditAI
+            </span>
           </Link>
-          <div className="nb-nav__mid">
-            {NAV_LINKS.map(([label, href]) => (
-              <Link key={href} href={href} className="nb-nav__link">
+
+          <nav className="hidden items-center gap-7 md:flex">
+            {NAV.map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className="text-[15px] font-medium text-[var(--color-slate)] transition-colors hover:text-[var(--color-deep-violet)]"
+              >
                 {label}
               </Link>
             ))}
-          </div>
-          <Link href="/dashboard/scans" className="nb-nav__cell nb-nav__cell--cta">
-            SCAN FREE →
-          </Link>
-        </nav>
+          </nav>
 
-        {/* ── BAND 2 — HERO 55/45 ──────────────────────── */}
-        <header className="nb-band" style={{ gridTemplateColumns: "55fr 45fr" }}>
-          <div className="nb-grid-bg nb-pad flex flex-col justify-center">
-            <div>
-              <span className="nb-badge">
-                HEY, WE&apos;RE SECURITHM <span aria-hidden>👋</span>
-              </span>
-            </div>
-            <h1 className="nb-display nb-h1 mt-7">
-              SHIP SECURE
-              <br />
-              SMART CONTRACTS
-            </h1>
-            <div className="mt-6 space-y-1">
-              {HERO_BODY.map((line) => (
-                <p key={line} className="nb-body max-w-[48ch]">{line}</p>
-              ))}
-            </div>
-            <div className="nb-actions mt-8 flex flex-wrap gap-4">
-              <Link href="/dashboard/scans" className="nb-btn nb-btn--lime">
-                SCAN A CONTRACT ↗
+          <div className="hidden items-center gap-3 md:flex">
+            <Link href="/auth/login" className="mm-link">
+              Log in
+            </Link>
+            <Link href="/dashboard/scans" className="mm-cta">
+              Scan free
+            </Link>
+          </div>
+
+          <button
+            className="flex h-11 w-11 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-pure-white)] p-2 shadow-[2px_2px_0_var(--nb-ink)] md:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Menu"
+          >
+            {menuOpen ? (
+              <PiIcon name="x" size={16} />
+            ) : (
+              <PiIcon name="list" size={16} />
+            )}
+          </button>
+        </div>
+
+        {menuOpen && (
+          <div className="mm-container pb-4 md:hidden">
+            {NAV.map(([label, href]) => (
+              <Link
+                key={href}
+                href={href}
+                className="block py-2 text-[15px] font-medium text-[var(--color-slate)]"
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
               </Link>
-              <Link href="/docs" className="nb-btn nb-btn--white">
-                GET THE CLI ↓
-              </Link>
-            </div>
-            <p className="nb-label mt-8">CONNECT WITH US</p>
+            ))}
             <div className="mt-3 flex gap-3">
-              {[
-                ["GitHub", "GH", "https://github.com/shivamprajapati17/securithm"],
-                ["npm", "NP", "https://www.npmjs.com/package/securithm"],
-                ["Docs", "DC", "/docs"],
-                ["Email", "@", "mailto:hello@securithm.vercel.app"],
-              ].map(([label, glyph, href]) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="nb-iconbtn"
-                  aria-label={label}
-                  target={href.startsWith("http") ? "_blank" : undefined}
-                  rel={href.startsWith("http") ? "noreferrer" : undefined}
-                >
-                  <span className="text-[12px] font-bold">{glyph}</span>
-                </a>
-              ))}
+              <Link
+                href="/auth/login"
+                className="mm-cta mm-cta--light flex-1 justify-center"
+              >
+                Log in
+              </Link>
+              <Link href="/dashboard/scans" className="mm-cta flex-1 justify-center">
+                Scan free
+              </Link>
             </div>
           </div>
+        )}
+      </header>
 
-          <div className="nb-hero-media relative flex items-center justify-center bg-[var(--pink)] p-10">
-            {/* lime-framed "portrait": the product's terminal face */}
-            <div className="nb-photoframe w-full max-w-[340px]">
-              <div className="min-h-[320px] bg-[var(--ink)] p-4 font-mono text-[12px] leading-[1.7] text-white">
-                <div className="text-[#8a8a8a]">$ securithm scan Vault.sol --fix</div>
-                <div className="mt-2 text-[var(--pink)]">&gt; dispatching 11 agents...</div>
-                <div className="text-[#8a8a8a]">  Reentrancy ... CRITICAL line 12</div>
-                <div className="text-[#8a8a8a]">  AuthAgent ... HIGH line 31</div>
-                <div className="mt-2 text-[var(--lime)]">  [OK] nonReentrant() guard</div>
-                <div className="text-[var(--lime)]">  [OK] tx.origin -&gt; msg.sender</div>
-                <div className="mt-2">  grade: C → A</div>
-                <div className="text-[var(--lime)]">  → Vault_fixed.sol</div>
+      <main className="relative z-10">
+        {/* ── HERO — the headline IS the hero ── */}
+        <section className="mm-container pb-20 pt-12 text-center md:pb-28 md:pt-20">
+          <div
+            data-reveal
+            className="mm-eyebrow"
+          >
+            <span className="block h-2.5 w-2.5 rounded-full border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-acid-lime)]" />
+            DOC. SEC-2026 / 11 TRAINED AGENTS / REV 2.6
+          </div>
+
+          <h1
+            data-reveal
+            className="mm-display mx-auto mt-6 max-w-[1100px] text-[clamp(56px,11vw,158px)]"
+            style={{ transitionDelay: "80ms" }}
+          >
+            Ship{" "}
+            <span className="mm-serif text-[0.96em]">secure</span>
+            <br />
+            contracts.
+          </h1>
+          <p
+            data-reveal
+            className="mx-auto mt-7 max-w-[52ch] text-[17px] leading-[1.6] text-[var(--color-slate)]"
+            style={{ transitionDelay: "160ms" }}
+          >
+            We are a security operations unit for your code. Paste a contract
+            and eleven trained agents sweep every line — real line numbers,
+            severity-tagged findings, and a fixed file you download when the
+            sweep is done.
+          </p>
+          <div
+            data-reveal
+            className="mt-9 flex flex-wrap items-center justify-center gap-3"
+            style={{ transitionDelay: "240ms" }}
+          >
+            <Link href="/dashboard/scans" className="mm-cta">
+              Scan a contract free <PiIcon name="arrow-right" size={15} />
+            </Link>
+            <Link href="/docs" className="mm-cta mm-cta--light">
+              Read the docs
+            </Link>
+          </div>
+
+          {/* Product mock — faux-OS window chrome over the warm canvas */}
+          <div
+            data-reveal
+            className="mm-brackets relative mx-auto mt-16 max-w-[640px]"
+            style={{ transitionDelay: "320ms" }}
+          >
+            {/* purple fragments breaking out of the frame */}
+            <span className="mm-burst -left-4 top-10 h-20 w-6" aria-hidden />
+            <span className="mm-burst -right-6 bottom-14 h-6 w-24" aria-hidden />
+            <div className="mm-terminal text-left">
+              <div className="mm-terminal-head">
+                <span style={{ background: "#e5484d" }} />
+                <span style={{ background: "#e5a13d" }} />
+                <span style={{ background: "#baf24a" }} />
+                <span className="mm-terminal-title">securithm — agent run</span>
+              </div>
+              <div className="mm-terminal-body">
+                <div>
+                  {"> "}
+                  {terminal.reduced
+                    ? SCAN_CMD
+                    : SCAN_CMD.slice(0, terminal.chars)}
+                  <span className="mm-caret">▌</span>
+                </div>
+                {(terminal.reduced
+                  ? OUTPUT_LINES
+                  : OUTPUT_LINES.slice(0, terminal.lines)
+                ).map((l, i) => (
+                  <div key={i} className={`${l.cls} mm-line-in`}>
+                    {l.text || "\u00A0"}
+                  </div>
+                ))}
               </div>
             </div>
-            {/* violet code card overlapping the frame's lower-right */}
-            <div aria-hidden className="nb-codecard absolute bottom-6 right-4 max-w-[300px] md:-right-2">
-              {CODE_LINES.map((parts, i) => (
-                <div key={i} className="whitespace-pre">
-                  {parts.map((p, j) => {
-                    const cls = p.startsWith("'")
-                      ? "tok-s"
-                      : ["const", "scan", "fix", "watch", "prove", "passion", "securithm"].includes(p)
-                        ? "tok-k"
-                        : "tok-p";
-                    return (
-                      <span key={j} className={cls}>{p}</span>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
           </div>
-        </header>
+        </section>
 
-        {/* ── BAND 3 — SKILLS STRIP ────────────────────── */}
-        <section id="skills" className="nb-band" style={{ gridTemplateColumns: "12fr 88fr" }} aria-label="Skills">
-          <div className="flex flex-col justify-center bg-[var(--violet)] p-5">
-            <h2 className="nb-display text-[22px] text-white">SKILLS</h2>
-            <span className="nb-display mt-1 text-[22px] text-white" aria-hidden>→</span>
+        {/* ── AGENT MARQUEE — the roster on parade ── */}
+        <div className="mm-marquee" aria-label="Security agents">
+          <div className="mm-marquee__track">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                className="flex shrink-0 items-center gap-10"
+                aria-hidden={copy === 1}
+              >
+                {MARQUEE_ITEMS.map((name) => (
+                  <span key={`${copy}-${name}`} className="mm-marquee__item">
+                    <span className="mm-marquee__dot" />
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
-          <div className="nb-skills-row flex items-stretch justify-around divide-x-[3px] divide-[var(--ink)] max-[1199px]:flex-wrap">
-            {SKILLS.map(([glyph, name]) => (
-              <div key={name} className="nb-skill min-w-[110px] flex-1">
-                <span
-                  aria-hidden
-                  className="flex h-9 w-9 items-center justify-center border-[3px] border-[var(--ink)] font-mono text-[11px] font-bold"
-                >
-                  {glyph}
-                </span>
-                <span className="nb-label">{name}</span>
+        </div>
+
+        {/* ── PROOF STRIP — quiet metrics on the canvas ── */}
+        <section className="mm-container pt-16 md:pt-20" ref={metricsRef}>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {[
+              { v: "0.4s", l: "TO VERDICT" },
+              { v: metricsSeen ? String(agentsCount) : "0", l: "TRAINED AGENTS" },
+              { v: metricsSeen ? String(chainsCount) : "0", l: "CHAINS WATCHED" },
+              { v: "24/7", l: "MONITORING" },
+            ].map(({ v, l }, i) => (
+              <div
+                key={l}
+                data-reveal
+                className="mm-card bg-[var(--color-pure-white)] p-6"
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="mm-display text-[40px] leading-none">{v}</div>
+                <div className="mm-label mt-3">{l}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ── BAND 4 — PROJECTS 70 / CERTS 30 ──────────── */}
-        <section id="projects" className="nb-band" style={{ gridTemplateColumns: "70fr 30fr" }}>
-          <div className="nb-pad">
-            <ProjectsColumn />
-          </div>
+        {/* ── WHAT WE ARE — the operation, stated ── */}
+        <section className="mm-container py-24 md:py-32">
+          <p data-reveal className="mm-label mm-label--violet">
+            [ WHAT WE ARE ]
+          </p>
+          <h2
+            data-reveal
+            className="mm-display mt-4 max-w-[900px] text-[clamp(40px,6vw,75px)]"
+          >
+            A security operations{" "}
+            <span className="mm-serif text-[0.96em]">unit</span>
+            <br />
+            for your code.
+          </h2>
 
-          <div id="proof" className="flex flex-col bg-[var(--lime)] p-6">
-            <h2 className="nb-h2">PROOF</h2>
-            <div className="mt-5 flex flex-1 flex-col gap-4">
-              {PROOFS.map((p) => (
-                <Link key={p.title} href={p.href} className="nb-cert">
-                  <span className="nb-h3 text-[15px]">{p.title}</span>
-                  <span className="nb-label">{p.sub}</span>
-                </Link>
-              ))}
+          <div className="mt-12 grid gap-5 md:grid-cols-2">
+            {[
+              {
+                k: "DETECT",
+                v: "11 agents trained on single vulnerability classes, cross-checked by static analysis. No black box — every finding names its agent and its line.",
+                wash: "mm-card--lime",
+              },
+              {
+                k: "REPAIR",
+                v: "Deterministic patches, not suggestions. Guards inserted, auth hardened, loops bounded — then handed back as a compilable file.",
+                wash: "mm-card--lilac",
+              },
+              {
+                k: "WATCH",
+                v: "Deployed contracts monitored on six chains. Exploit attempts, governance anomalies and oracle drift alerted in under a second.",
+                wash: "mm-card--sky",
+              },
+              {
+                k: "PROVE",
+                v: "Proof-of-solvency attestations, signed reports and exportable audits — the paperwork your users and regulators ask for.",
+                wash: "mm-card--apricot",
+              },
+            ].map((b, i) => (
+              <div
+                key={b.k}
+                data-reveal
+                className={`mm-card ${b.wash} p-7`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-baseline justify-between">
+                  <span className="mm-display text-[26px] leading-none">{b.k}</span>
+                  <span className="mm-badge">0{i + 1}</span>
+                </div>
+                <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.6] text-[var(--color-ink-black)]">
+                  {b.v}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── MODULES — accent wash rotation, one wash per card ── */}
+        <section className="mm-container pb-24 md:pb-32">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p data-reveal className="mm-eyebrow">
+                One protocol, three instruments
+              </p>
+              <h2
+                data-reveal
+                className="mm-display mt-4 max-w-[900px] text-[clamp(40px,6vw,75px)]"
+              >
+                Everything between
+                <br />
+                your code and{" "}
+                <span className="mm-serif text-[0.96em]">the exploit.</span>
+              </h2>
             </div>
-            <Link href="/docs" className="nb-btn nb-btn--white mt-5">
-              VIEW ALL DOCUMENTS →
-            </Link>
+            <div data-reveal className="mm-barcode hidden w-36 md:block" aria-hidden />
+          </div>
+
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {MODULES.map((m, i) => (
+              <div
+                key={m.eyebrow}
+                data-reveal
+                className={`mm-card ${m.wash}`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <span className={`mm-burst ${m.burst}`} aria-hidden />
+                <p className="mm-eyebrow">{m.eyebrow}</p>
+                <h3 className="mm-display mt-5 text-[34px] leading-[1.05]">
+                  {m.title}
+                </h3>
+                <p className="mt-4 text-[15px] leading-[1.6] text-[var(--color-ink-black)]">
+                  {m.body}
+                </p>
+                <Link
+                  href={m.href}
+                  className="mt-7 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--color-deep-violet)] underline underline-offset-2"
+                >
+                  {m.cta} <PiIcon name="arrow-right" size={14} />
+                </Link>
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* ── BAND 5 — EXPERIENCE 20/50/30 + CTA ───────── */}
-        <section id="experience" className="nb-band" style={{ gridTemplateColumns: "20fr 50fr 30fr" }}>
-          <div className="relative flex flex-col justify-center bg-[var(--pink)] p-5">
-            <h2 className="nb-display text-[24px] leading-[1.05]">TRACK<br />RECORD</h2>
-            <span className="nb-display mt-2 text-[24px]" aria-hidden>→</span>
-          </div>
+        {/* ── AGENTS — the trained roster, sky wash section ── */}
+        <section id="agents" className="mm-container pb-24 md:pb-32">
+          <div className="mm-card mm-card--sky">
+            <span
+              className="mm-burst -top-3 left-10 h-6 w-28"
+              aria-hidden
+            />
+            <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
+              <div>
+                <p data-reveal className="mm-eyebrow">
+                  The roster
+                </p>
+                <h2
+                  data-reveal
+                  className="mm-display mt-4 text-[clamp(36px,5vw,48px)]"
+                >
+                  Meet the agents
+                  <br />
+                  on your side.
+                </h2>
+                <p
+                  data-reveal
+                  className="mt-5 max-w-[46ch] text-[15px] leading-[1.6]"
+                >
+                  Each agent is trained on one vulnerability class and reports
+                  with its own signature. Auto-fix agents patch the line they
+                  flagged; review agents leave annotated guidance for your team.
+                </p>
 
-          <div className="nb-pad">
-            <ol className="nb-timeline">
-              {TIMELINE.map((t) => (
-                <li key={t.role}>
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                    <p className="nb-label text-[12px]">
-                      {t.role} • {t.org}
-                    </p>
-                    <p className="nb-label text-[11px]">{t.dates}</p>
+                <div data-reveal className="mt-7 flex flex-wrap gap-3">
+                  <span className="mm-badge bg-[var(--color-lime-wash)]">
+                    <PiIcon name="wrench" size={12} /> auto-fix
+                  </span>
+                  <span className="mm-badge bg-[var(--color-lilac-haze)]">
+                    <PiIcon name="robot" size={12} /> review
+                  </span>
+                  <span className="mm-badge bg-[var(--color-pure-white)]">
+                    <PiIcon name="download-simple" size={12} /> .sol / .patch
+                  </span>
+                </div>
+              </div>
+
+              <div data-reveal className="grid gap-2 sm:grid-cols-2">
+                {AGENTS.map(([id, name, sev, mode]) => (
+                  <div
+                    key={id}
+                    className="flex items-center justify-between rounded-[8px] border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-pure-white)] px-3 py-2.5 shadow-[2px_2px_0_var(--nb-ink)]"
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-semibold leading-tight">
+                        {name}
+                      </div>
+                      <div className="text-[11px] text-[var(--color-slate)]">
+                        {id}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span
+                        className={`h-2 w-2 rounded-full ${SEV_COLOR[sev]}`}
+                        aria-label={sev}
+                      />
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-slate)]">
+                        {mode}
+                      </span>
+                    </div>
                   </div>
-                  {t.lines.map((l) => (
-                    <p key={l} className="nb-body mt-1 max-w-[52ch]">{l}</p>
-                  ))}
-                </li>
-              ))}
-            </ol>
-            <Link href="/docs" className="nb-btn nb-btn--white mt-2">
-              READ FULL DOCS →
-            </Link>
-          </div>
-
-          <div className="nb-grid-bg--violet relative overflow-hidden p-8">
-            <h2 className="nb-display text-[clamp(26px,2.4vw,34px)] leading-[1.05] text-white">
-              LET&apos;S BUILD
-              <br />
-              SOMETHING
-              <br />
-              SECURE
-              <br />
-              TOGETHER
-            </h2>
-            <Link href="/book-demo" className="nb-btn nb-btn--white mt-7">
-              GET IN TOUCH →
-            </Link>
-            {/* the one decorative element: clipped pink starburst */}
-            <Starburst className="absolute -bottom-8 -right-8 h-[90px] w-[90px] max-[599px]:h-[56px] max-[599px]:w-[56px]" />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* ── BAND 6 — FOOTER (logo + copyright, no socials) ── */}
-        <footer className="nb-band" style={{ gridTemplateColumns: "auto 1fr" }}>
-          <Link href="/" className="nb-nav__cell">
-            <span aria-hidden>&lt;/&gt;</span> SECURITHM
-          </Link>
-          <div className="flex min-h-[56px] items-center justify-center border-l-[3px] border-[var(--ink)] px-4 text-center">
-            <p className="nb-label">© 2026 SECURITHM. ALL RIGHTS RESERVED.</p>
+        {/* ── SCAN → FIX → DOWNLOAD — the loop, wash rotation ── */}
+        <section className="mm-container pb-24 md:pb-32">
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                n: "01",
+                t: "Scan",
+                b: "Paste your contract or point at a repo. Eleven agents sweep every line and grade the file A–F.",
+                wash: "mm-card--lime",
+              },
+              {
+                n: "02",
+                t: "Fix",
+                b: "Auto-fix agents rewrite the flagged lines: guards inserted, auth hardened, loops bounded.",
+                wash: "mm-card--lilac",
+              },
+              {
+                n: "03",
+                t: "Download",
+                b: "Take the repaired .sol, the full unified patch, or a per-category diff — straight from the scan page.",
+                wash: "mm-card--apricot",
+              },
+            ].map((s, i) => (
+              <div
+                key={s.n}
+                data-reveal
+                className={`mm-card ${s.wash}`}
+                style={{ transitionDelay: `${i * 80}ms` }}
+              >
+                <div className="mm-display text-[64px] leading-none">{s.n}</div>
+                <h3 className="mm-display mt-4 text-[30px]">{s.t}</h3>
+                <p className="mt-3 text-[15px] leading-[1.6]">{s.b}</p>
+              </div>
+            ))}
           </div>
-        </footer>
+        </section>
+
+        {/* ── CLI — terminal access, dark mock on cream ── */}
+        <section className="mm-container pb-24 md:pb-32">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <p data-reveal className="mm-label mm-label--violet">
+                [ TERMINAL ACCESS ]
+              </p>
+              <h2
+                data-reveal
+                className="mm-display mt-4 text-[clamp(36px,5vw,56px)]"
+              >
+                Your pipeline,
+                <br />
+                <span className="mm-serif text-[0.96em]">hardened.</span>
+              </h2>
+              <p
+                data-reveal
+                className="mt-5 max-w-[46ch] text-[15px] leading-[1.6] text-[var(--color-slate)]"
+              >
+                The CLI runs the same eleven agents from your terminal. Five
+                free scans, no account. After that, one API key — generated at
+                checkout — unlocks unlimited runs and dashboard sync.
+              </p>
+              <div data-reveal className="mt-7">
+                <Link href="/pricing" className="mm-cta">
+                  Get an API key <PiIcon name="key" size={15} />
+                </Link>
+              </div>
+            </div>
+            <div data-reveal className="mm-brackets relative">
+              <div className="mm-terminal !min-h-0">
+                <div className="mm-terminal-head">
+                  <span style={{ background: "#e5484d" }} />
+                  <span style={{ background: "#e5a13d" }} />
+                  <span style={{ background: "#baf24a" }} />
+                  <span className="mm-terminal-title">terminal — securithm</span>
+                </div>
+                <div className="mm-terminal-body space-y-2">
+                  <div className="text-[#6b6b6b]"># install</div>
+                  <div>
+                    <span className="tok-key">$</span> npm install -g securithm
+                  </div>
+                  <div className="pt-2 text-[#6b6b6b]"># scan + fix</div>
+                  <div>
+                    <span className="tok-key">$</span> securithm scan Vault.sol --fix
+                  </div>
+                  <div className="pt-2 text-[#6b6b6b]"># unlimited + sync</div>
+                  <div>
+                    <span className="tok-key">$</span> securithm login
+                  </div>
+                  <div className="pl-4 text-[#89b0ff]">
+                    paste key from dashboard — done.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── FAQ — borderless items, hairline dividers only ── */}
+        <section id="faq" className="mm-container pb-24 md:pb-32">
+          <div className="mx-auto max-w-4xl">
+            <p data-reveal className="mm-eyebrow">
+              Common questions
+            </p>
+            <h2
+              data-reveal
+              className="mm-display mt-4 text-[clamp(40px,6vw,75px)]"
+            >
+              Asked, <span className="mm-serif text-[0.96em]">answered.</span>
+            </h2>
+
+            <div className="mt-12 border-t border-[var(--color-hairline)]">
+              {FAQS.map((f, i) => {
+                const open = openFaq === i;
+                return (
+                  <div
+                    key={i}
+                    data-reveal
+                    className="border-b border-[var(--color-hairline)]"
+                  >
+                    <button
+                      onClick={() => setOpenFaq(open ? null : i)}
+                      aria-expanded={open}
+                      className="flex w-full items-center justify-between gap-6 py-6 text-left"
+                    >
+                      <span className="text-[17px] font-medium text-[var(--color-ink-black)]">
+                        {f.q}
+                      </span>
+                      <span
+                        className={`shrink-0 text-xl leading-none transition-transform duration-300 ${
+                          open
+                            ? "rotate-45 text-[var(--color-deep-violet)]"
+                            : "text-[var(--color-slate)]"
+                        }`}
+                      >
+                        +
+                      </span>
+                    </button>
+                    <div
+                      className="grid transition-[grid-template-rows] duration-300 ease-out"
+                      style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+                    >
+                      <div className="overflow-hidden">
+                        <p className="pb-6 pr-10 text-[15px] leading-[1.6] text-[var(--color-slate)]">
+                          {f.a}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ── CTA — violet display, ink block ── */}
+        <section className="mm-container pb-28 text-center">
+          <div className="mm-barcode mx-auto mb-12 w-40" aria-hidden />
+          <h2
+            data-reveal
+            className="mm-display mx-auto max-w-[900px] text-[clamp(44px,7vw,127px)]"
+          >
+            Run your first
+            <br />
+            <span className="mm-serif text-[0.96em]">scan free.</span>
+          </h2>
+          <div
+            data-reveal
+            className="mt-9 flex flex-wrap items-center justify-center gap-3"
+          >
+            <Link href="/auth/register" className="mm-cta">
+              Start scanning <PiIcon name="arrow-right" size={15} />
+            </Link>
+            <Link href="/book-demo" className="mm-cta mm-cta--light">
+              Request a demo
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      {/* ── FOOTER — directly on the canvas, no border plate ── */}
+      <footer className="relative z-10 mm-container pb-12 pt-6">
+        <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-acid-lime)] shadow-[2px_2px_0_var(--nb-ink)]">
+                <PiIcon name="shield-check" size={15} className="text-[var(--color-deep-violet)]" />
+              </span>
+              <span className="mm-display text-[26px] leading-none">
+                AuditAI
+              </span>
+            </div>
+            <p className="mt-4 max-w-[300px] text-[14px] leading-[1.6] text-[var(--color-slate)]">
+              AI-powered smart contract security. Trained agents, deterministic
+              fixes and continuous monitoring for the on-chain economy.
+            </p>
+            <div className="mm-barcode mt-6 w-28" aria-hidden />
+          </div>
+          {[
+            {
+              head: "PRODUCT",
+              links: [
+                ["Features", "/features"],
+                ["Monitoring", "/dashboard/monitoring"],
+                ["Risk API", "/dashboard/api-console"],
+                ["Solvency proof", "/solvency"],
+              ],
+            },
+            {
+              head: "RESOURCES",
+              links: [
+                ["Documentation", "/docs"],
+                ["Whitepaper", "/whitepaper"],
+                ["SOC 2", "/soc2"],
+                ["Book a demo", "/book-demo"],
+              ],
+            },
+            {
+              head: "COMPANY",
+              links: [
+                ["Terms", "/terms"],
+                ["Privacy", "/privacy"],
+                ["Log in", "/auth/login"],
+                ["Register", "/auth/register"],
+              ],
+            },
+          ].map((col) => (
+            <div key={col.head}>
+              <p className="mm-label">{col.head}</p>
+              <ul className="mt-5 space-y-3">
+                {col.links.map(([label, href]) => (
+                  <li key={href}>
+                    <Link href={href} className="mm-link">
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <div className="mt-12 flex items-center justify-between text-[12px] uppercase tracking-[0.06em] text-[var(--color-slate)]">
+          <span>© 2026 AuditAI</span>
+          <span className="hidden sm:inline">Ship secure contracts</span>
+        </div>
+      </footer>
+
+      {/* Floating right-edge widget */}
+      <div className="mm-widget" aria-hidden>
+        <span className="mm-widget-dot" />
+        <span className="mm-widget-dot" />
+        <span className="mm-widget-dot" />
       </div>
     </div>
-  );
-}
-
-/* ── 12-point starburst ──────────────────────────────────── */
-
-function Starburst({ className }: { className?: string }) {
-  const spikes = 12;
-  const outer = 45;
-  const inner = 20;
-  const pts: string[] = [];
-  for (let i = 0; i < spikes * 2; i++) {
-    const r = i % 2 === 0 ? outer : inner;
-    const a = (Math.PI * i) / spikes;
-    pts.push(`${(45 + r * Math.cos(a)).toFixed(1)},${(45 + r * Math.sin(a)).toFixed(1)}`);
-  }
-  return (
-    <svg viewBox="0 0 90 90" className={className} aria-hidden focusable="false">
-      <polygon
-        points={pts.join(" ")}
-        fill="var(--pink)"
-        stroke="var(--ink)"
-        strokeWidth="3"
-      />
-    </svg>
   );
 }
