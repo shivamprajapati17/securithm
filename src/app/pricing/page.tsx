@@ -91,7 +91,7 @@ function PricingContent() {
     async (planId: "pro" | "enterprise" | "free") => {
       setError(null);
       if (!localStorage.getItem("securithm_token")) {
-        router.push(`/login?redirect=${encodeURIComponent(`/pricing?plan=${planId}`)}`);
+        router.push(`/auth/login?redirect=${encodeURIComponent(`/pricing?plan=${planId}`)}`);
         return;
       }
       setPhase("working");
@@ -312,7 +312,7 @@ function PricingContent() {
           <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] font-mono text-xs rounded-none">
             {error}{" "}
             {!loggedIn && (
-              <Link href="/register" className="underline">
+              <Link href="/auth/register" className="underline">
                 Create an account →
               </Link>
             )}
