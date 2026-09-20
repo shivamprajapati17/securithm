@@ -12,6 +12,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import readline from "node:readline/promises";
 import { exec } from "node:child_process";
 import {
@@ -194,7 +195,18 @@ async function ensureEntitlement(usage: UsageRecord, config: CliConfig): Promise
 // Update check
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PKG_VERSION = "1.1.0";
+/** Read the CLI version from this package's package.json (single source of truth). */
+function readPkgVersion(): string {
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const raw = fs.readFileSync(path.join(here, "../package.json"), "utf8");
+    return String((JSON.parse(raw) as { version?: string }).version ?? "0.0.0");
+  } catch {
+    return "0.0.0";
+  }
+}
+
+const PKG_VERSION = readPkgVersion();
 
 function isNewerVersion(current: string, candidate: string): boolean {
   const parse = (v: string) => v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
@@ -475,6 +487,11 @@ async function main(): Promise<void> {
       break;
     case "update":
       await checkForUpdates({ ...loadConfig(), version_check_at: null });
+      break;
+    case "version":
+    case "--version":
+    case "-v":
+      console.log(`securithm ${PKG_VERSION}`);
       break;
     case "help":
     case "--help":
