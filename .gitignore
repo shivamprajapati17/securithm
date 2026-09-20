@@ -75,3 +75,17 @@ backend-apiapi/
 
 # local env template contains real secrets — never commit
 .env.example
+
+# Investor/business docs and decks — kept local, not part of the product
+*.pdf
+*.pptx
+Securithm_Investor_Conversation_Guide.txt
+Backend_Schema.md
+Implementation_Plan.md
+Product Requirements Document (PRD) for AuditAI.md
+SDK_DOCUMENTATION.md
+Security_Error.md
+TRD.md
+UI_UX_Design.md
+Website_Flow.md
+Securithm_Proof_of_Reserves_Solvency_Build_Blueprint.md

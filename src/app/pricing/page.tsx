@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Zap,
   Check,
@@ -111,7 +109,7 @@ function PricingContent() {
               order_id: order.order_id,
               name: "Securithm",
               description: `${planId.toUpperCase()} plan (${billingCycle})`,
-              theme: { color: "#00ff88" },
+              theme: { color: "#3d065f" },
               handler: (response: {
                 razorpay_payment_id: string;
                 razorpay_order_id: string;
@@ -121,8 +119,12 @@ function PricingContent() {
                   order_id: response.razorpay_order_id,
                   payment_id: response.razorpay_payment_id,
                   signature: response.razorpay_signature,
+                  plan_id: planId,
                 })
-                  .then(() => resolve())
+                  .then((v) => {
+                    if (v.api_key?.full_key) setApiKey(v.api_key.full_key);
+                    resolve();
+                  })
                   .catch(reject);
               },
               modal: { ondismiss: () => reject(new Error("Payment cancelled.")) },
@@ -192,7 +194,7 @@ function PricingContent() {
         "CLI access (npx securithm)",
         "Community support",
       ],
-      cta: activePlanId === "free" ? "Generate API Key" : "Generate API Key",
+      cta: "Generate API Key",
     },
     {
       id: "pro",
@@ -236,71 +238,73 @@ function PricingContent() {
   const busy = phase === "working" || phase === "checkout";
 
   return (
-    <div className="min-h-screen bg-[var(--color-term-bg)] text-[var(--color-term-text)] flex flex-col">
+    <div className="mm-root min-h-screen text-[var(--color-ink-black)]">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl">
+      <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
         {fromCli && !apiKey && (
-          <div className="mb-8 p-4 border border-[var(--color-term-accent)] bg-[var(--color-term-accent)]/10 text-[var(--color-term-accent)] flex items-start gap-3 rounded-none">
-            <Terminal className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="mb-8 flex items-start gap-3 rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] p-5">
+            <Terminal className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-deep-violet)]" />
             <div>
-              <div className="font-mono text-sm font-semibold tracking-wider">
-                CLI SETUP: GENERATE AN API KEY
-              </div>
-              <p className="text-xs text-[var(--color-term-text-muted)] mt-1 font-mono">
-                Your CLI has used its 5 free scans. Pick a plan below, then generate an API key and
-                run <span className="text-[var(--color-term-accent)]">securithm login</span> to paste
-                it. After that, unlimited scans from the terminal.
+              <div className="mm-label mm-label--violet">CLI SETUP — GENERATE AN API KEY</div>
+              <p className="mt-2 text-[14px] leading-[1.55] text-[var(--color-slate)]">
+                Your CLI has used its 5 free scans. Pick a plan below, then
+                generate an API key and run{" "}
+                <code className="rounded bg-[var(--color-cool-mist)] px-1.5 py-0.5 font-mono text-[13px] text-[var(--color-deep-violet)]">
+                  securithm login
+                </code>{" "}
+                to paste it. After that, unlimited scans from the terminal.
               </p>
             </div>
           </div>
         )}
 
         {isLimitReached && (
-          <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] flex items-start gap-3 rounded-none">
-            <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+          <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-apricot)] p-5">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-burnt-sienna)]" />
             <div>
-              <div className="font-mono text-sm font-semibold tracking-wider">
-                FREE SCAN LIMIT REACHED (5/5 SCANS USED)
-              </div>
-              <p className="text-xs text-[var(--color-term-text-muted)] mt-1 font-mono">
-                You have used all 5 free contract scans. Pick a plan below — the API key you generate
-                unlocks unlimited scans on the website and the CLI.
+              <div className="mm-label mm-label--violet">FREE SCAN LIMIT REACHED — 5/5 USED</div>
+              <p className="mt-2 text-[14px] leading-[1.55] text-[var(--color-ink-black)]">
+                You have used all 5 free contract scans. Pick a plan below — the
+                API key you generate unlocks unlimited scans on the website and
+                the CLI.
               </p>
             </div>
           </div>
         )}
 
         {phase === "done" && apiKey && (
-          <div className="mb-8 p-4 border border-[var(--color-term-success)] bg-[var(--color-term-success)]/10 text-[var(--color-term-success)] rounded-none">
-            <div className="flex items-center gap-2 font-mono text-sm">
-              <Sparkles className="w-5 h-5 shrink-0" />
+          <div className="mb-8 rounded-[12px] bg-[var(--color-lime-wash)] p-5">
+            <div className="flex items-center gap-2 text-[15px] font-bold text-[var(--color-ink-black)]">
+              <Sparkles className="h-5 w-5 text-[var(--color-deep-violet)]" />
               Plan active{activePlanId ? ` (${activePlanId.toUpperCase()})` : ""}. Your API key is ready:
             </div>
-            <div className="mt-3 flex flex-col sm:flex-row items-stretch gap-2">
-              <code className="flex-1 px-3 py-2 bg-[var(--color-term-bg)] border border-[var(--color-term-border)] font-mono text-xs text-[var(--color-term-text)] break-all select-all">
+            <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row">
+              <code className="flex-1 select-all break-all rounded-[8px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-3 py-2 font-mono text-[13px] text-[var(--color-ink-black)]">
                 {apiKey}
               </code>
-              <Button
+              <button
                 onClick={copyKey}
-                size="sm"
-                className="bg-[var(--color-term-success)] text-black font-mono text-xs h-auto"
+                className="mm-cta !rounded-[9999px] !px-5 !py-2.5 !text-[13px]"
               >
-                <Copy className="w-3.5 h-3.5 mr-1" />
+                <Copy className="h-3.5 w-3.5" />
                 {copied ? "Copied!" : "Copy"}
-              </Button>
+              </button>
             </div>
-            <div className="mt-3 font-mono text-xs text-[var(--color-term-text-muted)] space-y-1">
+            <div className="mt-4 space-y-1.5 text-[13px] text-[var(--color-slate)]">
               <div>
-                <span className="text-[var(--color-term-accent)]">CLI:</span> run{" "}
-                <code className="text-[var(--color-term-success)]">securithm login</code> and paste
-                this key — unlimited scans from the terminal.
+                <span className="font-bold text-[var(--color-deep-violet)]">CLI:</span>{" "}
+                run{" "}
+                <code className="rounded bg-[var(--color-pure-white)] px-1.5 py-0.5 font-mono text-[12px]">
+                  securithm login
+                </code>{" "}
+                and paste this key — unlimited scans from the terminal.
               </div>
-              <div className="flex gap-3 pt-1">
-                <Link href="/dashboard/scans" className="text-[var(--color-term-success)] hover:underline">
+              <div className="flex gap-4 pt-1">
+                <Link href="/dashboard/scans" className="mm-link">
                   Start scanning →
                 </Link>
-                <Link href="/dashboard/api-console" className="text-[var(--color-term-success)] hover:underline">
+                <Link href="/dashboard/api-console" className="mm-link">
                   Manage keys →
                 </Link>
               </div>
@@ -309,169 +313,158 @@ function PricingContent() {
         )}
 
         {error && (
-          <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] font-mono text-xs rounded-none">
-            {error}{" "}
-            {!loggedIn && (
-              <Link href="/auth/register" className="underline">
-                Create an account →
-              </Link>
-            )}
+          <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-lilac-haze)] p-5 text-[14px] text-[var(--color-ink-black)]">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-deep-violet)]" />
+            <span>
+              {error}{" "}
+              {!loggedIn && (
+                <Link href="/auth/register" className="mm-link">
+                  Create an account →
+                </Link>
+              )}
+            </span>
           </div>
         )}
 
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[var(--color-term-border)] bg-[var(--color-term-dim)] text-[11px] font-mono text-[var(--color-term-accent)] mb-4">
-            <Zap className="w-3.5 h-3.5" />
-            SECURITHM PRICING & API ACCESS
+        <div className="mx-auto mb-12 max-w-2xl text-center">
+          <div className="mm-brackets mx-auto mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-4 py-2">
+            <Zap className="h-3.5 w-3.5 text-[var(--color-deep-violet)]" />
+            <span className="mm-label mm-label--violet">SECURITHM PRICING & API ACCESS</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-mono font-bold tracking-tight mb-4">
-            Instant Security for Every Smart Contract
+          <h1 className="mm-display text-[clamp(44px,7vw,75px)]">
+            Instant security
+            <br />
+            for every contract.
           </h1>
-          <p className="text-sm font-mono text-[var(--color-term-text-muted)]">
-            5 free scans, then pick a plan. Your API key unlocks unlimited scans on the website and
-            the CLI.
+          <p className="mx-auto mt-5 max-w-[50ch] text-[16px] leading-[1.55] text-[var(--color-slate)]">
+            5 free scans, then pick a plan. Your API key unlocks unlimited
+            scans on the website and the CLI.
             {scanLimit != null && scansUsed != null && (
-              <span className="block mt-1 text-[var(--color-term-accent)]">
+              <span className="mt-2 block font-bold text-[var(--color-deep-violet)]">
                 {Math.min(scansUsed, scanLimit)}/{scanLimit} free scans used
               </span>
             )}
           </p>
 
           {/* Billing Cycle Toggle */}
-          <div className="mt-6 inline-flex items-center p-1 border border-[var(--color-term-border)] bg-[var(--color-term-dim)]">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`px-3 py-1 text-xs font-mono transition-colors ${
-                billingCycle === "monthly"
-                  ? "bg-[var(--color-term-accent)] text-black font-semibold"
-                  : "text-[var(--color-term-text-muted)] hover:text-white"
-              }`}
-            >
-              MONTHLY
-            </button>
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`px-3 py-1 text-xs font-mono transition-colors ${
-                billingCycle === "yearly"
-                  ? "bg-[var(--color-term-accent)] text-black font-semibold"
-                  : "text-[var(--color-term-text-muted)] hover:text-white"
-              }`}
-            >
-              YEARLY (SAVE 20%)
-            </button>
+          <div className="mt-7 inline-flex items-center rounded-full border border-[var(--color-ink-black)] bg-[var(--color-pure-white)] p-1">
+            {(["monthly", "yearly"] as const).map((cycle) => (
+              <button
+                key={cycle}
+                onClick={() => setBillingCycle(cycle)}
+                className={`rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors ${
+                  billingCycle === cycle
+                    ? "bg-[var(--color-ink-black)] text-[var(--color-pure-white)]"
+                    : "text-[var(--color-slate)] hover:text-[var(--color-ink-black)]"
+                }`}
+              >
+                {cycle === "monthly" ? "MONTHLY" : "YEARLY (SAVE 20%)"}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="mb-16 grid grid-cols-1 gap-6 md:grid-cols-3">
           {plans.map((plan) => (
-            <Card
+            <div
               key={plan.id}
-              className={`relative border flex flex-col justify-between ${
+              className={`relative flex flex-col justify-between rounded-[12px] border p-6 transition-transform duration-200 hover:-translate-y-1 ${
                 plan.popular
-                  ? "border-[var(--color-term-accent)] bg-[var(--color-term-accent)]/5 shadow-[0_0_20px_rgba(0,255,136,0.1)]"
-                  : "border-[var(--color-term-border)] bg-[var(--color-term-dim)]/50"
+                  ? "border-[var(--color-ink-black)] bg-[var(--color-lime-wash)]"
+                  : "border-[var(--color-hairline)] bg-[var(--color-pure-white)]"
               }`}
             >
+              {plan.popular && (
+                <span className="mm-burst -top-3 right-8 h-6 w-16" aria-hidden />
+              )}
               <div>
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-[var(--color-term-text-muted)] tracking-wider">
-                      {plan.name.toUpperCase()}
-                    </span>
-                    {plan.badge && (
-                      <span
-                        className={`text-[10px] font-mono px-2 py-0.5 border ${
-                          plan.popular
-                            ? "border-[var(--color-term-accent)] text-[var(--color-term-accent)] bg-[var(--color-term-accent)]/10"
-                            : "border-[var(--color-term-border)] text-[var(--color-term-text-muted)]"
-                        }`}
-                      >
-                        {plan.badge}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-3xl md:text-4xl font-mono font-bold">{plan.price}</span>
-                    <span className="text-xs font-mono text-[var(--color-term-text-muted)]">{plan.period}</span>
-                  </div>
-                  <CardDescription className="text-xs font-mono text-[var(--color-term-text-muted)] mt-2">
-                    {plan.tagline}
-                  </CardDescription>
-                </CardHeader>
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="mm-label">{plan.name.toUpperCase()}</span>
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold leading-none ${
+                      plan.popular
+                        ? "bg-[var(--color-ink-black)] text-[var(--color-pure-white)]"
+                        : "bg-[var(--color-cool-mist)] text-[var(--color-slate)]"
+                    }`}
+                  >
+                    {plan.badge}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="mm-display text-[44px] leading-none">{plan.price}</span>
+                  <span className="text-[13px] font-medium text-[var(--color-slate)]">{plan.period}</span>
+                </div>
+                <p className="mt-3 text-[13px] leading-[1.5] text-[var(--color-slate)]">
+                  {plan.tagline}
+                </p>
 
-                <CardContent className="pt-2">
-                  <div className="border-t border-[var(--color-term-border)] pt-4 space-y-2.5">
-                    {plan.features.map((feature, i) => (
-                      <div key={i} className="flex items-start gap-2 text-xs font-mono">
-                        <Check className="w-3.5 h-3.5 text-[var(--color-term-accent)] mt-0.5 shrink-0" />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
+                <div className="mt-5 space-y-2.5 border-t border-[var(--color-hairline)] pt-5">
+                  {plan.features.map((feature, i) => (
+                    <div key={i} className="flex items-start gap-2 text-[13px] leading-[1.5]">
+                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--color-deep-violet)]" />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="p-6 pt-4 border-t border-[var(--color-term-border)]">
-                <Button
+              <div className="mt-6 border-t border-[var(--color-hairline)] pt-5">
+                <button
                   onClick={() => purchase(plan.id)}
                   disabled={busy}
-                  className={`w-full font-mono text-xs tracking-wider uppercase h-10 ${
-                    plan.popular
-                      ? "bg-[var(--color-term-accent)] text-black hover:bg-[var(--color-term-accent)]/90"
-                      : "bg-[var(--color-term-dim)] border border-[var(--color-term-border)] text-[var(--color-term-text)] hover:bg-[var(--color-term-border)]"
-                  }`}
+                  className={`mm-cta w-full justify-center ${
+                    plan.popular ? "" : "mm-cta--light"
+                  } ${busy ? "opacity-60" : ""}`}
                 >
-                  {busy ? "PROCESSING..." : (
-                    <span className="flex items-center justify-center gap-1.5">
-                      {plan.cta}
-                      <KeyRound className="w-3.5 h-3.5" />
-                    </span>
+                  {busy ? (
+                    "PROCESSING..."
+                  ) : (
+                    <>
+                      {plan.cta} <KeyRound className="h-3.5 w-3.5" />
+                    </>
                   )}
-                </Button>
+                </button>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
 
         {/* API Developer Section */}
-        <div className="border border-[var(--color-term-border)] bg-[var(--color-term-dim)] p-6 md:p-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="rounded-[12px] bg-[var(--color-pure-white)] p-6 md:p-8">
+          <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <div className="flex items-center gap-2 text-[var(--color-term-accent)] font-mono text-xs mb-2">
-                <Terminal className="w-4 h-4" />
+              <div className="mm-label mm-label--violet mb-2 flex items-center gap-2">
+                <Terminal className="h-4 w-4" />
                 NPM PACKAGE & SDK ACCESS
               </div>
-              <h3 className="text-lg font-mono font-bold">
-                Integrate Securithm in 3 lines of code
+              <h3 className="mm-display text-[30px] leading-tight">
+                Integrate in 3 lines of code
               </h3>
-              <p className="text-xs font-mono text-[var(--color-term-text-muted)] mt-1 max-w-xl">
-                Open-source TypeScript/JavaScript SDK for automated pipeline audits, risk scores, and on-chain monitoring.
+              <p className="mt-2 max-w-xl text-[14px] leading-[1.55] text-[var(--color-slate)]">
+                Open-source TypeScript/JavaScript SDK for automated pipeline
+                audits, risk scores, and on-chain monitoring.
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/docs">
-                <Button variant="outline" className="border-[var(--color-term-border)] font-mono text-xs">
-                  Read API Docs
-                </Button>
+              <Link href="/docs" className="mm-cta mm-cta--light">
+                Read API Docs
               </Link>
-              <Link href="/dashboard/api-console">
-                <Button className="bg-[var(--color-term-accent)] text-black font-mono text-xs">
-                  Generate API Key →
-                </Button>
+              <Link href="/dashboard/api-console" className="mm-cta">
+                Generate API Key →
               </Link>
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-[var(--color-term-border)] grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-3 bg-[var(--color-term-bg)] border border-[var(--color-term-border)] font-mono text-xs">
-              <div className="text-[var(--color-term-text-muted)] mb-1">// Install open-source SDK</div>
-              <div className="text-[var(--color-term-accent)]">npm install securithm</div>
+          <div className="mt-6 grid grid-cols-1 gap-4 border-t border-[var(--color-hairline)] pt-6 md:grid-cols-2">
+            <div className="rounded-[8px] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px]">
+              <div className="mb-1 text-[var(--color-slate)]">// Install open-source SDK</div>
+              <div className="font-bold text-[var(--color-deep-violet)]">npm install securithm</div>
             </div>
-            <div className="p-3 bg-[var(--color-term-bg)] border border-[var(--color-term-border)] font-mono text-xs">
-              <div className="text-[var(--color-term-text-muted)] mb-1">// CLI instant audit</div>
-              <div className="text-[var(--color-term-accent)]">npx securithm scan ./contracts/Vault.sol</div>
+            <div className="rounded-[8px] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px]">
+              <div className="mb-1 text-[var(--color-slate)]">// CLI instant audit</div>
+              <div className="font-bold text-[var(--color-deep-violet)]">npx securithm scan ./contracts/Vault.sol</div>
             </div>
           </div>
         </div>
@@ -482,7 +475,13 @@ function PricingContent() {
 
 export default function PricingPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[var(--color-term-bg)] flex items-center justify-center font-mono text-sm">Loading pricing...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#fff1eb] font-mono text-sm">
+          Loading pricing...
+        </div>
+      }
+    >
       <PricingContent />
     </Suspense>
   );
