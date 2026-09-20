@@ -18,7 +18,7 @@ export class HttpClient {
 
   constructor(options: ClientOptions = {}) {
     this.apiKey = options.apiKey;
-    this.baseUrl = options.baseUrl ?? "https://securithm.vercel.app/_/backend";
+    this.baseUrl = options.baseUrl ?? "https://securithm.vercel.app";
   }
 
   /** Set the Bearer token for subsequent requests. */

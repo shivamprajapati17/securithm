@@ -9,7 +9,7 @@ const docSections = [
     title: "QUICK START",
     description: "Get started with Securithm in minutes. Scan your first contract.",
     items: [
-      "Install the CLI: npm install securithm -g",
+      "Install the CLI: npm install -g securithm",
       "Scan a contract: securithm scan ./contract.sol",
       "View results in the dashboard",
       "Set up CI/CD integration",
@@ -130,11 +130,11 @@ export default function DocsPage() {
               <div className="space-y-1 text-[10px] font-mono">
                 <div className="flex items-center gap-2">
                   <span className="text-[var(--color-term-muted)] shrink-0">$</span>
-                  <span className="text-[var(--color-term-fg)]">npm install auditai -g</span>
+                  <span className="text-[var(--color-term-fg)]">npm install -g securithm</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[var(--color-term-muted)] shrink-0">$</span>
-                  <span className="text-[var(--color-term-fg)]">auditai scan ./contracts/VulnerableVault.sol --chain ethereum</span>
+                  <span className="text-[var(--color-term-fg)]">securithm scan ./contracts/VulnerableVault.sol --fix</span>
                 </div>
               </div>
             </div>

@@ -12,6 +12,7 @@ import { TeamEndpoint } from "./endpoints/team.js";
 import { ApiKeysEndpoint } from "./endpoints/api-keys.js";
 
 export * from "./types.js";
+export * from "./engine.js";
 export { HttpClient, type ClientOptions };
 
 /**

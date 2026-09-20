@@ -1,23 +1,20 @@
 
 export function getApiBase(): string {
-  if (typeof window !== "undefined") {
-    const hostname = window.location.hostname;
-    const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
-    if (!isLocal) {
-      const envUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (envUrl && envUrl.startsWith("https://")) {
-        return envUrl.replace(/\/$/, "");
-      }
-      return "";
-    }
-  }
-  if (process.env.NEXT_PUBLIC_API_URL) {
+  // The API now ships inside this Next.js app (native /api/v1 routes).
+  // Always same-origin — no external Python backend.
+  if (process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV !== "production") {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
   }
-  return process.env.NODE_ENV === "production" ? "" : "http://localhost:8000";
+  return "";
 }
 
 
+
+import {
+  fixedSourceForFinding,
+  buildUnifiedPatch,
+  buildFixedSource,
+} from "securithm/engine";
 
 // Kept for backward-compat (API key auth / SDK usage)
 let authToken: string | null = null;
@@ -37,6 +34,10 @@ export interface Scan {
   risk_score_overall: string | null;
   contract_name: string | null;
   error_message: string | null;
+  fixed_code: string | null;
+  fixes_applied: number;
+  fixes_manual: number;
+  full_patch: string | null;
   created_at: string;
   completed_at: string | null;
   findings: Finding[];
@@ -53,6 +54,9 @@ export interface Finding {
   description: string;
   suggested_fix: string | null;
   fixed_code: string | null;
+  agent?: string | null;
+  rule_key?: string | null;
+  fixable?: boolean;
   assigned_to: string | null;
   status: "open" | "in_progress" | "resolved" | "wont_fix";
   remediation_sla: string | null;
@@ -179,41 +183,92 @@ async function downloadFile(url: string, filename: string): Promise<void> {
   URL.revokeObjectURL(objectUrl);
 }
 
+/** Client-side trigger for a generated file download. */
+function downloadBlob(content: string, filename: string, mime = "text/plain") {
+  const blob = new Blob([content], { type: mime });
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = objectUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(objectUrl);
+}
+
+function safeName(name: string): string {
+  return name.replace(/[^A-Za-z0-9_-]+/g, "_") || "Contract";
+}
+
 /** Download the fully auto-fixed .sol file for a completed scan. */
-export async function downloadFixedContract(
-  scanId: string,
-  contractName?: string | null
-): Promise<void> {
-  const name = (contractName || "Contract").replace(/[^A-Za-z0-9_-]+/g, "_");
-  await downloadFile(
-    `/api/v1/scans/${scanId}/download/fixed`,
-    `${name}_fixed.sol`
+export async function downloadFixedContract(scan: Scan): Promise<void> {
+  if (!scan.fixed_code || !scan.contract_source) {
+    throw new Error("Fixed contract not available for this scan");
+  }
+  downloadBlob(
+    scan.fixed_code,
+    `${safeName(scan.contract_name || "Contract")}_fixed.sol`
   );
 }
 
 /** Download a unified diff with ALL applied fixes. */
-export async function downloadFullPatch(
-  scanId: string,
-  contractName?: string | null
-): Promise<void> {
-  const name = (contractName || "Contract").replace(/[^A-Za-z0-9_-]+/g, "_");
-  await downloadFile(
-    `/api/v1/scans/${scanId}/download/patch`,
-    `${name}_auditai.patch`
+export async function downloadFullPatch(scan: Scan): Promise<void> {
+  if (!scan.full_patch || !scan.contract_source) {
+    throw new Error("Patch not available for this scan");
+  }
+  downloadBlob(
+    scan.full_patch,
+    `${safeName(scan.contract_name || "Contract")}_securithm.patch`
   );
 }
 
 /** Download a unified diff for a single finding (per-category patch). */
 export async function downloadFindingPatch(
-  scanId: string,
-  findingId: string,
-  category: string
+  scan: Scan,
+  finding: Finding
 ): Promise<void> {
-  const name = category.split(" · ")[0].replace(/[^A-Za-z0-9_-]+/g, "_");
-  await downloadFile(
-    `/api/v1/scans/${scanId}/findings/${findingId}/patch`,
-    `${name}_fix.patch`
+  if (!scan.contract_source) {
+    throw new Error("Original source not available for this scan");
+  }
+  const engineFinding = {
+    rule_key: finding.rule_key ?? "",
+    agent: finding.agent ?? "",
+    category: finding.category,
+    severity: finding.severity,
+    severity_order: finding.severity_order,
+    line_number: finding.line_number ?? 1,
+    code_snippet: finding.code_snippet ?? "",
+    description: finding.description,
+    suggested_fix: finding.suggested_fix ?? "",
+    fixable: finding.fixable ?? false,
+  };
+  const fixed = fixedSourceForFinding(scan.contract_source, engineFinding);
+  const patch = buildUnifiedPatch(
+    scan.contract_source,
+    fixed,
+    `${safeName(scan.contract_name || "Contract")}_${safeName(finding.category)}`
   );
+  if (!patch) {
+    // Manual-review category — emit annotated guidance instead of a diff.
+    const guidance = [
+      "# SECURITHM — manual review guidance",
+      `# Category : ${finding.category}`,
+      `# Agent    : ${finding.agent ?? "n/a"}`,
+      `# Line     : ${finding.line_number ?? "?"}`,
+      "",
+      "Finding:",
+      `  ${finding.description}`,
+      "",
+      "Recommended fix:",
+      `  ${finding.suggested_fix ?? "Manual review required"}`,
+      "",
+      `Flagged code (line ${finding.line_number ?? "?"}):`,
+      `  ${finding.code_snippet ?? ""}`,
+    ].join("\n");
+    downloadBlob(guidance, `${safeName(finding.category)}_REVIEW.txt`);
+    return;
+  }
+  downloadBlob(patch, `${safeName(finding.category)}_fix.patch`);
 }
 
 export interface DiffPreviewResponse {
@@ -228,14 +283,46 @@ export interface DiffPreviewResponse {
 
 /** Original + fixed source for the in-app before/after diff preview. */
 export async function getDiffPreview(scanId: string): Promise<DiffPreviewResponse> {
-  return request<DiffPreviewResponse>(`/api/v1/scans/${scanId}/diff-preview`);
+  const scan = await getScan(scanId);
+  if (!scan.contract_source) {
+    throw new Error("Original source not available for this scan");
+  }
+  // Re-run the deterministic engine client-side so the preview always
+  // matches what the CLI and the stored fixed code produce.
+  const result = buildFixedSource(scan.contract_source);
+  return {
+    scanId,
+    contractName: scan.contract_name || "Contract",
+    original: scan.contract_source,
+    fixed: scan.fixed_code || result.fixed,
+    fixesApplied: scan.fixes_applied ?? result.applied.length,
+    fixesManual: scan.fixes_manual ?? result.manual.length,
+    appliedCategories: [...new Set(result.applied.map((f) => f.category))],
+  };
 }
 
 /** Category breakdown (agent, count, severities, fixable) for a scan. */
 export async function getScanCategories(
   scanId: string
 ): Promise<ScanCategoryGroup[]> {
-  return request<ScanCategoryGroup[]>(`/api/v1/scans/${scanId}/categories`);
+  const scan = await getScan(scanId);
+  const groups = new Map<string, ScanCategoryGroup>();
+  for (const f of scan.findings) {
+    const existing = groups.get(f.category);
+    if (existing) {
+      existing.count += 1;
+      existing.severities[f.severity] = (existing.severities[f.severity] ?? 0) + 1;
+    } else {
+      groups.set(f.category, {
+        category: f.category,
+        agent: f.agent ?? "Securithm Agent",
+        count: 1,
+        severities: { [f.severity]: 1 },
+        fixable: f.fixable ?? false,
+      });
+    }
+  }
+  return Array.from(groups.values());
 }
 
 export async function createScan(

@@ -299,7 +299,7 @@ export default function ScansPage() {
               disabled={downloading === "fixed"}
               onClick={() =>
                 handleDownload(
-                  () => api.downloadFixedContract(scanDetail.id, scanDetail.contract_name),
+                  () => api.downloadFixedContract(scanDetail),
                   "fixed"
                 )
               }
@@ -314,7 +314,7 @@ export default function ScansPage() {
               disabled={downloading === "patch"}
               onClick={() =>
                 handleDownload(
-                  () => api.downloadFullPatch(scanDetail.id, scanDetail.contract_name),
+                  () => api.downloadFullPatch(scanDetail),
                   "patch"
                 )
               }
@@ -428,7 +428,7 @@ export default function ScansPage() {
                           disabled={downloading === finding.id}
                           onClick={() =>
                             handleDownload(
-                              () => api.downloadFindingPatch(scanDetail.id, finding.id, finding.category),
+                              () => api.downloadFindingPatch(scanDetail, finding),
                               finding.id
                             )
                           }

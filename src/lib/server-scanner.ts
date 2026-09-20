@@ -1,4 +1,28 @@
+/**
+ * Server-side scan store for the Securithm website.
+ *
+ * - Analysis runs on the shared Securithm agent engine (npm package `securithm`)
+ *   so the website, the SDK and the CLI all produce identical findings/fixes.
+ * - Scans persist to Supabase (service-role key) when configured; every store
+ *   call falls back to an in-memory map so local dev and fresh deploys keep
+ *   working before the Supabase schema is applied.
+ */
+
 import crypto from "crypto";
+import {
+  analyzeAndFix,
+  buildFixedSource,
+  runAgents,
+  fixedSourceForFinding,
+  buildUnifiedPatch,
+  extractContractName,
+  type AgentFinding,
+} from "securithm/engine";
+
+export { analyzeAndFix, buildFixedSource, runAgents, fixedSourceForFinding, buildUnifiedPatch, extractContractName };
+export type { AgentFinding };
+
+// ─── Types (website API shape) ───────────────────────────────────────────────
 
 export interface Finding {
   id: string;
@@ -11,6 +35,9 @@ export interface Finding {
   description: string;
   suggested_fix: string | null;
   fixed_code: string | null;
+  agent?: string | null;
+  rule_key?: string | null;
+  fixable?: boolean;
   assigned_to: string | null;
   status: "open" | "in_progress" | "resolved" | "wont_fix";
   remediation_sla: string | null;
@@ -28,6 +55,10 @@ export interface Scan {
   risk_score_overall: string | null;
   contract_name: string | null;
   error_message: string | null;
+  fixed_code: string | null;
+  fixes_applied: number;
+  fixes_manual: number;
+  full_patch: string | null;
   created_at: string;
   completed_at: string | null;
   findings: Finding[];
@@ -55,227 +86,271 @@ export interface MonitoringEvent {
   timestamp: string;
 }
 
-// In-memory global store across serverless warm requests
-const globalScans: Map<string, Scan> = new Map();
-const globalMonitored: Map<string, MonitoredContract> = new Map();
-const globalEvents: Map<string, MonitoringEvent[]> = new Map();
+export interface ApiKeyRecord {
+  id: string;
+  user_id: string | null;
+  name: string;
+  key_prefix: string;
+  full_key: string | null;
+  created_at: string;
+  last_used_at: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  rate_limit_per_hour: number;
+}
 
-// Seed initial monitored contracts if empty
-function ensureSeedData() {
-  if (globalMonitored.size === 0) {
-    const id1 = "c1111111-1111-1111-1111-111111111111";
-    globalMonitored.set(id1, {
-      id: id1,
-      org_id: "default-org",
-      contract_address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
-      chain: "ethereum",
-      label: "Uniswap V2 Router",
-      status: "healthy",
-      created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-      last_checked: new Date().toISOString(),
-    });
-    globalEvents.set(id1, [
-      {
-        id: "e1",
-        monitored_contract_id: id1,
-        event_type: "HEALTH_CHECK",
-        severity: "low",
-        title: "Liquidity and Invariant Verification Passed",
-        description: "Zero anomalous outflows detected in last 24h period.",
-        tx_hash: "0x89abcdef1234567890abcdef1234567890abcdef1234567890abcdef12345678",
-        timestamp: new Date().toISOString(),
-      },
-    ]);
+// ─── Supabase admin client (optional) ────────────────────────────────────────
+
+let supabaseAdmin: ReturnType<typeof import("@supabase/supabase-js").createClient> | null | undefined;
+
+function getSupabaseAdmin() {
+  if (supabaseAdmin !== undefined) return supabaseAdmin;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    supabaseAdmin = null;
+    return null;
+  }
+  try {
+    // Lazy import keeps the build happy when supabase-js is absent.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { createClient } = require("@supabase/supabase-js") as typeof import("@supabase/supabase-js");
+    supabaseAdmin = createClient(url, serviceKey, { auth: { persistSession: false } });
+  } catch {
+    supabaseAdmin = null;
+  }
+  return supabaseAdmin;
+}
+
+async function sbInsertScans(scans: Scan[]): Promise<void> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return;
+  try {
+    const rows = scans.map(({ findings, ...s }) => ({
+      ...s,
+      fixes_applied: s.fixes_applied ?? 0,
+      fixes_manual: s.fixes_manual ?? 0,
+    }));
+    const { error } = await (sb.from("scans") as { upsert: (r: unknown) => PromiseLike<{ error: unknown }> }).upsert(rows);
+    if (error) throw error;
+    const findingRows = scans.flatMap((s) => s.findings ?? []);
+    if (findingRows.length) {
+      const { error: fErr } = await (sb.from("findings") as { upsert: (r: unknown) => PromiseLike<{ error: unknown }> }).upsert(findingRows);
+      if (fErr) throw fErr;
+    }
+  } catch {
+    // Table missing (42P01) or transient error — memory remains source of truth.
   }
 }
 
-export function analyzeContract(source: string, chain = "ethereum"): { findings: Finding[]; risk_score: string; contract_name: string; fixed_code: string } {
-  const lines = source.split("\n");
-  const rawFindings: Finding[] = [];
-  const scanId = crypto.randomUUID();
-
-  // Infer contract name
-  const nameMatch = source.match(/contract\s+(\w+)/i);
-  const contractName = nameMatch ? nameMatch[1] : "SmartContract";
-
-  // Reentrancy rule
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lineNum = i + 1;
-
-    if (/\.call\{value|\.call\.value\(/.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "Reentrancy · SENTINEL-01 ReentrancyAgent",
-        severity: "critical",
-        severity_order: 0,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "External call forwards ether to a user-controlled address. State updates after this call allow recursive reentrancy attacks.",
-        suggested_fix: "Apply checks-effects-interactions pattern and wrap with nonReentrant guard modifier.",
-        fixed_code: line,
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (/\btx\.origin\b/.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "tx.origin Authentication · SENTINEL-02 AuthAgent",
-        severity: "high",
-        severity_order: 1,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "Authorization relies on tx.origin instead of msg.sender. Vulnerable to phishing contracts triggering calls.",
-        suggested_fix: "Replace tx.origin with msg.sender for authorization checks.",
-        fixed_code: line.replace(/tx\.origin/g, "msg.sender"),
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (/\bselfdestruct\s*\(|\bsuicide\s*\(/.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "Unprotected Selfdestruct · SENTINEL-03 LifecycleAgent",
-        severity: "critical",
-        severity_order: 0,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "selfdestruct destroys bytecode and forwards balance. Irreversible fund loss if invoked by unauthorized callers.",
-        suggested_fix: "Remove selfdestruct or place behind multi-sig governance timelock.",
-        fixed_code: `// SECURITHM FIX: selfdestruct removed\n// ${line.trim()}`,
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (/\.delegatecall\s*\(/.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "Dangerous delegatecall · SENTINEL-04 ContextAgent",
-        severity: "high",
-        severity_order: 1,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "delegatecall executes foreign code inside current storage context. Target contracts can overwrite owner storage slots.",
-        suggested_fix: "Use call() or lock the implementation address to an immutable audited contract.",
-        fixed_code: line.replace(/\.delegatecall\(/g, ".call("),
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (/function\s+\w*\s*(withdraw|mint|burn|drain|destroy|setOwner)\w*\s*\([^)]*\)\s*public(?![^{]*onlyOwner)/i.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "Missing Access Control · SENTINEL-09 PrivilegeAgent",
-        severity: "high",
-        severity_order: 1,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "Privileged function is public without an onlyOwner or access control modifier.",
-        suggested_fix: "Add OpenZeppelin onlyOwner modifier to restrict execution to authorized administrative accounts.",
-        fixed_code: line.replace(/public\s*\{/i, "public onlyOwner {"),
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    if (/pragma\s+solidity\s*[\^>=]*\s*0\.[0-7]\./i.test(line)) {
-      rawFindings.push({
-        id: crypto.randomUUID(),
-        scan_id: scanId,
-        category: "Integer Overflow/Underflow · SENTINEL-10 ArithAgent",
-        severity: "medium",
-        severity_order: 2,
-        line_number: lineNum,
-        code_snippet: line.trim(),
-        description: "Solidity < 0.8 uses wrapping arithmetic by default without SafeMath.",
-        suggested_fix: "Upgrade pragma to ^0.8.20 to enable compiler-level checked arithmetic.",
-        fixed_code: "pragma solidity ^0.8.20;",
-        assigned_to: null,
-        status: "open",
-        remediation_sla: new Date(Date.now() + 7 * 86400000).toISOString(),
-        resolved_at: null,
-        created_at: new Date().toISOString(),
-      });
-    }
+async function sbSelectScans(filter?: { user_id?: string; id?: string }): Promise<Scan[] | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  try {
+    let query = (sb.from("scans") as unknown as {
+      select: (s: string) => { order: (c: string, o: object) => any };
+    }).select("*, findings(*)").order("created_at", { ascending: false }) as {
+      eq: (c: string, v: unknown) => any;
+    };
+    if (filter?.user_id) query = query.eq("user_id", filter.user_id);
+    if (filter?.id) query = query.eq("id", filter.id);
+    const { data, error } = (await query) as unknown as { data: unknown[] | null; error: unknown };
+    if (error) throw error;
+    return (data ?? []) as unknown as Scan[];
+  } catch {
+    return null;
   }
+}
 
-  // Calculate risk grade
-  let crit = 0, high = 0, med = 0, low = 0;
-  for (const f of rawFindings) {
-    if (f.severity === "critical") crit++;
-    else if (f.severity === "high") high++;
-    else if (f.severity === "medium") med++;
-    else low++;
+async function sbDeleteScan(id: string): Promise<void> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return;
+  try {
+    await (sb.from("scans") as unknown as { delete: () => { eq: (c: string, v: unknown) => PromiseLike<unknown> } }).delete().eq("id", id);
+  } catch {
+    /* ignore */
   }
+}
 
-  let grade = "A";
-  if (crit > 0) grade = "F";
-  else if (high > 1) grade = "D";
-  else if (high === 1) grade = "C";
-  else if (med > 0) grade = "B";
+async function sbUpsertApiKeys(keys: ApiKeyRecord[]): Promise<void> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return;
+  try {
+    await (sb.from("api_keys") as { upsert: (r: unknown) => PromiseLike<{ error: unknown }> }).upsert(keys);
+  } catch {
+    /* ignore */
+  }
+}
 
+async function sbSelectApiKeys(filter?: { user_id?: string; full_key?: string }): Promise<ApiKeyRecord[] | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  try {
+    let query = (sb.from("api_keys") as unknown as {
+      select: (s: string) => { eq: (c: string, v: unknown) => any };
+    }).select("*") as { eq: (c: string, v: unknown) => any };
+    if (filter?.user_id) query = query.eq("user_id", filter.user_id);
+    if (filter?.full_key) query = query.eq("full_key", filter.full_key);
+    const { data, error } = (await query) as unknown as { data: unknown[] | null; error: unknown };
+    if (error) throw error;
+    return (data ?? []) as unknown as ApiKeyRecord[];
+  } catch {
+    return null;
+  }
+}
+
+// ─── Analysis ────────────────────────────────────────────────────────────────
+
+export interface AnalyzeResult {
+  findings: Omit<Finding, "id" | "scan_id" | "status" | "assigned_to" | "resolved_at" | "remediation_sla" | "created_at">[];
+  risk_score: string;
+  contract_name: string;
+  fixed_code: string;
+  fixes_applied: number;
+  fixes_manual: number;
+  full_patch: string;
+}
+
+/** Run the trained agent engine on Solidity source. */
+export function analyzeContract(
+  source: string,
+  _chain = "ethereum"
+): AnalyzeResult {
+  const result = analyzeAndFix(source);
   return {
-    findings: rawFindings,
-    risk_score: grade,
-    contract_name: contractName,
-    fixed_code: source,
+    findings: result.findings.map((f) => ({
+      category: f.category,
+      severity: f.severity,
+      severity_order: f.severity_order,
+      line_number: f.line_number,
+      code_snippet: f.code_snippet,
+      description: f.description,
+      suggested_fix: f.suggested_fix,
+      fixed_code: null,
+      agent: f.agent,
+      rule_key: f.rule_key,
+      fixable: f.fixable,
+    })),
+    risk_score: result.risk_score,
+    contract_name: result.contract_name,
+    fixed_code: result.fixed_code,
+    fixes_applied: result.fixes_applied,
+    fixes_manual: result.fixes_manual,
+    full_patch: result.full_patch,
   };
 }
 
+// ─── Scan store (memory primary + Supabase best-effort) ─────────────────────
+
+// In-memory store across warm requests
+const globalScans = globalThis as unknown as {
+  __securithm_scans?: Map<string, Scan>;
+  __securithm_monitored?: Map<string, MonitoredContract>;
+  __securithm_events?: Map<string, MonitoringEvent[]>;
+  __securithm_api_keys?: Map<string, ApiKeyRecord>;
+  __securithm_seeded?: boolean;
+};
+
+function scansMap(): Map<string, Scan> {
+  globalScans.__securithm_scans ??= new Map();
+  return globalScans.__securithm_scans;
+}
+function monitoredMap(): Map<string, MonitoredContract> {
+  globalScans.__securithm_monitored ??= new Map();
+  return globalScans.__securithm_monitored;
+}
+function eventsMap(): Map<string, MonitoringEvent[]> {
+  globalScans.__securithm_events ??= new Map();
+  return globalScans.__securithm_events;
+}
+function apiKeysMap(): Map<string, ApiKeyRecord> {
+  globalScans.__securithm_api_keys ??= new Map();
+  return globalScans.__securithm_api_keys;
+}
+
+function ensureSeedData() {
+  if (globalScans.__securithm_seeded) return;
+  globalScans.__securithm_seeded = true;
+  if (monitoredMap().size === 0) {
+    const seeds: Array<Omit<MonitoredContract, "id" | "created_at" | "last_checked">> = [
+      {
+        org_id: "demo",
+        contract_address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        chain: "ethereum",
+        label: "USDC Token (sample watch)",
+        status: "healthy",
+      },
+      {
+        org_id: "demo",
+        contract_address: "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+        chain: "ethereum",
+        label: "UNI Token (sample watch)",
+        status: "healthy",
+      },
+    ];
+    for (const seed of seeds) addMonitored(seed);
+  }
+}
+
 export function saveScan(scan: Scan): Scan {
-  globalScans.set(scan.id, scan);
+  scansMap().set(scan.id, scan);
+  void sbInsertScans([scan]);
   return scan;
 }
 
 export function getScanById(id: string): Scan | undefined {
-  return globalScans.get(id);
+  return scansMap().get(id);
+}
+
+export async function getScanByIdAsync(id: string): Promise<Scan | undefined> {
+  const local = scansMap().get(id);
+  if (local) return local;
+  const rows = await sbSelectScans({ id });
+  if (rows && rows.length) {
+    scansMap().set(id, rows[0]);
+    return rows[0];
+  }
+  return undefined;
 }
 
 export function listAllScans(): Scan[] {
-  return Array.from(globalScans.values()).sort(
+  return Array.from(scansMap().values()).sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 }
 
+export async function listScansForUser(userId: string | null): Promise<Scan[]> {
+  if (!userId) return listAllScans().filter((s) => !s.user_id);
+  const rows = await sbSelectScans({ user_id: userId });
+  if (rows && rows.length) {
+    for (const row of rows) scansMap().set(row.id, row);
+    return rows;
+  }
+  return listAllScans().filter((s) => s.user_id === userId);
+}
+
 export function listAllFindings(): Finding[] {
   const all: Finding[] = [];
-  for (const s of globalScans.values()) {
-    all.push(...s.findings);
-  }
+  for (const s of scansMap().values()) all.push(...s.findings);
   return all.sort((a, b) => a.severity_order - b.severity_order);
 }
 
-export function listMonitored(): MonitoredContract[] {
-  ensureSeedData();
-  return Array.from(globalMonitored.values());
+export function deleteScan(id: string): boolean {
+  const existed = scansMap().delete(id);
+  void sbDeleteScan(id);
+  return existed;
 }
 
-export function addMonitored(contract: Omit<MonitoredContract, "id" | "created_at" | "last_checked">): MonitoredContract {
+// ─── Monitoring store (memory; seeded demo data) ─────────────────────────────
+
+export function listMonitored(): MonitoredContract[] {
+  ensureSeedData();
+  return Array.from(monitoredMap().values());
+}
+
+export function addMonitored(
+  contract: Omit<MonitoredContract, "id" | "created_at" | "last_checked">
+): MonitoredContract {
   ensureSeedData();
   const id = crypto.randomUUID();
   const item: MonitoredContract = {
@@ -284,15 +359,71 @@ export function addMonitored(contract: Omit<MonitoredContract, "id" | "created_a
     created_at: new Date().toISOString(),
     last_checked: new Date().toISOString(),
   };
-  globalMonitored.set(id, item);
+  monitoredMap().set(id, item);
   return item;
 }
 
 export function removeMonitored(id: string): boolean {
-  return globalMonitored.delete(id);
+  return monitoredMap().delete(id);
 }
 
 export function getEventsForContract(contractId: string): MonitoringEvent[] {
   ensureSeedData();
-  return globalEvents.get(contractId) || [];
+  return eventsMap().get(contractId) || [];
+}
+
+export function addMonitoringEvent(contractId: string, event: Omit<MonitoringEvent, "id" | "monitored_contract_id" | "timestamp">): MonitoringEvent {
+  ensureSeedData();
+  const full: MonitoringEvent = {
+    ...event,
+    id: crypto.randomUUID(),
+    monitored_contract_id: contractId,
+    timestamp: new Date().toISOString(),
+  };
+  const list = eventsMap().get(contractId) ?? [];
+  list.unshift(full);
+  eventsMap().set(contractId, list.slice(0, 100));
+  return full;
+}
+
+// ─── API keys (for SDK/CLI entitlement) ──────────────────────────────────────
+
+export function createApiKey(userId: string | null, name: string, rateLimitPerHour = 500): ApiKeyRecord {
+  const rawSecret = `sk_live_${crypto.randomBytes(24).toString("hex")}`;
+  const record: ApiKeyRecord = {
+    id: crypto.randomUUID(),
+    user_id: userId,
+    name,
+    key_prefix: rawSecret.substring(0, 12),
+    full_key: rawSecret,
+    created_at: new Date().toISOString(),
+    last_used_at: null,
+    expires_at: null,
+    is_active: true,
+    rate_limit_per_hour: rateLimitPerHour,
+  };
+  apiKeysMap().set(record.id, record);
+  void sbUpsertApiKeys([record]);
+  return record;
+}
+
+export function listApiKeys(userId: string | null): ApiKeyRecord[] {
+  return Array.from(apiKeysMap().values()).filter((k) => k.user_id === userId);
+}
+
+export async function validateApiKey(key: string): Promise<ApiKeyRecord | null> {
+  if (!key.startsWith("sk_live_")) return null;
+  const local = Array.from(apiKeysMap().values()).find((k) => k.full_key === key && k.is_active);
+  if (local) return local;
+  const rows = await sbSelectApiKeys({ full_key: key });
+  if (rows && rows.length) {
+    const record = rows.find((k) => k.is_active) ?? null;
+    if (record) {
+      apiKeysMap().set(record.id, record);
+      record.last_used_at = new Date().toISOString();
+      void sbUpsertApiKeys([record]);
+    }
+    return record;
+  }
+  return null;
 }
