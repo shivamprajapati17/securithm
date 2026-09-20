@@ -35,11 +35,51 @@
   --font-mm-sans: "Inter", var(--font-sans);
   --font-mm-body: "DM Sans", "Inter", var(--font-sans);
   --font-mm-mono: "Geist Mono", "JetBrains Mono", var(--font-mono);
+  --font-mm-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 
   background: var(--color-peach-cream);
   color: var(--color-ink-black);
   font-family: var(--font-mm-body);
   overflow-x: clip;
+}
+
+./* Editorial serif accent — italic display voice for hero emphasis */
+.mm-serif {
+  font-family: var(--font-mm-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--color-deep-violet);
+}
+
+/* Keystroke micro-UI — physical keys for CLI snippets */
+.mm-kbd {
+  display: inline-block;
+  border: 1px solid var(--color-hairline);
+  border-radius: 4px;
+  background: var(--color-cool-mist);
+  padding: 2px 8px;
+  font-family: var(--font-mm-mono);
+  font-size: 12.5px;
+  color: var(--color-deep-violet);
+}
+
+/* Ultra-diffuse ambient light — fixed layer, never scrolls */
+.mm-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(600px 420px at 18% 12%, rgba(61, 6, 95, 0.05), transparent 70%),
+    radial-gradient(520px 380px at 85% 30%, rgba(255, 166, 128, 0.06), transparent 70%);
+  animation: mm-drift 24s ease-in-out infinite alternate;
+}
+@keyframes mm-drift {
+  to {
+    transform: translate3d(0, -24px, 0);
+  }
 }
 
 .mm-container {
@@ -116,37 +156,44 @@
   color: var(--color-slate);
 }
 
-/* Black pill CTA — the single dark anchor on the cream canvas */
+/* CTA — solid ink block, crisp 6px corners, no shadow (minimalist spec) */
 .mm-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: var(--color-ink-black);
   color: var(--color-pure-white);
-  border-radius: 9999px;
-  padding: 11px 20px;
+  border-radius: 6px;
+  padding: 12px 22px;
   font-family: var(--font-mm-body);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
-  transition: transform 150ms ease, opacity 150ms ease;
+  transition: background 160ms ease, transform 120ms ease, box-shadow 200ms ease;
 }
 .mm-cta:hover {
-  opacity: 0.85;
+  background: #333333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 .mm-cta:active {
   transform: scale(0.98);
+  box-shadow: none;
 }
 .mm-cta--light {
   background: var(--color-pure-white);
   color: var(--color-ink-black);
   border: 1px solid var(--color-ink-black);
 }
+.mm-cta--light:hover {
+  background: var(--color-cool-mist);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
 
-/* Accent wash feature cards — flat, no shadows, 12px radius */
+/* Accent wash feature cards — flat, crisp 12px radius, 1px hairline */
 .mm-card {
+  border: 1px solid var(--color-hairline);
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   position: relative;
 }
 .mm-card--lime { background: var(--color-lime-wash); }
@@ -165,12 +212,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 9999px;
   font-family: var(--font-mm-body);
   font-size: 12px;
-  font-weight: 700;
-  line-height: 0.8;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
   color: var(--color-ink-black);
 }
 
@@ -186,15 +234,15 @@
   color: var(--color-deep-violet);
 }
 
-/* Floating right-edge pill widget */
+/* Floating right-edge widget — crisp rectangle (no pill) */
 .mm-widget {
   position: fixed;
   right: 0;
   top: 40%;
-  width: 12px;
-  height: 80px;
+  width: 10px;
+  height: 76px;
   background: var(--color-ink-black);
-  border-radius: 9999px 0 0 9999px;
+  border-radius: 6px 0 0 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,16 +257,21 @@
   background: var(--color-pure-white);
 }
 
-/* ── Hero terminal: dark product mock, cream page contrast ── */
+/* ── Hero terminal: faux-OS window chrome, warm-dark surface ── */
 .mm-terminal {
   background: #1a1a1a;
   border-radius: 12px;
-  padding: 20px;
+  padding: 0;
   font-family: var(--font-mm-mono);
   font-size: 12px;
   line-height: 1.65;
   color: #e8e8e8;
   min-height: 340px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.mm-terminal-body {
+  padding: 20px;
 }
 .mm-terminal .tok-key { color: #d075ff; }
 .mm-terminal .tok-str { color: #baf24a; }
@@ -228,12 +281,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-hairline);
 }
 .mm-terminal-head span {
   width: 10px;
   height: 10px;
   border-radius: 9999px;
+}
+.mm-terminal-head .mm-terminal-title {
+  margin-left: 8px;
+  font-family: var(--font-mm-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--color-slate);
 }
 
 @keyframes mm-blink {
@@ -247,12 +310,13 @@
 
 /* ── Motion layer — metamask-grade energy on the cream canvas ── */
 
-/* Card lift + decorative burst wiggle on hover */
+/* Card lift — ultra-subtle shadow shift only (minimalist spec) */
 .mm-card {
-  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 200ms ease, box-shadow 200ms ease;
 }
 .mm-card:hover {
-  transform: translateY(-4px);
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 .mm-card .mm-burst {
   transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -313,6 +377,7 @@
   .mm-marquee__track { animation: none; }
   .mm-card, .mm-card .mm-burst { transition: none; }
   .mm-terminal .mm-line-in { animation: none; }
+  .mm-ambient { animation: none; }
 }
 
 }

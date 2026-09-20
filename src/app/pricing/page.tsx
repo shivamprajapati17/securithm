@@ -4,15 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
-import {
-  Zap,
-  Check,
-  Terminal,
-  Sparkles,
-  AlertCircle,
-  Copy,
-  KeyRound,
-} from "lucide-react";
+import { PiIcon } from "@/components/pi-icon";
 import {
   createPaymentOrder,
   verifyPayment,
@@ -244,7 +236,7 @@ function PricingContent() {
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
         {fromCli && !apiKey && (
           <div className="mb-8 flex items-start gap-3 rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] p-5">
-            <Terminal className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-deep-violet)]" />
+            <PiIcon name="terminal-window" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-deep-violet)]" />
             <div>
               <div className="mm-label mm-label--violet">CLI SETUP — GENERATE AN API KEY</div>
               <p className="mt-2 text-[14px] leading-[1.55] text-[var(--color-slate)]">
@@ -261,7 +253,7 @@ function PricingContent() {
 
         {isLimitReached && (
           <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-apricot)] p-5">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-burnt-sienna)]" />
+            <PiIcon name="warning-circle" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-burnt-sienna)]" />
             <div>
               <div className="mm-label mm-label--violet">FREE SCAN LIMIT REACHED — 5/5 USED</div>
               <p className="mt-2 text-[14px] leading-[1.55] text-[var(--color-ink-black)]">
@@ -276,7 +268,7 @@ function PricingContent() {
         {phase === "done" && apiKey && (
           <div className="mb-8 rounded-[12px] bg-[var(--color-lime-wash)] p-5">
             <div className="flex items-center gap-2 text-[15px] font-bold text-[var(--color-ink-black)]">
-              <Sparkles className="h-5 w-5 text-[var(--color-deep-violet)]" />
+              <PiIcon name="sparkle" size={18} className="text-[var(--color-deep-violet)]" />
               Plan active{activePlanId ? ` (${activePlanId.toUpperCase()})` : ""}. Your API key is ready:
             </div>
             <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row">
@@ -287,7 +279,7 @@ function PricingContent() {
                 onClick={copyKey}
                 className="mm-cta !rounded-[9999px] !px-5 !py-2.5 !text-[13px]"
               >
-                <Copy className="h-3.5 w-3.5" />
+                <PiIcon name="copy" size={14} />
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
@@ -314,7 +306,7 @@ function PricingContent() {
 
         {error && (
           <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-lilac-haze)] p-5 text-[14px] text-[var(--color-ink-black)]">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-deep-violet)]" />
+            <PiIcon name="warning-circle" size={16} className="mt-0.5 shrink-0 text-[var(--color-deep-violet)]" />
             <span>
               {error}{" "}
               {!loggedIn && (
@@ -329,13 +321,13 @@ function PricingContent() {
         {/* Header */}
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <div className="mm-brackets mx-auto mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-4 py-2">
-            <Zap className="h-3.5 w-3.5 text-[var(--color-deep-violet)]" />
+            <PiIcon name="lightning" size={14} className="text-[var(--color-deep-violet)]" />
             <span className="mm-label mm-label--violet">SECURITHM PRICING & API ACCESS</span>
           </div>
           <h1 className="mm-display text-[clamp(44px,7vw,75px)]">
             Instant security
             <br />
-            for every contract.
+            <span className="mm-serif text-[0.96em]">for every contract.</span>
           </h1>
           <p className="mx-auto mt-5 max-w-[50ch] text-[16px] leading-[1.55] text-[var(--color-slate)]">
             5 free scans, then pick a plan. Your API key unlocks unlimited
@@ -403,7 +395,7 @@ function PricingContent() {
                 <div className="mt-5 space-y-2.5 border-t border-[var(--color-hairline)] pt-5">
                   {plan.features.map((feature, i) => (
                     <div key={i} className="flex items-start gap-2 text-[13px] leading-[1.5]">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--color-deep-violet)]" />
+                      <PiIcon name="check" size={14} className="mt-0.5 shrink-0 text-[var(--color-deep-violet)]" />
                       <span>{feature}</span>
                     </div>
                   ))}
@@ -422,7 +414,7 @@ function PricingContent() {
                     "PROCESSING..."
                   ) : (
                     <>
-                      {plan.cta} <KeyRound className="h-3.5 w-3.5" />
+                      {plan.cta} <PiIcon name="key" size={14} />
                     </>
                   )}
                 </button>
@@ -436,7 +428,7 @@ function PricingContent() {
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <div className="mm-label mm-label--violet mb-2 flex items-center gap-2">
-                <Terminal className="h-4 w-4" />
+              <PiIcon name="terminal-window" size={16} className="text-[var(--color-deep-violet)]" />
                 NPM PACKAGE & SDK ACCESS
               </div>
               <h3 className="mm-display text-[30px] leading-tight">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Menu, X, CalendarDays } from "lucide-react";
+import { PiIcon } from "@/components/pi-icon";
 import { useState } from "react";
 
 export function Navbar() {
@@ -12,7 +12,7 @@ export function Navbar() {
         <div className="flex h-14 items-center justify-between">
           <a href="/" className="flex items-center gap-2 group">
             <div className="flex h-7 w-7 items-center justify-center border border-[var(--color-term-border)] group-hover:bg-[var(--color-term-fg)] group-hover:border-[var(--color-term-fg)] transition-colors">
-              <Shield className="h-4 w-4 text-[var(--color-term-fg)] group-hover:text-[var(--color-term-bg)]" />
+              <PiIcon name="shield-check" className="h-4 w-4 text-[var(--color-term-fg)] group-hover:text-[var(--color-term-bg)]" />
             </div>
             <span className="text-sm font-bold uppercase tracking-wider text-[var(--color-term-fg)] term-glow">
               AuditAI
@@ -45,7 +45,7 @@ export function Navbar() {
               href="/book-demo"
               className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-3 h-8 text-xs font-mono uppercase tracking-wider transition-colors"
             >
-              <CalendarDays className="h-3.5 w-3.5" />
+              <PiIcon name="arrow-up-right" className="h-3.5 w-3.5" />
               book demo
             </a>
           </div>
@@ -55,9 +55,9 @@ export function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? (
-              <X className="h-4 w-4" />
+              <PiIcon name="x" className="h-4 w-4" />
             ) : (
-              <Menu className="h-4 w-4" />
+              <PiIcon name="list" className="h-4 w-4" />
             )}
           </button>
         </div>
@@ -79,7 +79,7 @@ export function Navbar() {
               href="/book-demo"
               className="inline-flex items-center gap-2 border border-[var(--color-term-fg)] text-[var(--color-term-fg)] bg-transparent hover:bg-[var(--color-term-fg)] hover:text-[var(--color-term-bg)] px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors"
             >
-              <CalendarDays className="h-3.5 w-3.5" />
+              <PiIcon name="arrow-up-right" className="h-3.5 w-3.5" />
               book demo
             </a>
           </div>

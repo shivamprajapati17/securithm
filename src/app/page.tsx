@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Menu, X, Bot, Wrench, Download } from "lucide-react";
+import { PiIcon } from "@/components/pi-icon";
 
 const NAV = [
   ["Platform", "/features"],
@@ -89,15 +89,15 @@ const FAQS = [
 const SCAN_CMD = "securithm scan VulnerableVault.sol";
 
 const OUTPUT_LINES: Array<{ cls: string; text: string }> = [
-  { cls: "tok-key", text: "▸ dispatching 11 agents…" },
-  { cls: "tok-com", text: "  SENTINEL-01 ReentrancyAgent … CRITICAL line 12" },
-  { cls: "tok-com", text: "  SENTINEL-02 AuthAgent      … HIGH     line 31" },
-  { cls: "tok-com", text: "  SENTINEL-06 GasAgent       … LOW      line 48" },
-  { cls: "tok-key", text: "▸ applying safe fixes…" },
-  { cls: "tok-str", text: "  ✔ nonReentrant() guard inserted" },
-  { cls: "tok-str", text: "  ✔ tx.origin → msg.sender" },
-  { cls: "tok-str", text: "  ✔ loop bounded by MAX_BATCH" },
-  { cls: "tok-fn", text: "  grade: C → A   ready: VulnerableVault_fixed.sol" },
+  { cls: "tok-key", text: "> dispatching 11 agents..." },
+  { cls: "tok-com", text: "  SENTINEL-01 ReentrancyAgent ... CRITICAL line 12" },
+  { cls: "tok-com", text: "  SENTINEL-02 AuthAgent      ... HIGH     line 31" },
+  { cls: "tok-com", text: "  SENTINEL-06 GasAgent       ... LOW      line 48" },
+  { cls: "tok-key", text: "> applying safe fixes..." },
+  { cls: "tok-str", text: "  [OK] nonReentrant() guard inserted" },
+  { cls: "tok-str", text: "  [OK] tx.origin -> msg.sender" },
+  { cls: "tok-str", text: "  [OK] loop bounded by MAX_BATCH" },
+  { cls: "tok-fn", text: "  grade: C -> A   ready: VulnerableVault_fixed.sol" },
 ];
 
 const MARQUEE_ITEMS = [
@@ -209,7 +209,7 @@ export default function Home() {
         entries.forEach((e) => {
           if (e.isIntersecting) {
             (e.target as HTMLElement).style.transition =
-              "opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1)";
+              "opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1)";
             (e.target as HTMLElement).style.opacity = "1";
             (e.target as HTMLElement).style.transform = "none";
             io.unobserve(e.target);
@@ -224,8 +224,11 @@ export default function Home() {
 
   return (
     <div className="mm-root min-h-screen" ref={revealRef}>
-      {/* ── Top telemetry strip — industrial doc reference on cream ── */}
-      <div className="border-b border-[var(--color-hairline)]">
+      {/* Ambient light — fixed layer behind everything */}
+      <div className="mm-ambient" aria-hidden />
+
+      {/* ── Top telemetry strip — quiet meta line on the canvas ── */}
+      <div className="relative z-10 border-b border-[var(--color-hairline)]">
         <div className="mm-container flex h-9 items-center justify-between">
           <span className="mm-label">SEC-2026 / CONTRACT SECURITY OPERATIONS</span>
           <span className="mm-label mm-label--violet hidden sm:inline">
@@ -238,8 +241,8 @@ export default function Home() {
       <header className="sticky top-0 z-50">
         <div className="mm-container flex h-[72px] items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-ink-black)]">
-              <span className="block h-3 w-3 rounded-full border-2 border-[var(--color-acid-lime)]" />
+            <span className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--color-ink-black)]">
+              <PiIcon name="shield-check" size={14} className="text-[var(--color-acid-lime)]" />
             </span>
             <span className="mm-display text-[26px] leading-none">
               AuditAI
@@ -268,11 +271,15 @@ export default function Home() {
           </div>
 
           <button
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-ink-black)] p-2 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-[6px] border border-[var(--color-ink-black)] p-2 md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Menu"
           >
-            {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {menuOpen ? (
+              <PiIcon name="x" size={16} />
+            ) : (
+              <PiIcon name="list" size={16} />
+            )}
           </button>
         </div>
 
@@ -303,9 +310,9 @@ export default function Home() {
         )}
       </header>
 
-      <main>
+      <main className="relative z-10">
         {/* ── HERO — the headline IS the hero ── */}
-        <section className="mm-container pb-16 pt-10 text-center md:pb-24 md:pt-16">
+        <section className="mm-container pb-20 pt-12 text-center md:pb-28 md:pt-20">
           <div
             data-reveal
             className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-4 py-2"
@@ -321,13 +328,14 @@ export default function Home() {
             className="mm-display mx-auto mt-6 max-w-[1100px] text-[clamp(56px,11vw,158px)]"
             style={{ transitionDelay: "80ms" }}
           >
-            Ship secure
+            Ship{" "}
+            <span className="mm-serif text-[0.96em]">secure</span>
             <br />
             contracts.
           </h1>
           <p
             data-reveal
-            className="mx-auto mt-7 max-w-[52ch] text-[17px] leading-[1.5] text-[var(--color-slate)]"
+            className="mx-auto mt-7 max-w-[52ch] text-[17px] leading-[1.6] text-[var(--color-slate)]"
             style={{ transitionDelay: "160ms" }}
           >
             We are a security operations unit for your code. Paste a contract
@@ -341,14 +349,14 @@ export default function Home() {
             style={{ transitionDelay: "240ms" }}
           >
             <Link href="/dashboard/scans" className="mm-cta">
-              Scan a contract free <ArrowRight className="h-4 w-4" />
+              Scan a contract free <PiIcon name="arrow-right" size={15} />
             </Link>
             <Link href="/docs" className="mm-cta mm-cta--light">
               Read the docs
             </Link>
           </div>
 
-          {/* Product mock — dark frame against the warm canvas, crosshairs */}
+          {/* Product mock — faux-OS window chrome over the warm canvas */}
           <div
             data-reveal
             className="mm-brackets relative mx-auto mt-16 max-w-[640px]"
@@ -362,25 +370,25 @@ export default function Home() {
                 <span style={{ background: "#e5484d" }} />
                 <span style={{ background: "#e5a13d" }} />
                 <span style={{ background: "#baf24a" }} />
-                <span className="ml-2 text-[11px] text-[#6b6b6b]">
-                  securithm — agent run
-                </span>
+                <span className="mm-terminal-title">securithm — agent run</span>
               </div>
-              <div>
-                ${" "}
-                {terminal.reduced
-                  ? SCAN_CMD
-                  : SCAN_CMD.slice(0, terminal.chars)}
-                <span className="mm-caret">▌</span>
-              </div>
-              {(terminal.reduced
-                ? OUTPUT_LINES
-                : OUTPUT_LINES.slice(0, terminal.lines)
-              ).map((l, i) => (
-                <div key={i} className={`${l.cls} mm-line-in`}>
-                  {l.text || "\u00A0"}
+              <div className="mm-terminal-body">
+                <div>
+                  {"> "}
+                  {terminal.reduced
+                    ? SCAN_CMD
+                    : SCAN_CMD.slice(0, terminal.chars)}
+                  <span className="mm-caret">▌</span>
                 </div>
-              ))}
+                {(terminal.reduced
+                  ? OUTPUT_LINES
+                  : OUTPUT_LINES.slice(0, terminal.lines)
+                ).map((l, i) => (
+                  <div key={i} className={`${l.cls} mm-line-in`}>
+                    {l.text || "\u00A0"}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -406,7 +414,7 @@ export default function Home() {
         </div>
 
         {/* ── PROOF STRIP — quiet metrics on the canvas ── */}
-        <section className="mm-container" ref={metricsRef}>
+        <section className="mm-container pt-16 md:pt-20" ref={metricsRef}>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
               { v: "0.4s", l: "TO VERDICT" },
@@ -417,18 +425,18 @@ export default function Home() {
               <div
                 key={l}
                 data-reveal
-                className="rounded-[12px] border border-[var(--color-hairline)] p-5"
-                style={{ transitionDelay: `${i * 60}ms` }}
+                className="rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] p-6"
+                style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div className="mm-display text-[40px] leading-none">{v}</div>
-                <div className="mm-label mt-2">{l}</div>
+                <div className="mm-label mt-3">{l}</div>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── WHAT WE ARE — the operation, stated ── */}
-        <section className="mm-container pt-20 md:pt-28">
+        <section className="mm-container py-24 md:py-32">
           <p data-reveal className="mm-label mm-label--violet">
             [ WHAT WE ARE ]
           </p>
@@ -436,9 +444,10 @@ export default function Home() {
             data-reveal
             className="mm-display mt-4 max-w-[900px] text-[clamp(40px,6vw,75px)]"
           >
-            A security operations
+            A security operations{" "}
+            <span className="mm-serif text-[0.96em]">unit</span>
             <br />
-            unit for your code.
+            for your code.
           </h2>
 
           <div className="mt-12 grid gap-5 md:grid-cols-2">
@@ -467,14 +476,14 @@ export default function Home() {
               <div
                 key={b.k}
                 data-reveal
-                className={`rounded-[12px] p-6 ${b.wash}`}
-                style={{ transitionDelay: `${i * 70}ms` }}
+                className={`rounded-[12px] border border-[var(--color-hairline)] p-7 ${b.wash}`}
+                style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div className="flex items-baseline justify-between">
                   <span className="mm-display text-[26px] leading-none">{b.k}</span>
                   <span className="mm-label">0{i + 1}</span>
                 </div>
-                <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.5] text-[var(--color-ink-black)]">
+                <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.6] text-[var(--color-ink-black)]">
                   {b.v}
                 </p>
               </div>
@@ -483,7 +492,7 @@ export default function Home() {
         </section>
 
         {/* ── MODULES — accent wash rotation, one wash per card ── */}
-        <section className="mm-container py-20 md:py-28">
+        <section className="mm-container pb-24 md:pb-32">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p data-reveal className="mm-eyebrow">
@@ -495,7 +504,8 @@ export default function Home() {
               >
                 Everything between
                 <br />
-                your code and the exploit.
+                your code and{" "}
+                <span className="mm-serif text-[0.96em]">the exploit.</span>
               </h2>
             </div>
             <div data-reveal className="mm-barcode hidden w-36 md:block" aria-hidden />
@@ -514,14 +524,14 @@ export default function Home() {
                 <h3 className="mm-display mt-5 text-[34px] leading-[1.05]">
                   {m.title}
                 </h3>
-                <p className="mt-4 text-[15px] leading-[1.5] text-[var(--color-ink-black)]">
+                <p className="mt-4 text-[15px] leading-[1.6] text-[var(--color-ink-black)]">
                   {m.body}
                 </p>
                 <Link
                   href={m.href}
-                  className="mt-7 inline-flex items-center gap-2 text-[15px] font-bold text-[var(--color-deep-violet)] underline underline-offset-2"
+                  className="mt-7 inline-flex items-center gap-2 text-[15px] font-semibold text-[var(--color-deep-violet)] underline underline-offset-2"
                 >
-                  {m.cta} <ArrowRight className="h-4 w-4" />
+                  {m.cta} <PiIcon name="arrow-right" size={14} />
                 </Link>
               </div>
             ))}
@@ -529,7 +539,7 @@ export default function Home() {
         </section>
 
         {/* ── AGENTS — the trained roster, sky wash section ── */}
-        <section id="agents" className="mm-container pb-20 md:pb-28">
+        <section id="agents" className="mm-container pb-24 md:pb-32">
           <div className="mm-card mm-card--sky">
             <span
               className="mm-burst -top-3 left-10 h-6 w-28"
@@ -550,7 +560,7 @@ export default function Home() {
                 </h2>
                 <p
                   data-reveal
-                  className="mt-5 max-w-[46ch] text-[15px] leading-[1.5]"
+                  className="mt-5 max-w-[46ch] text-[15px] leading-[1.6]"
                 >
                   Each agent is trained on one vulnerability class and reports
                   with its own signature. Auto-fix agents patch the line they
@@ -559,13 +569,13 @@ export default function Home() {
 
                 <div data-reveal className="mt-7 flex flex-wrap gap-3">
                   <span className="mm-badge bg-[var(--color-lime-wash)]">
-                    <Wrench className="h-3 w-3" /> auto-fix
+                    <PiIcon name="wrench" size={12} /> auto-fix
                   </span>
                   <span className="mm-badge bg-[var(--color-lilac-haze)]">
-                    <Bot className="h-3 w-3" /> review
+                    <PiIcon name="robot" size={12} /> review
                   </span>
                   <span className="mm-badge bg-[var(--color-pure-white)]">
-                    <Download className="h-3 w-3" /> .sol / .patch
+                    <PiIcon name="download-simple" size={12} /> .sol / .patch
                   </span>
                 </div>
               </div>
@@ -577,7 +587,7 @@ export default function Home() {
                     className="flex items-center justify-between rounded-[8px] bg-[var(--color-pure-white)] px-3 py-2.5"
                   >
                     <div className="min-w-0">
-                      <div className="truncate text-[13px] font-bold leading-tight">
+                      <div className="truncate text-[13px] font-semibold leading-tight">
                         {name}
                       </div>
                       <div className="text-[11px] text-[var(--color-slate)]">
@@ -589,7 +599,7 @@ export default function Home() {
                         className={`h-2 w-2 rounded-full ${SEV_COLOR[sev]}`}
                         aria-label={sev}
                       />
-                      <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-slate)]">
+                      <span className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-slate)]">
                         {mode}
                       </span>
                     </div>
@@ -601,7 +611,7 @@ export default function Home() {
         </section>
 
         {/* ── SCAN → FIX → DOWNLOAD — the loop, wash rotation ── */}
-        <section className="mm-container pb-20 md:pb-28">
+        <section className="mm-container pb-24 md:pb-32">
           <div className="grid gap-6 md:grid-cols-3">
             {[
               {
@@ -631,15 +641,15 @@ export default function Home() {
               >
                 <div className="mm-display text-[64px] leading-none">{s.n}</div>
                 <h3 className="mm-display mt-4 text-[30px]">{s.t}</h3>
-                <p className="mt-3 text-[15px] leading-[1.5]">{s.b}</p>
+                <p className="mt-3 text-[15px] leading-[1.6]">{s.b}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* ── CLI — terminal access, dark mock on cream ── */}
-        <section className="mm-container pb-20 md:pb-28">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
+        <section className="mm-container pb-24 md:pb-32">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <p data-reveal className="mm-label mm-label--violet">
                 [ TERMINAL ACCESS ]
@@ -650,11 +660,11 @@ export default function Home() {
               >
                 Your pipeline,
                 <br />
-                hardened.
+                <span className="mm-serif text-[0.96em]">hardened.</span>
               </h2>
               <p
                 data-reveal
-                className="mt-5 max-w-[46ch] text-[15px] leading-[1.5] text-[var(--color-slate)]"
+                className="mt-5 max-w-[46ch] text-[15px] leading-[1.6] text-[var(--color-slate)]"
               >
                 The CLI runs the same eleven agents from your terminal. Five
                 free scans, no account. After that, one API key — generated at
@@ -662,13 +672,19 @@ export default function Home() {
               </p>
               <div data-reveal className="mt-7">
                 <Link href="/pricing" className="mm-cta">
-                  Get an API key <ArrowRight className="h-4 w-4" />
+                  Get an API key <PiIcon name="key" size={15} />
                 </Link>
               </div>
             </div>
             <div data-reveal className="mm-brackets relative">
               <div className="mm-terminal !min-h-0">
-                <div className="space-y-2">
+                <div className="mm-terminal-head">
+                  <span style={{ background: "#e5484d" }} />
+                  <span style={{ background: "#e5a13d" }} />
+                  <span style={{ background: "#baf24a" }} />
+                  <span className="mm-terminal-title">terminal — securithm</span>
+                </div>
+                <div className="mm-terminal-body space-y-2">
                   <div className="text-[#6b6b6b]"># install</div>
                   <div>
                     <span className="tok-key">$</span> npm install -g securithm
@@ -690,9 +706,9 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── FAQ — hairline dividers on the canvas ── */}
-        <section id="faq" className="mm-container pb-20 md:pb-28">
-          <div className="mx-auto max-w-[800px]">
+        {/* ── FAQ — borderless items, hairline dividers only ── */}
+        <section id="faq" className="mm-container pb-24 md:pb-32">
+          <div className="mx-auto max-w-4xl">
             <p data-reveal className="mm-eyebrow">
               Common questions
             </p>
@@ -700,7 +716,7 @@ export default function Home() {
               data-reveal
               className="mm-display mt-4 text-[clamp(40px,6vw,75px)]"
             >
-              Asked, answered.
+              Asked, <span className="mm-serif text-[0.96em]">answered.</span>
             </h2>
 
             <div className="mt-12 border-t border-[var(--color-hairline)]">
@@ -735,7 +751,7 @@ export default function Home() {
                       style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
                     >
                       <div className="overflow-hidden">
-                        <p className="pb-6 pr-10 text-[15px] leading-[1.5] text-[var(--color-slate)]">
+                        <p className="pb-6 pr-10 text-[15px] leading-[1.6] text-[var(--color-slate)]">
                           {f.a}
                         </p>
                       </div>
@@ -747,8 +763,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── CTA — violet display, black pill ── */}
-        <section className="mm-container pb-24 text-center">
+        {/* ── CTA — violet display, ink block ── */}
+        <section className="mm-container pb-28 text-center">
           <div className="mm-barcode mx-auto mb-12 w-40" aria-hidden />
           <h2
             data-reveal
@@ -756,14 +772,14 @@ export default function Home() {
           >
             Run your first
             <br />
-            scan free.
+            <span className="mm-serif text-[0.96em]">scan free.</span>
           </h2>
           <div
             data-reveal
             className="mt-9 flex flex-wrap items-center justify-center gap-3"
           >
             <Link href="/auth/register" className="mm-cta">
-              Start scanning <ArrowRight className="h-4 w-4" />
+              Start scanning <PiIcon name="arrow-right" size={15} />
             </Link>
             <Link href="/book-demo" className="mm-cta mm-cta--light">
               Request a demo
@@ -773,18 +789,18 @@ export default function Home() {
       </main>
 
       {/* ── FOOTER — directly on the canvas, no border plate ── */}
-      <footer className="mm-container pb-12 pt-6">
+      <footer className="relative z-10 mm-container pb-12 pt-6">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-ink-black)]">
-                <span className="block h-3 w-3 rounded-full border-2 border-[var(--color-acid-lime)]" />
+              <span className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--color-ink-black)]">
+                <PiIcon name="shield-check" size={14} className="text-[var(--color-acid-lime)]" />
               </span>
               <span className="mm-display text-[26px] leading-none">
                 AuditAI
               </span>
             </div>
-            <p className="mt-4 max-w-[300px] text-[14px] leading-[1.5] text-[var(--color-slate)]">
+            <p className="mt-4 max-w-[300px] text-[14px] leading-[1.6] text-[var(--color-slate)]">
               AI-powered smart contract security. Trained agents, deterministic
               fixes and continuous monitoring for the on-chain economy.
             </p>
@@ -839,7 +855,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Floating right-edge pill widget */}
+      {/* Floating right-edge widget */}
       <div className="mm-widget" aria-hidden>
         <span className="mm-widget-dot" />
         <span className="mm-widget-dot" />
