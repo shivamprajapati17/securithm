@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   METAMASK-STYLE HOMEPAGE LAYER (mm-*) — v2
-   Warm peach workshop — giant violet display type, quiet controls.
-   v2: keeps the warm MetaMask canvas & pill CTAs, adds crisp structural
-   details from the brutalist pass — mono telemetry labels, registration
-   crosshairs, barcode strip, and hairline-ink panel borders.
-   Scoped to .mm-root so the Exante app theme is untouched.
+   NEUBRUTALIST HOMEPAGE LAYER (mm-*) — v3
+   Attitude of neubrutalism, Securithm's palette:
+   cream canvas, violet display type, lime/orchid/apricot/sky washes,
+   hazard-red accent. Thick 2px ink borders, hard 45° offset shadows,
+   flat fills, zero gradients, 8px corners, tactile press states.
+   Scoped to .mm-root — the Exante app theme is untouched.
    ═══════════════════════════════════════════════ */
 
 @layer components {
 
 .mm-root {
-  /* Colors */
+  /* Palette — unchanged */
   --color-peach-cream: #fff1eb;
   --color-ink-black: #0a0a0a;
   --color-pure-white: #ffffff;
@@ -23,13 +23,19 @@
   --color-midnight-plum: #190066;
   --color-lime-wash: #e5ffc3;
   --color-acid-lime: #baf24a;
-  --color-lilac-hash: #eac2ff;
   --color-lilac-haze: #eac2ff;
   --color-orchid-pop: #d075ff;
   --color-sky-wash: #cce7ff;
   --color-periwinkle: #89b0ff;
   --color-apricot: #ffa680;
   --color-burnt-sienna: #661800;
+
+  /* Neubrutalist structure tokens — off-black ink, hard shadows */
+  --nb-ink: #1a1611;
+  --nb-border: 2px solid var(--nb-ink);
+  --nb-shadow: 4px 4px 0 var(--nb-ink);
+  --nb-shadow-lg: 7px 7px 0 var(--nb-ink);
+  --nb-radius: 8px;
 
   --font-mm-display: "Bebas Neue", "Oswald", var(--font-display);
   --font-mm-sans: "Inter", var(--font-sans);
@@ -38,14 +44,13 @@
   --font-mm-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
 
   background: var(--color-peach-cream);
-  color: var(--color-ink-black);
+  color: var(--nb-ink);
   font-family: var(--font-mm-body);
   overflow-x: clip;
 }
 
 /* Editorial serif accent — italic display voice for hero emphasis.
-   .mm-root prefix raises specificity above .mm-display so the serif
-   family wins when nested inside a display heading. */
+   .mm-root prefix raises specificity above .mm-display. */
 .mm-root .mm-serif {
   font-family: var(--font-mm-serif);
   font-style: italic;
@@ -55,33 +60,27 @@
   color: var(--color-deep-violet);
 }
 
-/* Keystroke micro-UI — physical keys for CLI snippets */
+/* Keystroke micro-UI — physical keys, hard border */
 .mm-kbd {
   display: inline-block;
-  border: 1px solid var(--color-hairline);
+  border: 1.5px solid var(--nb-ink);
   border-radius: 4px;
-  background: var(--color-cool-mist);
+  background: var(--color-pure-white);
+  box-shadow: 2px 2px 0 var(--nb-ink);
   padding: 2px 8px;
   font-family: var(--font-mm-mono);
   font-size: 12.5px;
   color: var(--color-deep-violet);
 }
 
-/* Ultra-diffuse ambient light — fixed layer, never scrolls */
+/* Flat cream plate (kept for JSX compatibility; neubrutalism is
+   gradient-free so this is a no-op layer) */
 .mm-ambient {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background:
-    radial-gradient(600px 420px at 18% 12%, rgba(61, 6, 95, 0.05), transparent 70%),
-    radial-gradient(520px 380px at 85% 30%, rgba(255, 166, 128, 0.06), transparent 70%);
-  animation: mm-drift 24s ease-in-out infinite alternate;
-}
-@keyframes mm-drift {
-  to {
-    transform: translate3d(0, -24px, 0);
-  }
+  background: transparent;
 }
 
 .mm-container {
@@ -99,8 +98,7 @@
   letter-spacing: -0.006em;
 }
 
-/* Mono telemetry label — structural detail carried over from the
-   brutalist pass; reads as an industrial doc reference on cream. */
+/* Mono telemetry label */
 .mm-label {
   font-family: var(--font-mm-mono);
   font-size: 11px;
@@ -109,12 +107,11 @@
   text-transform: uppercase;
   color: var(--color-slate);
 }
-
 .mm-label--violet {
   color: var(--color-deep-violet);
 }
 
-/* Registration crosshairs at panel corners. */
+/* Registration crosshairs at panel corners */
 .mm-brackets {
   position: relative;
 }
@@ -125,89 +122,119 @@
   font-family: var(--font-mm-mono);
   font-size: 14px;
   line-height: 1;
-  color: var(--color-slate);
+  color: var(--nb-ink);
+  z-index: 1;
 }
 .mm-brackets::before {
   top: -7px;
-  left: -6px;
+  left: -8px;
 }
 .mm-brackets::after {
   bottom: -7px;
-  right: -6px;
+  right: -8px;
 }
 
-/* Barcode strip — decorative, mechanical. */
+/* Barcode strip — flat, mechanical */
 .mm-barcode {
   height: 16px;
   background: repeating-linear-gradient(
     90deg,
-    var(--color-deep-violet) 0 2px,
+    var(--nb-ink) 0 2px,
     transparent 2px 5px,
-    var(--color-deep-violet) 5px 6px,
+    var(--nb-ink) 5px 6px,
     transparent 6px 10px
   );
 }
 
 .mm-eyebrow {
-  font-family: var(--font-mm-body);
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 0.8;
-  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mm-mono);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-slate);
+  color: var(--nb-ink);
+  background: var(--color-lime-wash);
+  border: var(--nb-border);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  box-shadow: 3px 3px 0 var(--nb-ink);
 }
 
-/* CTA — solid ink block, crisp 6px corners, no shadow (minimalist spec) */
+/* CTA — accent fill, 2px ink border, hard offset shadow.
+   Hover: lift southeast shadow grows. Active: tactile press. */
 .mm-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-ink-black);
-  color: var(--color-pure-white);
-  border-radius: 6px;
+  background: var(--color-lime-wash);
+  color: var(--nb-ink);
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
   padding: 12px 22px;
   font-family: var(--font-mm-body);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
-  transition: background 160ms ease, transform 120ms ease, box-shadow 200ms ease;
+  box-shadow: var(--nb-shadow);
+  transition: transform 160ms ease-out, box-shadow 160ms ease-out,
+    background 160ms ease-out;
 }
 .mm-cta:hover {
-  background: #333333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
 }
 .mm-cta:active {
-  transform: scale(0.98);
-  box-shadow: none;
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--nb-ink);
 }
 .mm-cta--light {
   background: var(--color-pure-white);
-  color: var(--color-ink-black);
-  border: 1px solid var(--color-ink-black);
+  color: var(--nb-ink);
 }
 .mm-cta--light:hover {
   background: var(--color-cool-mist);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.mm-cta--violet {
+  background: var(--color-deep-violet);
+  color: var(--color-peach-cream);
+}
+.mm-cta--violet:hover {
+  background: var(--color-midnight-plum);
 }
 
-/* Accent wash feature cards — flat, crisp 12px radius, 1px hairline */
+/* Wash feature cards — flat fill, 2px ink border, hard shadow */
 .mm-card {
-  border: 1px solid var(--color-hairline);
-  border-radius: 12px;
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
   padding: 28px;
   position: relative;
+  box-shadow: var(--nb-shadow);
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+}
+.mm-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--nb-ink);
 }
 .mm-card--lime { background: var(--color-lime-wash); }
 .mm-card--lilac { background: var(--color-lilac-haze); }
 .mm-card--apricot { background: var(--color-apricot); }
 .mm-card--sky { background: var(--color-sky-wash); }
 
-/* Decorative fragments that break the card edge (signature) */
+/* Decorative fragments that break the card edge */
 .mm-burst {
   position: absolute;
   border-radius: 4px;
   background: var(--color-deep-violet);
+  border: 2px solid var(--nb-ink);
+}
+.mm-card .mm-burst {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mm-card:hover .mm-burst {
+  transform: rotate(8deg) scale(1.12);
 }
 
 .mm-badge {
@@ -215,36 +242,42 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
+  border: 1.5px solid var(--nb-ink);
   border-radius: 9999px;
+  background: var(--color-pure-white);
+  box-shadow: 2px 2px 0 var(--nb-ink);
   font-family: var(--font-mm-body);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
-  color: var(--color-ink-black);
+  color: var(--nb-ink);
 }
 
 /* Footer/subnav links sit directly on the canvas */
 .mm-link {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--color-slate);
+  font-weight: 600;
+  color: var(--nb-ink);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 .mm-link:hover {
   color: var(--color-deep-violet);
 }
 
-/* Floating right-edge widget — crisp rectangle (no pill) */
+/* Floating right-edge widget — hard-edged tab */
 .mm-widget {
   position: fixed;
   right: 0;
   top: 40%;
-  width: 10px;
-  height: 76px;
-  background: var(--color-ink-black);
-  border-radius: 6px 0 0 6px;
+  width: 14px;
+  height: 80px;
+  background: var(--nb-ink);
+  border: 2px solid var(--nb-ink);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -253,52 +286,53 @@
   z-index: 50;
 }
 .mm-widget-dot {
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
   border-radius: 9999px;
-  background: var(--color-pure-white);
+  background: var(--color-lime-wash);
 }
 
-/* ── Hero terminal: faux-OS window chrome, warm-dark surface ── */
+/* ── Hero terminal: faux-OS chrome, warm-dark surface, hard frame ── */
 .mm-terminal {
-  background: #1a1a1a;
-  border-radius: 12px;
+  background: #1a1611;
+  border: var(--nb-border);
+  border-radius: var(--nb-radius);
   padding: 0;
   font-family: var(--font-mm-mono);
   font-size: 12px;
   line-height: 1.65;
-  color: #e8e8e8;
+  color: #f3efe8;
   min-height: 340px;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow: var(--nb-shadow-lg);
 }
 .mm-terminal-body {
   padding: 20px;
 }
-.mm-terminal .tok-key { color: #d075ff; }
-.mm-terminal .tok-str { color: #baf24a; }
-.mm-terminal .tok-com { color: #6b6b6b; }
-.mm-terminal .tok-fn { color: #89b0ff; }
+.mm-terminal .tok-key { color: var(--color-orchid-pop); }
+.mm-terminal .tok-str { color: var(--color-acid-lime); }
+.mm-terminal .tok-com { color: #8a8378; }
+.mm-terminal .tok-fn { color: var(--color-periwinkle); }
 .mm-terminal-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 0;
   padding: 12px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--color-hairline);
+  background: var(--color-pure-white);
+  border-bottom: var(--nb-border);
 }
 .mm-terminal-head span {
   width: 10px;
   height: 10px;
   border-radius: 9999px;
+  border: 1.5px solid var(--nb-ink);
 }
 .mm-terminal-head .mm-terminal-title {
   margin-left: 8px;
   font-family: var(--font-mm-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: var(--color-slate);
+  color: var(--nb-ink);
 }
 
 @keyframes mm-blink {
@@ -310,31 +344,17 @@
   color: var(--color-acid-lime);
 }
 
-/* ── Motion layer — metamask-grade energy on the cream canvas ── */
+/* ── Motion — ease-out, transform/opacity only ── */
 
-/* Card lift — ultra-subtle shadow shift only (minimalist spec) */
-.mm-card {
-  transition: transform 200ms ease, box-shadow 200ms ease;
-}
-.mm-card:hover {
-  transform: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-.mm-card .mm-burst {
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.mm-card:hover .mm-burst {
-  transform: rotate(8deg) scale(1.12);
-}
-
-/* Agent marquee — seamless loop, duplicated track, pauses on hover */
+/* Agent marquee — seamless loop, pauses on hover */
 @keyframes mm-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
 .mm-marquee {
   overflow: hidden;
-  border-block: 1px solid var(--color-hairline);
+  border-block: var(--nb-border);
+  background: var(--color-lilac-haze);
   padding-block: 14px;
 }
 .mm-marquee__track {
@@ -357,11 +377,11 @@
   color: var(--color-deep-violet);
 }
 .mm-marquee__dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 9999px;
   background: var(--color-acid-lime);
-  border: 1px solid var(--color-deep-violet);
+  border: 1.5px solid var(--nb-ink);
 }
 
 /* Typed terminal — line entrance */
@@ -373,13 +393,23 @@
   animation: mm-line-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Entry reveal — fade + translate-Y over 420ms ease-out */
+@keyframes mm-enter {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+.mm-enter {
+  animation: mm-enter 420ms ease-out both;
+  animation-delay: calc(var(--stagger, 0) * 80ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mm-caret { animation: none; }
-  .mm-cta { transition: none; }
+  .mm-cta, .mm-card, .mm-card .mm-burst { transition: none; }
+  .mm-cta:hover, .mm-card:hover { transform: none; }
   .mm-marquee__track { animation: none; }
-  .mm-card, .mm-card .mm-burst { transition: none; }
   .mm-terminal .mm-line-in { animation: none; }
-  .mm-ambient { animation: none; }
+  .mm-enter { animation: none; }
 }
 
 }

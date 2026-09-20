@@ -239,11 +239,10 @@ export default function Home() {
 
       {/* ── NAV — flat transparent bar on the cream canvas ── */}
       <header className="sticky top-0 z-50">
-        <div className="mm-container flex h-[72px] items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--color-ink-black)]">
-              <PiIcon name="shield-check" size={14} className="text-[var(--color-acid-lime)]" />
-            </span>
+        <div className="mm-container flex h-[72px] items-center justify-between">            <Link href="/" className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-acid-lime)] shadow-[2px_2px_0_var(--nb-ink)]">
+                <PiIcon name="shield-check" size={15} className="text-[var(--color-deep-violet)]" />
+              </span>
             <span className="mm-display text-[26px] leading-none">
               AuditAI
             </span>
@@ -271,7 +270,7 @@ export default function Home() {
           </div>
 
           <button
-            className="flex h-11 w-11 items-center justify-center rounded-[6px] border border-[var(--color-ink-black)] p-2 md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-pure-white)] p-2 shadow-[2px_2px_0_var(--nb-ink)] md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Menu"
           >
@@ -315,12 +314,10 @@ export default function Home() {
         <section className="mm-container pb-20 pt-12 text-center md:pb-28 md:pt-20">
           <div
             data-reveal
-            className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-4 py-2"
+            className="mm-eyebrow"
           >
-            <span className="block h-2 w-2 rounded-full bg-[var(--color-acid-lime)]" />
-            <span className="mm-label mm-label--violet">
-              DOC. SEC-2026 / 11 TRAINED AGENTS / REV 2.6
-            </span>
+            <span className="block h-2.5 w-2.5 rounded-full border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-acid-lime)]" />
+            DOC. SEC-2026 / 11 TRAINED AGENTS / REV 2.6
           </div>
 
           <h1
@@ -425,7 +422,7 @@ export default function Home() {
               <div
                 key={l}
                 data-reveal
-                className="rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] p-6"
+                className="mm-card bg-[var(--color-pure-white)] p-6"
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div className="mm-display text-[40px] leading-none">{v}</div>
@@ -455,33 +452,33 @@ export default function Home() {
               {
                 k: "DETECT",
                 v: "11 agents trained on single vulnerability classes, cross-checked by static analysis. No black box — every finding names its agent and its line.",
-                wash: "bg-[var(--color-lime-wash)]",
+                wash: "mm-card--lime",
               },
               {
                 k: "REPAIR",
                 v: "Deterministic patches, not suggestions. Guards inserted, auth hardened, loops bounded — then handed back as a compilable file.",
-                wash: "bg-[var(--color-lilac-haze)]",
+                wash: "mm-card--lilac",
               },
               {
                 k: "WATCH",
                 v: "Deployed contracts monitored on six chains. Exploit attempts, governance anomalies and oracle drift alerted in under a second.",
-                wash: "bg-[var(--color-sky-wash)]",
+                wash: "mm-card--sky",
               },
               {
                 k: "PROVE",
                 v: "Proof-of-solvency attestations, signed reports and exportable audits — the paperwork your users and regulators ask for.",
-                wash: "bg-[var(--color-apricot)]",
+                wash: "mm-card--apricot",
               },
             ].map((b, i) => (
               <div
                 key={b.k}
                 data-reveal
-                className={`rounded-[12px] border border-[var(--color-hairline)] p-7 ${b.wash}`}
+                className={`mm-card ${b.wash} p-7`}
                 style={{ transitionDelay: `${i * 80}ms` }}
               >
                 <div className="flex items-baseline justify-between">
                   <span className="mm-display text-[26px] leading-none">{b.k}</span>
-                  <span className="mm-label">0{i + 1}</span>
+                  <span className="mm-badge">0{i + 1}</span>
                 </div>
                 <p className="mt-4 max-w-[52ch] text-[15px] leading-[1.6] text-[var(--color-ink-black)]">
                   {b.v}
@@ -584,7 +581,7 @@ export default function Home() {
                 {AGENTS.map(([id, name, sev, mode]) => (
                   <div
                     key={id}
-                    className="flex items-center justify-between rounded-[8px] bg-[var(--color-pure-white)] px-3 py-2.5"
+                    className="flex items-center justify-between rounded-[8px] border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-pure-white)] px-3 py-2.5 shadow-[2px_2px_0_var(--nb-ink)]"
                   >
                     <div className="min-w-0">
                       <div className="truncate text-[13px] font-semibold leading-tight">
@@ -793,8 +790,8 @@ export default function Home() {
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[var(--color-ink-black)]">
-                <PiIcon name="shield-check" size={14} className="text-[var(--color-acid-lime)]" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-acid-lime)] shadow-[2px_2px_0_var(--nb-ink)]">
+                <PiIcon name="shield-check" size={15} className="text-[var(--color-deep-violet)]" />
               </span>
               <span className="mm-display text-[26px] leading-none">
                 AuditAI

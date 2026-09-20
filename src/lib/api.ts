@@ -14,7 +14,7 @@ import {
   fixedSourceForFinding,
   buildUnifiedPatch,
   buildFixedSource,
-} from "securithm/engine";
+} from "@/lib/engine";
 
 // Kept for backward-compat (API key auth / SDK usage)
 let authToken: string | null = null;

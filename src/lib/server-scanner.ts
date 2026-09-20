@@ -17,7 +17,7 @@ import {
   buildUnifiedPatch,
   extractContractName,
   type AgentFinding,
-} from "securithm/engine";
+} from "@/lib/engine";
 
 export { analyzeAndFix, buildFixedSource, runAgents, fixedSourceForFinding, buildUnifiedPatch, extractContractName };
 export type { AgentFinding };

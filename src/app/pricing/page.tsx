@@ -235,7 +235,7 @@ function PricingContent() {
 
       <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
         {fromCli && !apiKey && (
-          <div className="mb-8 flex items-start gap-3 rounded-[12px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] p-5">
+          <div className="mb-8 flex items-start gap-3 rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-pure-white)] p-5 shadow-[4px_4px_0_var(--nb-ink)]">
             <PiIcon name="terminal-window" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-deep-violet)]" />
             <div>
               <div className="mm-label mm-label--violet">CLI SETUP — GENERATE AN API KEY</div>
@@ -252,7 +252,7 @@ function PricingContent() {
         )}
 
         {isLimitReached && (
-          <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-apricot)] p-5">
+          <div className="mb-8 flex items-start gap-3 rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-apricot)] p-5 shadow-[4px_4px_0_var(--nb-ink)]">
             <PiIcon name="warning-circle" className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-burnt-sienna)]" />
             <div>
               <div className="mm-label mm-label--violet">FREE SCAN LIMIT REACHED — 5/5 USED</div>
@@ -266,18 +266,18 @@ function PricingContent() {
         )}
 
         {phase === "done" && apiKey && (
-          <div className="mb-8 rounded-[12px] bg-[var(--color-lime-wash)] p-5">
+          <div className="mb-8 rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-lime-wash)] p-5 shadow-[4px_4px_0_var(--nb-ink)]">
             <div className="flex items-center gap-2 text-[15px] font-bold text-[var(--color-ink-black)]">
               <PiIcon name="sparkle" size={18} className="text-[var(--color-deep-violet)]" />
               Plan active{activePlanId ? ` (${activePlanId.toUpperCase()})` : ""}. Your API key is ready:
             </div>
             <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row">
-              <code className="flex-1 select-all break-all rounded-[8px] border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-3 py-2 font-mono text-[13px] text-[var(--color-ink-black)]">
+              <code className="flex-1 select-all break-all rounded-[6px] border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-pure-white)] px-3 py-2 font-mono text-[13px] text-[var(--color-ink-black)] shadow-[2px_2px_0_var(--nb-ink)]">
                 {apiKey}
               </code>
               <button
                 onClick={copyKey}
-                className="mm-cta !rounded-[9999px] !px-5 !py-2.5 !text-[13px]"
+                className="mm-cta !rounded-[6px] !px-5 !py-2.5 !text-[13px]"
               >
                 <PiIcon name="copy" size={14} />
                 {copied ? "Copied!" : "Copy"}
@@ -305,7 +305,7 @@ function PricingContent() {
         )}
 
         {error && (
-          <div className="mb-8 flex items-start gap-3 rounded-[12px] bg-[var(--color-lilac-haze)] p-5 text-[14px] text-[var(--color-ink-black)]">
+          <div className="mb-8 flex items-start gap-3 rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-lilac-haze)] p-5 text-[14px] text-[var(--color-ink-black)] shadow-[4px_4px_0_var(--nb-ink)]">
             <PiIcon name="warning-circle" size={16} className="mt-0.5 shrink-0 text-[var(--color-deep-violet)]" />
             <span>
               {error}{" "}
@@ -320,7 +320,7 @@ function PricingContent() {
 
         {/* Header */}
         <div className="mx-auto mb-12 max-w-2xl text-center">
-          <div className="mm-brackets mx-auto mb-6 inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] bg-[var(--color-pure-white)] px-4 py-2">
+          <div className="mm-brackets mx-auto mb-6 inline-flex items-center gap-1.5 rounded-[9999px] border-2 border-[var(--nb-ink)] bg-[var(--color-lime-wash)] px-4 py-2 shadow-[3px_3px_0_var(--nb-ink)]">
             <PiIcon name="lightning" size={14} className="text-[var(--color-deep-violet)]" />
             <span className="mm-label mm-label--violet">SECURITHM PRICING & API ACCESS</span>
           </div>
@@ -340,12 +340,12 @@ function PricingContent() {
           </p>
 
           {/* Billing Cycle Toggle */}
-          <div className="mt-7 inline-flex items-center rounded-full border border-[var(--color-ink-black)] bg-[var(--color-pure-white)] p-1">
+          <div className="mt-7 inline-flex items-center rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-pure-white)] p-1 shadow-[3px_3px_0_var(--nb-ink)]">
             {(["monthly", "yearly"] as const).map((cycle) => (
               <button
                 key={cycle}
                 onClick={() => setBillingCycle(cycle)}
-                className={`rounded-full px-4 py-1.5 text-[13px] font-bold transition-colors ${
+                className={`rounded-[5px] px-4 py-1.5 text-[13px] font-bold transition-colors ${
                   billingCycle === cycle
                     ? "bg-[var(--color-ink-black)] text-[var(--color-pure-white)]"
                     : "text-[var(--color-slate)] hover:text-[var(--color-ink-black)]"
@@ -362,10 +362,10 @@ function PricingContent() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`relative flex flex-col justify-between rounded-[12px] border p-6 transition-transform duration-200 hover:-translate-y-1 ${
+              className={`relative flex flex-col justify-between rounded-[8px] border-2 border-[var(--nb-ink)] p-6 shadow-[4px_4px_0_var(--nb-ink)] transition-transform duration-200 hover:-translate-y-1 ${
                 plan.popular
-                  ? "border-[var(--color-ink-black)] bg-[var(--color-lime-wash)]"
-                  : "border-[var(--color-hairline)] bg-[var(--color-pure-white)]"
+                  ? "bg-[var(--color-lime-wash)]"
+                  : "bg-[var(--color-pure-white)]"
               }`}
             >
               {plan.popular && (
@@ -375,9 +375,9 @@ function PricingContent() {
                 <div className="mb-3 flex items-center justify-between">
                   <span className="mm-label">{plan.name.toUpperCase()}</span>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-[11px] font-bold leading-none ${
+                    className={`rounded-full border-[1.5px] border-[var(--nb-ink)] px-2.5 py-1 text-[11px] font-bold leading-none shadow-[2px_2px_0_var(--nb-ink)] ${
                       plan.popular
-                        ? "bg-[var(--color-ink-black)] text-[var(--color-pure-white)]"
+                        ? "bg-[var(--color-orchid-pop)] text-[var(--nb-ink)]"
                         : "bg-[var(--color-cool-mist)] text-[var(--color-slate)]"
                     }`}
                   >
@@ -424,7 +424,7 @@ function PricingContent() {
         </div>
 
         {/* API Developer Section */}
-        <div className="rounded-[12px] bg-[var(--color-pure-white)] p-6 md:p-8">
+        <div className="rounded-[8px] border-2 border-[var(--nb-ink)] bg-[var(--color-pure-white)] p-6 shadow-[4px_4px_0_var(--nb-ink)] md:p-8">
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <div className="mm-label mm-label--violet mb-2 flex items-center gap-2">
@@ -450,11 +450,11 @@ function PricingContent() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 gap-4 border-t border-[var(--color-hairline)] pt-6 md:grid-cols-2">
-            <div className="rounded-[8px] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px]">
+            <div className="rounded-[6px] border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px] shadow-[2px_2px_0_var(--nb-ink)]">
               <div className="mb-1 text-[var(--color-slate)]">// Install open-source SDK</div>
               <div className="font-bold text-[var(--color-deep-violet)]">npm install securithm</div>
             </div>
-            <div className="rounded-[8px] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px]">
+            <div className="rounded-[6px] border-[1.5px] border-[var(--nb-ink)] bg-[var(--color-cool-mist)] p-4 font-mono text-[13px] shadow-[2px_2px_0_var(--nb-ink)]">
               <div className="mb-1 text-[var(--color-slate)]">// CLI instant audit</div>
               <div className="font-bold text-[var(--color-deep-violet)]">npx securithm scan ./contracts/Vault.sol</div>
             </div>
