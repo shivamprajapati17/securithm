@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { createClient } from "@supabase/supabase-js";
 import {
   analyzeContract,
   saveScan,
@@ -9,27 +8,9 @@ import {
   type Scan,
   type Finding,
 } from "@/lib/server-scanner";
+import { getUserFromRequest } from "@/lib/auth-server";
 
 const FREE_ANON_LIMIT = 5;
-
-/** Resolve the Supabase user from the request's bearer token (optional). */
-async function getUserFromRequest(request: NextRequest): Promise<{ id: string } | null> {
-  const auth = request.headers.get("authorization");
-  if (!auth?.startsWith("Bearer ")) return null;
-  const token = auth.slice(7);
-  // API keys (sk_live_…) are handled separately — not Supabase JWTs.
-  if (token.startsWith("sk_live_")) return null;
-  try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !anonKey) return null;
-    const sb = createClient(url, anonKey, { auth: { persistSession: false } });
-    const { data } = await sb.auth.getUser(token);
-    return data?.user ? { id: data.user.id } : null;
-  } catch {
-    return null;
-  }
-}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
