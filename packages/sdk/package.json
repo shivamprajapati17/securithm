@@ -1,6 +1,6 @@
 {
   "name": "securithm",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Securithm SDK + CLI — Ship secure contracts. Scan & auto-fix Solidity from the terminal (securithm scan Contract.sol --fix), or integrate via the typed client.",
   "keywords": [
     "securithm",
