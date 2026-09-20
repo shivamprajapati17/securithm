@@ -449,7 +449,42 @@ function invitesMap(): Map<string, TeamInvite> {
   return globalScans.__securithm_invites;
 }
 
-export function listTeamInvites(): TeamInvite[] {
+async function sbUpsertInvites(invites: TeamInvite[]): Promise<void> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return;
+  try {
+    await (sb.from("team_invites") as { upsert: (r: unknown) => PromiseLike<{ error: unknown }> }).upsert(invites);
+  } catch {
+    /* ignore */
+  }
+}
+
+async function sbSelectInvites(): Promise<TeamInvite[] | null> {
+  const sb = getSupabaseAdmin();
+  if (!sb) return null;
+  try {
+    const { data, error } = (await (sb.from("team_invites") as unknown as {
+      select: (s: string) => { order: (c: string, o: object) => PromiseLike<{ data: unknown[] | null; error: unknown }> };
+    }).select("*").order("created_at", { ascending: false })) as unknown as {
+      data: unknown[] | null; error: unknown;
+    };
+    if (error) throw error;
+    return (data ?? []) as unknown as TeamInvite[];
+  } catch {
+    return null;
+  }
+}
+
+async function sbUpdateInvite(invite: TeamInvite): Promise<void> {
+  await sbUpsertInvites([invite]);
+}
+
+export async function listTeamInvites(): Promise<TeamInvite[]> {
+  const rows = await sbSelectInvites();
+  if (rows && rows.length) {
+    for (const row of rows) invitesMap().set(row.id, row);
+    return rows;
+  }
   return Array.from(invitesMap().values()).sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
@@ -468,12 +503,16 @@ export function createTeamInvite(email: string, role: string, invitedBy: string 
     created_at: new Date().toISOString(),
   };
   invitesMap().set(invite.id, invite);
+  void sbUpsertInvites([invite]);
   return invite;
 }
 
-export function setInviteStatus(id: string, status: "accepted" | "declined"): TeamInvite | null {
+export async function setInviteStatus(id: string, status: "accepted" | "declined"): Promise<TeamInvite | null> {
+  // Pull from Supabase in case this instance never saw the invite.
+  await listTeamInvites();
   const invite = invitesMap().get(id);
   if (!invite) return null;
   invite.status = status;
+  void sbUpdateInvite(invite);
   return invite;
 }

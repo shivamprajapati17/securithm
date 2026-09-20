@@ -3,7 +3,7 @@ import { createTeamInvite, listTeamInvites } from "@/lib/server-scanner";
 import { getUserFromRequest } from "@/lib/auth-server";
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json(listTeamInvites());
+  return NextResponse.json(await listTeamInvites());
 }
 
 export async function POST(request: NextRequest) {

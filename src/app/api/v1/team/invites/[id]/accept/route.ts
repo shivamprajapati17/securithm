@@ -6,7 +6,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const invite = setInviteStatus(id, "accepted");
+  const invite = await setInviteStatus(id, "accepted");
   if (!invite) {
     return NextResponse.json({ detail: "Invite not found" }, { status: 404 });
   }
