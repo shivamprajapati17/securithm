@@ -85,26 +85,110 @@ const FAQS = [
   },
 ];
 
-const TERMINAL_LINES = [
-  { cls: "tok-com", text: "$ auditai scan VulnerableVault.sol" },
-  { cls: "", text: "" },
+const SCAN_CMD = "securithm scan VulnerableVault.sol";
+
+const OUTPUT_LINES: Array<{ cls: string; text: string }> = [
   { cls: "tok-key", text: "▸ dispatching 11 agents…" },
   { cls: "tok-com", text: "  SENTINEL-01 ReentrancyAgent … CRITICAL line 12" },
   { cls: "tok-com", text: "  SENTINEL-02 AuthAgent      … HIGH     line 31" },
   { cls: "tok-com", text: "  SENTINEL-06 GasAgent       … LOW      line 48" },
-  { cls: "", text: "" },
   { cls: "tok-key", text: "▸ applying safe fixes…" },
   { cls: "tok-str", text: "  ✔ nonReentrant() guard inserted" },
   { cls: "tok-str", text: "  ✔ tx.origin → msg.sender" },
   { cls: "tok-str", text: "  ✔ loop bounded by MAX_BATCH" },
-  { cls: "", text: "" },
   { cls: "tok-fn", text: "  grade: C → A   ready: VulnerableVault_fixed.sol" },
 ];
+
+const MARQUEE_ITEMS = [
+  "ReentrancyAgent",
+  "AuthAgent",
+  "LifecycleAgent",
+  "ContextAgent",
+  "ReturnValueAgent",
+  "GasAgent",
+  "TemporalAgent",
+  "EntropyAgent",
+  "PrivilegeAgent",
+  "ArithAgent",
+  "GovernanceAgent",
+];
+
+/** Looping typewriter: types the scan command, streams agent output, restarts. */
+function useTerminalLoop(): { reduced: boolean; chars: number; lines: number } {
+  const [reduced, setReduced] = useState(false);
+  const [chars, setChars] = useState(0);
+  const [lines, setLines] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setReduced(true);
+      return;
+    }
+    let t: ReturnType<typeof setTimeout> | undefined;
+    if (chars < SCAN_CMD.length) {
+      t = setTimeout(() => setChars((c) => c + 1), 26 + Math.random() * 46);
+    } else if (lines < OUTPUT_LINES.length) {
+      t = setTimeout(() => setLines((l) => l + 1), lines === 0 ? 320 : 170 + Math.random() * 90);
+    } else {
+      t = setTimeout(() => {
+        setChars(0);
+        setLines(0);
+      }, 3600);
+    }
+    return () => clearTimeout(t);
+  }, [chars, lines]);
+
+  return { reduced, chars, lines };
+}
+
+/** Count up to `target` once `start` flips true. Respects reduced motion. */
+function useCountUp(target: number, start: boolean): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(target);
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - t0) / 950, 1);
+      const eased = 1 - Math.pow(1 - p, 4);
+      setValue(Math.round(eased * target));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [start, target]);
+  return value;
+}
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const revealRef = useRef<HTMLDivElement>(null!);
+  const terminal = useTerminalLoop();
+  const [metricsSeen, setMetricsSeen] = useState(false);
+  const metricsRef = useRef<HTMLDivElement>(null!);
+  const agentsCount = useCountUp(11, metricsSeen);
+  const chainsCount = useCountUp(6, metricsSeen);
+
+  useEffect(() => {
+    const el = metricsRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setMetricsSeen(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     const els = revealRef.current?.querySelectorAll("[data-reveal]");
@@ -260,30 +344,57 @@ export default function Home() {
                 <span style={{ background: "#e5a13d" }} />
                 <span style={{ background: "#baf24a" }} />
                 <span className="ml-2 text-[11px] text-[#6b6b6b]">
-                  auditai — agent run
+                  securithm — agent run
                 </span>
               </div>
-              {TERMINAL_LINES.map((l, i) => (
-                <div key={i} className={l.cls}>
+              <div>
+                ${" "}
+                {terminal.reduced
+                  ? SCAN_CMD
+                  : SCAN_CMD.slice(0, terminal.chars)}
+                <span className="mm-caret">▌</span>
+              </div>
+              {(terminal.reduced
+                ? OUTPUT_LINES
+                : OUTPUT_LINES.slice(0, terminal.lines)
+              ).map((l, i) => (
+                <div key={i} className={`${l.cls} mm-line-in`}>
                   {l.text || "\u00A0"}
                 </div>
               ))}
-              <div>
-                $ <span className="mm-caret">▌</span>
-              </div>
             </div>
           </div>
         </section>
 
+        {/* ── AGENT MARQUEE — the roster on parade ── */}
+        <div className="mm-marquee" aria-label="Security agents">
+          <div className="mm-marquee__track">
+            {[0, 1].map((copy) => (
+              <div
+                key={copy}
+                className="flex shrink-0 items-center gap-10"
+                aria-hidden={copy === 1}
+              >
+                {MARQUEE_ITEMS.map((name) => (
+                  <span key={`${copy}-${name}`} className="mm-marquee__item">
+                    <span className="mm-marquee__dot" />
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* ── PROOF STRIP — quiet metrics on the canvas ── */}
-        <section className="mm-container">
+        <section className="mm-container" ref={metricsRef}>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[
-              ["0.4s", "TO VERDICT"],
-              ["11", "TRAINED AGENTS"],
-              ["6", "CHAINS WATCHED"],
-              ["24/7", "MONITORING"],
-            ].map(([v, l], i) => (
+              { v: "0.4s", l: "TO VERDICT" },
+              { v: metricsSeen ? String(agentsCount) : "0", l: "TRAINED AGENTS" },
+              { v: metricsSeen ? String(chainsCount) : "0", l: "CHAINS WATCHED" },
+              { v: "24/7", l: "MONITORING" },
+            ].map(({ v, l }, i) => (
               <div
                 key={l}
                 data-reveal

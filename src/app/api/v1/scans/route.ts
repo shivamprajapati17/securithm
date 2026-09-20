@@ -9,8 +9,9 @@ import {
   type Finding,
 } from "@/lib/server-scanner";
 import { getUserFromRequest } from "@/lib/auth-server";
+import { getUserPlan, FREE_SCAN_LIMIT } from "@/lib/payments";
 
-const FREE_ANON_LIMIT = 5;
+const FREE_ANON_LIMIT = FREE_SCAN_LIMIT;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -59,7 +60,26 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
-    } else if (!user) {
+    } else if (user) {
+      // Logged-in free tier — 5 scans before upgrading to Pro.
+      const plan = await getUserPlan(user.id);
+      if (!plan.unlimited) {
+        const recent = await listScansForUser(user.id);
+        const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+        const used = recent.filter((s) => new Date(s.created_at).getTime() > dayAgo).length;
+        if (used >= FREE_SCAN_LIMIT) {
+          return NextResponse.json(
+            {
+              detail: `Free plan limit reached (${FREE_SCAN_LIMIT} scans). Upgrade to Pro for unlimited scanning — activation also generates an API key for the CLI.`,
+              code: "free_limit_reached",
+              limit: FREE_SCAN_LIMIT,
+              upgrade_url: "/pricing?paywall=limit_reached",
+            },
+            { status: 402 }
+          );
+        }
+      }
+    } else {
       // Anonymous scan — count per IP against the free tier.
       const ip =
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||

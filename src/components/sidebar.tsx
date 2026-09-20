@@ -15,7 +15,6 @@ import {
   Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CiStatusIndicator } from "@/components/ci-status";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notification-context";
@@ -206,9 +205,6 @@ export function Sidebar() {
 
       {/* Notifications */}
       {!collapsed && <NotificationPanel />}
-
-      {/* CI Status */}
-      <CiStatusIndicator collapsed={collapsed} />
 
       {/* User area */}
       <div className="p-2 border-t border-[var(--color-term-border)] shrink-0">

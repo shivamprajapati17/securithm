@@ -40,6 +40,7 @@ def _selectors() -> tuple[str, str]:
         _keccak(_GET_SIG)[:4].hex(),
     )
 
+
 _FALLBACK_GAS = 300_000
 
 # chain id -> public explorer base URL (used for tx deep links)

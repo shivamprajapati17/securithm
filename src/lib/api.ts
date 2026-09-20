@@ -140,7 +140,15 @@ export async function request<T>(
     const error = await response.json().catch(() => ({
       detail: `HTTP ${response.status}`,
     }));
-    throw new Error(error.detail || `Request failed: ${response.status}`);
+    const err = new Error(error.detail || `Request failed: ${response.status}`) as Error & {
+      status?: number;
+      code?: string;
+      upgrade_url?: string;
+    };
+    err.status = response.status;
+    err.code = error.code;
+    err.upgrade_url = error.upgrade_url;
+    throw err;
   }
 
   // Handle 204 No Content
@@ -1014,4 +1022,108 @@ export async function getAttestationOnChain(
   return request<OnChainStatus>(
     `/api/v1/solvency/attestation/${attestationId}/onchain`
   );
+}
+
+/* ============ Payments (Razorpay) ============ */
+
+export interface PaymentOrder {
+  order_id: string;
+  amount: number;
+  currency: string;
+  plan_id: string;
+  plan_name: string;
+  billing_cycle: string;
+  /** False when amount === 0 — the plan was activated immediately. */
+  payment_required: boolean;
+  already_active?: boolean;
+  key_id?: string | null;
+  checkout?: { order_id: string; amount: number; currency: string } | null;
+}
+
+export async function createPaymentOrder(body: {
+  plan_id: string;
+  billing_cycle?: "monthly" | "yearly";
+}): Promise<PaymentOrder> {
+  return request<PaymentOrder>("/api/v1/payments/create-order", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function verifyPayment(body: {
+  order_id: string;
+  payment_id: string;
+  signature: string;
+  plan_id?: string;
+}): Promise<{
+  success: boolean;
+  plan_id: string;
+  api_key?: { full_key: string; key_prefix: string; name: string; validated: boolean };
+}> {
+  return request("/api/v1/payments/verify", {
+    method: "POST",
+    body: JSON.stringify({
+      razorpay_order_id: body.order_id,
+      razorpay_payment_id: body.payment_id,
+      razorpay_signature: body.signature,
+      plan_id: body.plan_id,
+      // ₹0 launch pricing carries a sentinel payment id — no real payment
+      // happened, so the server skips signature verification.
+      free: body.payment_id === "free_activation",
+    }),
+  });
+}
+
+export async function getPaymentPlan(): Promise<{
+  plan_id: string;
+  plan_name: string;
+  status: string;
+  scan_limit: number | null;
+  scan_count: number;
+  amount_due: number;
+  currency: string;
+}> {
+  return request("/api/v1/payments/plan");
+}
+
+/* ============ API keys ============ */
+
+export async function generateApiKey(body: {
+  name: string;
+  scopes?: string[];
+}): Promise<{ id: string; full_key: string; name: string }> {
+  return request("/api/v1/api-keys", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export async function listApiKeys(): Promise<
+  Array<{
+    id: string;
+    name: string;
+    key_prefix: string;
+    created_at: string;
+    last_used_at: string | null;
+    usage_count: number;
+    is_active: boolean;
+  }>
+> {
+  return request("/api/v1/auth/api-keys");
+}
+
+export async function getApiKeyUsage(): Promise<{
+  total_keys: number;
+  active_keys: number;
+  total_requests: number;
+  keys: Array<{
+    id: string;
+    name: string;
+    key_prefix: string;
+    usage_count: number;
+    last_used_at: string | null;
+    is_active: boolean;
+  }>;
+}> {
+  return request("/api/v1/auth/api-keys/usage");
 }

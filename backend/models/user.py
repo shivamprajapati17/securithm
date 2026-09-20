@@ -45,7 +45,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Uuid(), primary_key=True, default=uuid.uuid4)
-    auth_id = Column(String(255), unique=True, nullable=True, index=True)  # Supabase auth user ID
+    auth_id = Column(
+        String(255), unique=True, nullable=True, index=True
+    )  # Supabase auth user ID
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=True)
     display_name = Column(String(255), nullable=True)

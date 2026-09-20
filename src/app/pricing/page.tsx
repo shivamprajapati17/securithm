@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
@@ -12,64 +12,196 @@ import {
   Terminal,
   Sparkles,
   AlertCircle,
+  Copy,
+  KeyRound,
 } from "lucide-react";
+import {
+  createPaymentOrder,
+  verifyPayment,
+  generateApiKey,
+  getPaymentPlan,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (window.Razorpay) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
+type Phase = "idle" | "working" | "checkout" | "done";
+
 function PricingContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const isLimitReached = searchParams.get("paywall") === "limit_reached";
+  const fromCli = searchParams.get("cli") === "1";
+  const presetPlan = searchParams.get("plan");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [purchasing, setPurchasing] = useState(false);
-  const [purchaseSuccess, setPurchaseSuccess] = useState<string | null>(null);
-
-  const [freeScansUsed, setFreeScansUsed] = useState(0);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [scansUsed, setScansUsed] = useState<number | null>(null);
+  const [scanLimit, setScanLimit] = useState<number | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const used = parseInt(localStorage.getItem("securithm_free_scans_used") || "0", 10);
-      setFreeScansUsed(used);
+    setLoggedIn(!!localStorage.getItem("securithm_token"));
+    const planId = localStorage.getItem("securithm_plan_id");
+    if (planId) setActivePlanId(planId);
+    if (localStorage.getItem("securithm_token")) {
+      getPaymentPlan()
+        .then((plan) => {
+          setScansUsed(plan.scan_count);
+          setScanLimit(plan.scan_limit);
+          if (plan.plan_id) setActivePlanId(plan.plan_id);
+        })
+        .catch(() => undefined);
     }
   }, []);
 
-  const handlePurchase = (planName: string) => {
-    setPurchasing(true);
-    setTimeout(() => {
-      setPurchasing(false);
-      setPurchaseSuccess(planName);
-      if (typeof window !== "undefined") {
-        // Reset or boost scan limits upon upgrade
-        localStorage.setItem("securithm_free_scans_used", "0");
-      }
-    }, 1200);
+  const copyKey = async () => {
+    if (!apiKey) return;
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
   };
 
-  const plans = [
+  /** Create the order and either auto-activate (₹0) or open Razorpay Checkout. */
+  const purchase = useCallback(
+    async (planId: "pro" | "enterprise" | "free") => {
+      setError(null);
+      if (!localStorage.getItem("securithm_token")) {
+        router.push(`/login?redirect=${encodeURIComponent(`/pricing?plan=${planId}`)}`);
+        return;
+      }
+      setPhase("working");
+      try {
+        const order = await createPaymentOrder({ plan_id: planId, billing_cycle: billingCycle });
+        if (order.already_active) {
+          setActivePlanId(order.plan_id);
+        } else if (order.payment_required && order.checkout) {
+          const loaded = await loadRazorpayScript();
+          if (!loaded || !order.key_id) {
+            throw new Error("Payment gateway unavailable — try again shortly.");
+          }
+          setPhase("checkout");
+          await new Promise<void>((resolve, reject) => {
+            const rzp = new window.Razorpay!({
+              key: order.key_id,
+              order_id: order.order_id,
+              name: "Securithm",
+              description: `${planId.toUpperCase()} plan (${billingCycle})`,
+              theme: { color: "#00ff88" },
+              handler: (response: {
+                razorpay_payment_id: string;
+                razorpay_order_id: string;
+                razorpay_signature: string;
+              }) => {
+                verifyPayment({
+                  order_id: response.razorpay_order_id,
+                  payment_id: response.razorpay_payment_id,
+                  signature: response.razorpay_signature,
+                })
+                  .then(() => resolve())
+                  .catch(reject);
+              },
+              modal: { ondismiss: () => reject(new Error("Payment cancelled.")) },
+            });
+            rzp.open();
+          });
+          setActivePlanId(planId);
+        } else {
+          // amount === 0: the server activated the plan immediately.
+          setActivePlanId(order.plan_id);
+        }
+        // Free path (₹0 launch pricing): the server activated the plan; the
+        // verify endpoint generates the API key.
+        if (!apiKey) {
+          const verified = await verifyPayment({
+            order_id: order.order_id,
+            payment_id: "free_activation",
+            signature: "free",
+            plan_id: planId,
+          });
+          setApiKey(verified.api_key?.full_key ?? null);
+        } else {
+          const key = await generateApiKey({ name: `${planId} plan key` });
+          setApiKey(key.full_key);
+        }
+        setPhase("done");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Purchase failed.");
+        setPhase("idle");
+      }
+    },
+    [billingCycle, router]
+  );
+
+  // Auto-start a preset plan flow (?plan=pro after login redirect).
+  // Deps intentionally narrow: re-running on every `purchase` identity change
+  // would re-trigger checkout after each phase transition.
+  useEffect(() => {
+    if (presetPlan && (presetPlan === "pro" || presetPlan === "enterprise") && loggedIn && phase === "idle" && !apiKey) {
+      void purchase(presetPlan);
+    }
+  }, [presetPlan, loggedIn]);
+
+  const plans: Array<{
+    id: "free" | "pro" | "enterprise";
+    name: string;
+    tagline: string;
+    price: string;
+    period: string;
+    badge: string;
+    popular: boolean;
+    features: string[];
+    cta: string;
+  }> = [
     {
+      id: "free",
       name: "Developer Free",
       tagline: "For learning & testing individual contracts",
       price: "$0",
       period: "forever",
-      badge: "Current Tier",
-      badgeVariant: "secondary" as const,
-      features: [
-        "2 Free Smart Contract Scans",
-        "Deterministic vulnerability detection",
-        "High / Critical finding flags",
-        "Community Discord support",
-        "Public knowledge base access",
-      ],
-      cta: freeScansUsed >= 2 ? "Limit Reached (2/2 Used)" : `Active (${freeScansUsed}/2 Used)`,
-      disabled: true,
+      badge: scansUsed != null && scanLimit != null && scansUsed >= scanLimit ? "Limit Reached" : "Current Tier",
       popular: false,
+      features: [
+        "5 Free Smart Contract Scans",
+        "11 trained security agents",
+        "Auto-fix patches & fixed contracts",
+        "CLI access (npx securithm)",
+        "Community support",
+      ],
+      cta: activePlanId === "free" ? "Generate API Key" : "Generate API Key",
     },
     {
+      id: "pro",
       name: "Securithm Pro",
       tagline: "For professional Web3 developers and auditors",
       price: billingCycle === "monthly" ? "$49" : "$39",
       period: "/ month",
       badge: "Most Popular",
-      badgeVariant: "default" as const,
+      popular: true,
       features: [
         "Unlimited smart contract scans",
         "Deep symbolic execution & AST analysis",
@@ -78,17 +210,16 @@ function PricingContent() {
         "GitHub Actions & CI/CD pipeline gating",
         "Standard API access (500 req/hour)",
       ],
-      cta: "Upgrade to Pro",
-      disabled: false,
-      popular: true,
+      cta: activePlanId === "pro" ? "Manage Plan" : "Upgrade to Pro",
     },
     {
+      id: "enterprise",
       name: "API & Enterprise",
       tagline: "For protocols, launchpads, and high-frequency audits",
       price: billingCycle === "monthly" ? "$249" : "$199",
       period: "/ month",
       badge: "High Throughput",
-      badgeVariant: "outline" as const,
+      popular: false,
       features: [
         "Everything in Pro tier",
         "Dedicated API key with 10,000 req/hour",
@@ -98,44 +229,93 @@ function PricingContent() {
         "Multi-user RBAC & team workspaces",
         "99.9% uptime SLA & priority engineer support",
       ],
-      cta: "Get Enterprise API Key",
-      disabled: false,
-      popular: false,
+      cta: activePlanId === "enterprise" ? "Manage Plan" : "Get Enterprise API Key",
     },
   ];
+
+  const busy = phase === "working" || phase === "checkout";
 
   return (
     <div className="min-h-screen bg-[var(--color-term-bg)] text-[var(--color-term-text)] flex flex-col">
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-12 max-w-6xl">
-        {isLimitReached && (
-          <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] flex items-start gap-3 rounded-none">
-            <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+        {fromCli && !apiKey && (
+          <div className="mb-8 p-4 border border-[var(--color-term-accent)] bg-[var(--color-term-accent)]/10 text-[var(--color-term-accent)] flex items-start gap-3 rounded-none">
+            <Terminal className="w-5 h-5 mt-0.5 shrink-0" />
             <div>
               <div className="font-mono text-sm font-semibold tracking-wider">
-                FREE SCAN LIMIT REACHED (2/2 SCANS USED)
+                CLI SETUP: GENERATE AN API KEY
               </div>
               <p className="text-xs text-[var(--color-term-text-muted)] mt-1 font-mono">
-                You have reached your 2 free contract scans. Purchase an API plan or Pro subscription below to continue auditing smart contracts without restrictions.
+                Your CLI has used its 5 free scans. Pick a plan below, then generate an API key and
+                run <span className="text-[var(--color-term-accent)]">securithm login</span> to paste
+                it. After that, unlimited scans from the terminal.
               </p>
             </div>
           </div>
         )}
 
-        {purchaseSuccess && (
-          <div className="mb-8 p-4 border border-[var(--color-term-success)] bg-[var(--color-term-success)]/10 text-[var(--color-term-success)] flex items-center justify-between rounded-none">
-            <div className="flex items-center gap-2">
+        {isLimitReached && (
+          <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] flex items-start gap-3 rounded-none">
+            <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
+            <div>
+              <div className="font-mono text-sm font-semibold tracking-wider">
+                FREE SCAN LIMIT REACHED (5/5 SCANS USED)
+              </div>
+              <p className="text-xs text-[var(--color-term-text-muted)] mt-1 font-mono">
+                You have used all 5 free contract scans. Pick a plan below — the API key you generate
+                unlocks unlimited scans on the website and the CLI.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {phase === "done" && apiKey && (
+          <div className="mb-8 p-4 border border-[var(--color-term-success)] bg-[var(--color-term-success)]/10 text-[var(--color-term-success)] rounded-none">
+            <div className="flex items-center gap-2 font-mono text-sm">
               <Sparkles className="w-5 h-5 shrink-0" />
-              <div className="font-mono text-sm">
-                Successfully unlocked <strong>{purchaseSuccess}</strong>! Your scan limits have been refreshed.
+              Plan active{activePlanId ? ` (${activePlanId.toUpperCase()})` : ""}. Your API key is ready:
+            </div>
+            <div className="mt-3 flex flex-col sm:flex-row items-stretch gap-2">
+              <code className="flex-1 px-3 py-2 bg-[var(--color-term-bg)] border border-[var(--color-term-border)] font-mono text-xs text-[var(--color-term-text)] break-all select-all">
+                {apiKey}
+              </code>
+              <Button
+                onClick={copyKey}
+                size="sm"
+                className="bg-[var(--color-term-success)] text-black font-mono text-xs h-auto"
+              >
+                <Copy className="w-3.5 h-3.5 mr-1" />
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+            </div>
+            <div className="mt-3 font-mono text-xs text-[var(--color-term-text-muted)] space-y-1">
+              <div>
+                <span className="text-[var(--color-term-accent)]">CLI:</span> run{" "}
+                <code className="text-[var(--color-term-success)]">securithm login</code> and paste
+                this key — unlimited scans from the terminal.
+              </div>
+              <div className="flex gap-3 pt-1">
+                <Link href="/dashboard/scans" className="text-[var(--color-term-success)] hover:underline">
+                  Start scanning →
+                </Link>
+                <Link href="/dashboard/api-console" className="text-[var(--color-term-success)] hover:underline">
+                  Manage keys →
+                </Link>
               </div>
             </div>
-            <Link href="/dashboard/scans">
-              <Button size="sm" className="bg-[var(--color-term-success)] text-black font-mono text-xs">
-                Start Scanning →
-              </Button>
-            </Link>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-8 p-4 border border-[var(--color-term-warning)] bg-[var(--color-term-warning)]/10 text-[var(--color-term-warning)] font-mono text-xs rounded-none">
+            {error}{" "}
+            {!loggedIn && (
+              <Link href="/register" className="underline">
+                Create an account →
+              </Link>
+            )}
           </div>
         )}
 
@@ -149,7 +329,13 @@ function PricingContent() {
             Instant Security for Every Smart Contract
           </h1>
           <p className="text-sm font-mono text-[var(--color-term-text-muted)]">
-            Scan unlimited contracts, automate CI/CD protection, and integrate enterprise-grade security APIs directly into your dApp.
+            5 free scans, then pick a plan. Your API key unlocks unlimited scans on the website and
+            the CLI.
+            {scanLimit != null && scansUsed != null && (
+              <span className="block mt-1 text-[var(--color-term-accent)]">
+                {Math.min(scansUsed, scanLimit)}/{scanLimit} free scans used
+              </span>
+            )}
           </p>
 
           {/* Billing Cycle Toggle */}
@@ -181,7 +367,7 @@ function PricingContent() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {plans.map((plan) => (
             <Card
-              key={plan.name}
+              key={plan.id}
               className={`relative border flex flex-col justify-between ${
                 plan.popular
                   ? "border-[var(--color-term-accent)] bg-[var(--color-term-accent)]/5 shadow-[0_0_20px_rgba(0,255,136,0.1)]"
@@ -229,15 +415,20 @@ function PricingContent() {
 
               <div className="p-6 pt-4 border-t border-[var(--color-term-border)]">
                 <Button
-                  onClick={() => handlePurchase(plan.name)}
-                  disabled={plan.disabled || purchasing}
+                  onClick={() => purchase(plan.id)}
+                  disabled={busy}
                   className={`w-full font-mono text-xs tracking-wider uppercase h-10 ${
                     plan.popular
                       ? "bg-[var(--color-term-accent)] text-black hover:bg-[var(--color-term-accent)]/90"
                       : "bg-[var(--color-term-dim)] border border-[var(--color-term-border)] text-[var(--color-term-text)] hover:bg-[var(--color-term-border)]"
                   }`}
                 >
-                  {purchasing ? "PROCESSING..." : plan.cta}
+                  {busy ? "PROCESSING..." : (
+                    <span className="flex items-center justify-center gap-1.5">
+                      {plan.cta}
+                      <KeyRound className="w-3.5 h-3.5" />
+                    </span>
+                  )}
                 </Button>
               </div>
             </Card>

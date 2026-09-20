@@ -61,6 +61,7 @@ class AgentFinding:
 # lines. They are applied bottom-up so line indices stay stable.
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _fix_tx_origin(line: str) -> list[str]:
     return [line.replace("tx.origin", "msg.sender")]
 
@@ -75,12 +76,17 @@ def _fix_selfdestruct(line: str) -> list[str]:
 
 
 def _fix_delegatecall(line: str) -> list[str]:
-    return [line.replace(".delegatecall(", ".call( // AUDITAI FIX: delegatecall removed (storage hijack)")]
+    return [
+        line.replace(
+            ".delegatecall(",
+            ".call( // AUDITAI FIX: delegatecall removed (storage hijack)",
+        )
+    ]
 
 
 def _fix_unchecked_call(line: str) -> list[str]:
     stripped = line.strip()
-    fixed = "require(" + stripped[:-1] + '); // AUDITAI FIX: return value now checked'
+    fixed = "require(" + stripped[:-1] + "); // AUDITAI FIX: return value now checked"
     indent = line[: len(line) - len(line.lstrip())]
     return [indent + fixed]
 
@@ -133,7 +139,7 @@ REENTRANCY_GUARD_BLOCK = [
     "bool private _auditai_locked; // AUDITAI FIX: reentrancy guard",
     "",
     "modifier nonReentrant() { // AUDITAI FIX: added by ReentrancyAgent",
-    "    require(!_auditai_locked, \"AUDITAI: reentrant call\");",
+    '    require(!_auditai_locked, "AUDITAI: reentrant call");',
     "    _auditai_locked = true;",
     "    _;",
     "    _auditai_locked = false;",
@@ -151,6 +157,7 @@ def _fix_reentrancy(line: str) -> list[str]:
 # ─────────────────────────────────────────────────────────────────────────────
 # Agent rule library (trained patterns)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class AgentRule:
@@ -275,8 +282,12 @@ RULES: list[AgentRule] = [
         category="Weak Source of Randomness",
         severity=FindingSeverity.HIGH,
         patterns=[
-            re.compile(r"(?i)(random|lottery|winner|raffle|dice|rand\b)[^\n]*block\.(timestamp|hash|difficulty)"),
-            re.compile(r"(?i)block\.(timestamp|hash|difficulty)[^\n]*(random|lottery|winner|raffle|dice)"),
+            re.compile(
+                r"(?i)(random|lottery|winner|raffle|dice|rand\b)[^\n]*block\.(timestamp|hash|difficulty)"
+            ),
+            re.compile(
+                r"(?i)block\.(timestamp|hash|difficulty)[^\n]*(random|lottery|winner|raffle|dice)"
+            ),
         ],
         description=(
             "On-chain randomness derived from block properties is predictable and "
@@ -322,8 +333,12 @@ RULES: list[AgentRule] = [
         category="Centralization Risk",
         severity=FindingSeverity.MEDIUM,
         patterns=[
-            re.compile(r"payable\s*\(\s*owner\s*\)\s*\.\s*transfer\s*\(\s*address\s*\(\s*this\s*\)\s*\.\s*balance"),
-            re.compile(r"(?:owner|admin)[^\n]*\.transfer\s*\(\s*address\s*\(\s*this\s*\)\s*\.\s*balance"),
+            re.compile(
+                r"payable\s*\(\s*owner\s*\)\s*\.\s*transfer\s*\(\s*address\s*\(\s*this\s*\)\s*\.\s*balance"
+            ),
+            re.compile(
+                r"(?:owner|admin)[^\n]*\.transfer\s*\(\s*address\s*\(\s*this\s*\)\s*\.\s*balance"
+            ),
         ],
         description=(
             "A single key can move the entire contract balance in one call. Owner "
@@ -338,6 +353,7 @@ RULES: list[AgentRule] = [
 # ─────────────────────────────────────────────────────────────────────────────
 # Scanning
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def run_agents(source: str) -> list[AgentFinding]:
     """Run all rule agents over the source and return deduplicated findings."""
@@ -356,7 +372,9 @@ def run_agents(source: str) -> list[AgentFinding]:
 
             # unchecked_call must not double-report calls whose value IS checked
             if rule.key == "unchecked_call" and (
-                re.search(r"\bbool\s+\w+", line) or "require(" in line or re.search(r"\bif\s*\(", line)
+                re.search(r"\bbool\s+\w+", line)
+                or "require(" in line
+                or re.search(r"\bif\s*\(", line)
             ):
                 continue
             # skip unchecked_call on payable-transfer lines already wrapped
@@ -403,6 +421,7 @@ def calculate_risk_score(findings: list[AgentFinding]) -> str:
 # Fixing
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def _collect_line_edits(
     source: str,
     findings: list[AgentFinding] | None = None,
@@ -448,14 +467,16 @@ def _insert_scope_blocks(lines: list[str], blocks: dict[str, list[str]]) -> list
         return lines
     out = list(lines)
     for idx, line in enumerate(out):
-        if re.search(r"\bcontract\s+\w+[^{]*\{\s*$", line) or re.search(r"\babstract\s+contract\s+\w+[^{]*\{\s*$", line):
+        if re.search(r"\bcontract\s+\w+[^{]*\{\s*$", line) or re.search(
+            r"\babstract\s+contract\s+\w+[^{]*\{\s*$", line
+        ):
             insertion: list[str] = []
             if "reentrancy_guard" in blocks:
                 insertion.extend(blocks["reentrancy_guard"])
             if "max_batch" in blocks:
                 insertion.extend(blocks["max_batch"])
             if insertion:
-                out[idx:idx + 1] = [line] + insertion
+                out[idx : idx + 1] = [line] + insertion
             return out
     return out
 
@@ -475,7 +496,9 @@ def _apply_nonreentrant_to_functions(lines: list[str], call_line_idx: int) -> li
     return out
 
 
-def build_fixed_source(source: str) -> tuple[str, list[AgentFinding], list[AgentFinding]]:
+def build_fixed_source(
+    source: str,
+) -> tuple[str, list[AgentFinding], list[AgentFinding]]:
     """Apply all safe fixer transforms and return (fixed_source, applied, manual)."""
     findings = run_agents(source)
     applied = [f for f in findings if f.fixable]
@@ -489,7 +512,7 @@ def build_fixed_source(source: str) -> tuple[str, list[AgentFinding], list[Agent
         for rule_key, fixer in edits[idx]:
             current = lines[idx]
             replacement = fixer(current)
-            lines[idx:idx + 1] = replacement
+            lines[idx : idx + 1] = replacement
             if rule_key == "reentrancy":
                 lines = _apply_nonreentrant_to_functions(lines, idx)
 
@@ -525,7 +548,7 @@ def fixed_source_for_finding(source: str, finding: AgentFinding) -> str:
         return source
 
     replacement = rule.fixer(current)
-    lines[idx:idx + 1] = replacement
+    lines[idx : idx + 1] = replacement
     if rule.key == "reentrancy":
         lines = _apply_nonreentrant_to_functions(lines, idx)
         lines = _insert_scope_blocks(lines, _scope_blocks(source, [finding]))

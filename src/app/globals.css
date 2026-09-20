@@ -192,6 +192,75 @@
 @media (prefers-reduced-motion: reduce) {
   .mm-caret { animation: none; }
   .mm-cta { transition: none; }
+  .mm-marquee__track { animation: none; }
+  .mm-card, .mm-burst { transition: none; }
+}
+
+/* ── Motion layer — metamask-grade energy on the cream canvas ── */
+
+/* Card lift + decorative burst wiggle on hover */
+.mm-card {
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mm-card:hover {
+  transform: translateY(-4px);
+}
+.mm-card .mm-burst {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mm-card:hover .mm-burst {
+  transform: rotate(8deg) scale(1.12);
+}
+
+/* Agent marquee — seamless loop, duplicated track, pauses on hover */
+@keyframes mm-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.mm-marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--color-hairline);
+  padding-block: 14px;
+}
+.mm-marquee__track {
+  display: flex;
+  width: max-content;
+  gap: 40px;
+  animation: mm-marquee 28s linear infinite;
+}
+.mm-marquee:hover .mm-marquee__track {
+  animation-play-state: paused;
+}
+.mm-marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-family: var(--font-mm-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-deep-violet);
+}
+.mm-marquee__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-acid-lime);
+  border: 1px solid var(--color-deep-violet);
+}
+
+/* Typed terminal — line entrance */
+@keyframes mm-line-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: none; }
+}
+.mm-terminal .mm-line-in {
+  animation: mm-line-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mm-terminal .mm-line-in { animation: none; }
+  .mm-card, .mm-card .mm-burst { transition: none; }
 }
 
 /* ═══════════════════════════════════════════════

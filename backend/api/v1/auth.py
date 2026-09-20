@@ -28,6 +28,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 # ─── JWT Helpers ─────────────────────────────────────────
 
+
 def _decode_jwt_payload(token: str) -> dict | None:
     """Decode JWT payload without signature verification (for claim inspection only)."""
     try:
@@ -121,6 +122,7 @@ def _is_supabase_token(claims: dict | None) -> bool:
 
 
 # ─── Auth Dependencies ───────────────────────────────────
+
 
 def get_optional_user(
     authorization: str = Header(default=None),
@@ -269,6 +271,7 @@ async def get_current_user(
 
 # ─── Auth Endpoints ──────────────────────────────────────
 
+
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(
     user_in: UserCreate,
@@ -414,24 +417,32 @@ async def update_me(
 def _get_base_url(request: Request | None = None) -> str:
     """Determine frontend base URL dynamically from request or environment."""
     if request:
-        proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        proto = (
+            request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        )
         host = request.headers.get("x-forwarded-host") or request.headers.get("host")
         if host:
             return f"{proto}://{host}".rstrip("/")
     vercel_url = os.environ.get("VERCEL_URL")
     if vercel_url:
         return f"https://{vercel_url}".rstrip("/")
-    if settings.frontend_url and not settings.frontend_url.startswith("http://localhost"):
+    if settings.frontend_url and not settings.frontend_url.startswith(
+        "http://localhost"
+    ):
         return settings.frontend_url.rstrip("/")
     return "http://localhost:3000"
 
 
 def _get_oauth_redirect_url(request: Request | None = None) -> str:
     """Get the OAuth redirect URI matching Google Console registration."""
-    if settings.oauth_redirect_url and not settings.oauth_redirect_url.startswith("http://localhost"):
+    if settings.oauth_redirect_url and not settings.oauth_redirect_url.startswith(
+        "http://localhost"
+    ):
         return settings.oauth_redirect_url
     if request:
-        proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        proto = (
+            request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
+        )
         host = request.headers.get("x-forwarded-host") or request.headers.get("host")
         if host and ("vercel.app" in host or "securithm" in host):
             return f"{proto}://{host}/api/v1/auth/callback"

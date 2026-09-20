@@ -32,9 +32,9 @@ def lines_with_rule(findings, rule_key):
 def active_lines(source: str) -> list[str]:
     """Source lines that are not comments or the AUDITAI header."""
     return [
-        l
-        for l in source.splitlines()
-        if not l.strip().startswith("//") and l.strip() != ""
+        line_
+        for line_ in source.splitlines()
+        if not line_.strip().startswith("//") and line_.strip() != ""
     ]
 
 
@@ -44,7 +44,7 @@ RULE_SNIPPETS = {
     "reentrancy": '(bool success, ) = msg.sender.call{value: 1}("");',
     "tx_origin": "if (tx.origin == owner) { withdraw(); }",
     "selfdestruct": "selfdestruct(payable(owner));",
-    "delegatecall": "(bool ok, ) = target.delegatecall(abi.encodeWithSignature(\"f()\"));",
+    "delegatecall": '(bool ok, ) = target.delegatecall(abi.encodeWithSignature("f()"));',
     "unchecked_call": "token.transfer(to, amount);",
     "unbounded_loop": "for (uint i; i < users.length; i++) { process(users[i]); }",
     "timestamp": "require(block.timestamp > deadline);",
@@ -57,7 +57,7 @@ RULE_SNIPPETS = {
 
 @pytest.mark.parametrize("rule_key", RULE_SNIPPETS.keys())
 def test_every_rule_fires_on_trained_snippet(rule_key):
-    rule = next(r for r in RULES if r.key == rule_key)
+    _rule = next(r for r in RULES if r.key == rule_key)
     source = "// SPDX-License-Identifier: MIT\n" + RULE_SNIPPETS[rule_key] + "\n"
     findings = lines_with_rule(run_agents(source), rule_key)
     assert findings, f"rule {rule_key} did not fire on its trained snippet"
@@ -109,8 +109,10 @@ def test_fix_tx_origin():
 
 def test_fix_selfdestruct_commented_out():
     fixed, applied, _ = build_fixed_source("selfdestruct(payable(owner));")
-    assert not any("selfdestruct(" in l for l in active_lines(fixed))
-    assert any("selfdestruct" in l for l in fixed.splitlines())  # kept as comment
+    assert not any("selfdestruct(" in line_ for line_ in active_lines(fixed))
+    assert any(
+        "selfdestruct" in line_ for line_ in fixed.splitlines()
+    )  # kept as comment
     assert len(applied) == 1
 
 
@@ -177,11 +179,7 @@ def test_manual_review_items_not_auto_applied():
 
 
 def test_fixed_source_for_finding_only_touches_own_line():
-    source = (
-        "if (tx.origin == owner) {\n"
-        "    token.transfer(to, amount);\n"
-        "}\n"
-    )
+    source = "if (tx.origin == owner) {\n    token.transfer(to, amount);\n}\n"
     findings = run_agents(source)
     target = next(f for f in findings if f.rule_key == "tx_origin")
     patched = fixed_source_for_finding(source, target)

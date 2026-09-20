@@ -84,11 +84,13 @@ async def list_scans(
     if chain:
         query = query.where(ScanJob.chain == chain)
     if category:
-        query = query.where(ScanJob.findings.any(Finding.category.ilike(f"%{category}%")))
+        query = query.where(
+            ScanJob.findings.any(Finding.category.ilike(f"%{category}%"))
+        )
 
     # Get total count
     count_query = select(func.count()).select_from(query.subquery())
-    total = db.execute(count_query).scalar() or 0
+    _total = db.execute(count_query).scalar() or 0
 
     # Paginate
     offset = (page - 1) * page_size
@@ -169,20 +171,26 @@ def _source_header(scan: ScanJob) -> str:
     return scan.contract_source or ""
 
 
-def _reconstruct_findings(scan: ScanJob, findings: list[Finding]) -> list[agent_engine.AgentFinding]:
+def _reconstruct_findings(
+    scan: ScanJob, findings: list[Finding]
+) -> list[agent_engine.AgentFinding]:
     """Rebuild AgentFinding objects from DB rows so fixer transforms can run.
 
     The category is stored as 'Base · Agent'; split it back apart.
     """
-    rules_by_key = {r.key: r for r in agent_engine.RULES}
+    _rules_by_key = {r.key: r for r in agent_engine.RULES}
     out: list[agent_engine.AgentFinding] = []
     for f in findings:
         base_category = f.category.split(" · ")[0].strip()
-        rule = next((r for r in agent_engine.RULES if r.category == base_category), None)
+        rule = next(
+            (r for r in agent_engine.RULES if r.category == base_category), None
+        )
         out.append(
             agent_engine.AgentFinding(
                 rule_key=rule.key if rule else "unknown",
-                agent=f.category.split(" · ")[-1].strip() if " · " in f.category else "AGENT",
+                agent=f.category.split(" · ")[-1].strip()
+                if " · " in f.category
+                else "AGENT",
                 category=base_category,
                 severity=f.severity,
                 line_number=f.line_number or 1,
@@ -209,7 +217,9 @@ async def download_fixed_contract(
     scan = _get_scoped_scan(db, scan_id, current_user)
     source = _source_header(scan)
     if not source:
-        raise HTTPException(status_code=404, detail="Scan has no stored contract source")
+        raise HTTPException(
+            status_code=404, detail="Scan has no stored contract source"
+        )
 
     fixed, _applied, _manual = agent_engine.build_fixed_source(source)
     name = scan.contract_name or "Contract"
@@ -233,7 +243,9 @@ async def download_full_patch(
     scan = _get_scoped_scan(db, scan_id, current_user)
     source = _source_header(scan)
     if not source:
-        raise HTTPException(status_code=404, detail="Scan has no stored contract source")
+        raise HTTPException(
+            status_code=404, detail="Scan has no stored contract source"
+        )
 
     fixed, applied, manual = agent_engine.build_fixed_source(source)
     patch = agent_engine.build_unified_patch(
@@ -264,7 +276,9 @@ async def download_finding_patch(
     scan = _get_scoped_scan(db, scan_id, current_user)
     source = _source_header(scan)
     if not source:
-        raise HTTPException(status_code=404, detail="Scan has no stored contract source")
+        raise HTTPException(
+            status_code=404, detail="Scan has no stored contract source"
+        )
 
     finding = db.get(Finding, finding_id)
     if not finding or finding.scan_id != scan.id:
@@ -309,7 +323,9 @@ async def get_diff_preview(
     scan = _get_scoped_scan(db, scan_id, current_user)
     source = _source_header(scan)
     if not source:
-        raise HTTPException(status_code=404, detail="Scan has no stored contract source")
+        raise HTTPException(
+            status_code=404, detail="Scan has no stored contract source"
+        )
 
     fixed, applied, manual = agent_engine.build_fixed_source(source)
     return {
@@ -337,7 +353,13 @@ async def list_scan_categories(
         agent = f.category.split(" · ")[-1].strip() if " · " in f.category else "AGENT"
         g = groups.setdefault(
             base,
-            {"category": base, "agent": agent, "count": 0, "severities": {}, "fixable": False},
+            {
+                "category": base,
+                "agent": agent,
+                "count": 0,
+                "severities": {},
+                "fixable": False,
+            },
         )
         g["count"] += 1
         g["severities"][f.severity.value] = g["severities"].get(f.severity.value, 0) + 1

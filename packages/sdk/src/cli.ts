@@ -13,6 +13,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline/promises";
+import { exec } from "node:child_process";
 import {
   runAgents,
   buildFixedSource,
@@ -113,13 +114,30 @@ ${c.violet("  └─────────────────────
 // API key gate (paste flow)
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function promptApiKey(): Promise<string | null> {
+/** Best-effort cross-platform browser open (no dependencies). */
+function openBrowser(url: string): void {
+  try {
+    if (process.platform === "win32") exec(`start "" "${url}"`);
+    else if (process.platform === "darwin") exec(`open "${url}"`);
+    else exec(`xdg-open "${url}"`);
+  } catch {
+    // headless/CI — the printed URL is the fallback
+  }
+}
+
+async function promptApiKey(config: CliConfig): Promise<string | null> {
+  const pricingUrl = `${config.base_url}/pricing?cli=1`;
   console.log("");
-  console.log(c.bold("  ── API key required ──"));
+  console.log(c.bold("  ── Free limit reached — API key required ──"));
   console.log("");
-  console.log("  You've used all " + c.bold(String(FREE_SCAN_LIMIT)) + " free scans.");
-  console.log("  Paste your Securithm API key to continue scanning:");
-  console.log(c.dim(`  (${DEFAULT_BASE_URL}/dashboard → API Keys → create key)`));
+  console.log(`  You've used all ${c.bold(String(FREE_SCAN_LIMIT))} free scans.`);
+  console.log("  Opening your browser — sign in, pick a plan and complete checkout");
+  console.log("  (Razorpay); your API key is generated right on the page.");
+  openBrowser(pricingUrl);
+  console.log("");
+  console.log(c.dim(`  If the browser didn't open, go to: ${pricingUrl}`));
+  console.log("");
+  console.log("  Then paste your API key here (press Enter to abort):");
   console.log("");
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   let answer = "";
@@ -131,6 +149,7 @@ async function promptApiKey(): Promise<string | null> {
   rl.close();
   if (!answer) {
     console.log(c.red("  No key entered — aborting."));
+    console.log(c.dim("  Tip: run `securithm login` after your key is ready."));
     return null;
   }
   return answer;
@@ -139,7 +158,7 @@ async function promptApiKey(): Promise<string | null> {
 async function ensureEntitlement(usage: UsageRecord, config: CliConfig): Promise<boolean> {
   if (usage.count < FREE_SCAN_LIMIT) return true;
   if (config.api_key) return true;
-  const key = await promptApiKey();
+  const key = await promptApiKey(config);
   if (!key) return false;
 
   // Validate the key against the website before accepting it.
@@ -311,7 +330,7 @@ function printHelp(): void {
 
 async function cmdLogin(): Promise<void> {
   const config = loadConfig();
-  const key = await promptApiKey();
+  const key = await promptApiKey(config);
   if (!key) return;
   config.api_key = key;
   saveConfig(config);

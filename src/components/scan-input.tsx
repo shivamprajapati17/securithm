@@ -62,17 +62,8 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
       return;
     }
 
-    // Check free scan count paywall (2 scans max for free tier)
-    const scanCount = typeof window !== "undefined"
-      ? parseInt(localStorage.getItem("securithm_free_scans_used") || "0", 10)
-      : 0;
-
-    if (scanCount >= 2) {
-      router.push("/pricing?paywall=limit_reached");
-      return;
-    }
-
-    setLoading(true);
+    // Free-limit enforcement is server-side (5 anonymous scans, then paywall /
+    // API key). The 402 handler below redirects to pricing when reached.    setLoading(true);
     setError(null);
     try {
       if (inputMode === "code") {
@@ -83,7 +74,9 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
           input_mode: "code",
         });
         if (typeof window !== "undefined") {
-          localStorage.setItem("securithm_free_scans_used", (scanCount + 1).toString());
+          localStorage.setItem("securithm_free_scans_used", (
+            parseInt(localStorage.getItem("securithm_free_scans_used") || "0", 10) + 1
+          ).toString());
         }
         onScan?.(code, chain);
         router.push(`/dashboard/scans?id=${result.id}`);
@@ -95,7 +88,9 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
           input_mode: "address",
         });
         if (typeof window !== "undefined") {
-          localStorage.setItem("securithm_free_scans_used", (scanCount + 1).toString());
+          localStorage.setItem("securithm_free_scans_used", (
+            parseInt(localStorage.getItem("securithm_free_scans_used") || "0", 10) + 1
+          ).toString());
         }
         onScan?.(code, chain);
         router.push(`/dashboard/scans?id=${result.id}`);
@@ -104,7 +99,12 @@ export function ScanInput({ onScan, variant = "hero", redirectToDemo = false }: 
         router.push("/dashboard/repos");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "SCAN FAILED");
+      const err = e as Error & { status?: number; code?: string };
+      if (err.status === 402 || err.code === "free_limit_reached") {
+        router.push("/pricing?paywall=limit_reached");
+        return;
+      }
+      setError(err instanceof Error ? err.message : "SCAN FAILED");
     } finally {
       setLoading(false);
     }
