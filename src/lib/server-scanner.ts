@@ -49,6 +49,7 @@ export interface Scan {
   id: string;
   org_id: string | null;
   user_id: string | null;
+  origin?: string | null;
   contract_source: string | null;
   chain: string | null;
   status: "pending" | "running" | "completed" | "failed";

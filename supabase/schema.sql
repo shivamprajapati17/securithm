@@ -9,6 +9,7 @@ create table if not exists public.scans (
   id uuid primary key,
   org_id text,
   user_id text,
+  origin text default 'web',
   contract_source text,
   chain text,
   status text default 'completed',

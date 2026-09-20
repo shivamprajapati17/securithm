@@ -122,7 +122,12 @@ async function promptApiKey(): Promise<string | null> {
   console.log(c.dim(`  (${DEFAULT_BASE_URL}/dashboard → API Keys → create key)`));
   console.log("");
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  const answer = (await rl.question(c.cyan("  API key: "))).trim();
+  let answer = "";
+  try {
+    answer = (await rl.question(c.cyan("  API key: "))).trim();
+  } catch {
+    // stdin closed before a full line arrived
+  }
   rl.close();
   if (!answer) {
     console.log(c.red("  No key entered — aborting."));
@@ -170,7 +175,7 @@ async function ensureEntitlement(usage: UsageRecord, config: CliConfig): Promise
 // Update check
 // ─────────────────────────────────────────────────────────────────────────────
 
-const PKG_VERSION = "1.0.1";
+const PKG_VERSION = "1.1.0";
 
 function isNewerVersion(current: string, candidate: string): boolean {
   const parse = (v: string) => v.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
@@ -294,7 +299,8 @@ function printHelp(): void {
   console.log("      --fix             Write <Name>_fixed.sol next to the input");
   console.log("      --patch           Also write a unified .patch file");
   console.log("      --out <dir>       Output directory (default: beside input)");
-  console.log("    login               Paste your API key (unlocks unlimited scans)");
+  console.log("      --no-sync         Skip syncing to your Securithm dashboard");
+  console.log("    login               Paste your API key (unlocks unlimited scans + dashboard sync)");
   console.log("    status              Show usage, key state and version");
   console.log("    update              Check npm for a newer CLI version");
   console.log("    help                Show this help");
@@ -323,12 +329,35 @@ async function cmdStatus(): Promise<void> {
   console.log(`  config       : ${CONFIG_FILE}`);
 }
 
+/** Push a local scan result to the user's Securithm dashboard (best effort). */
+async function syncScan(config: CliConfig, source: string, contractName: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${config.base_url}/api/v1/scans`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.api_key}`,
+        "X-Securithm-Client": "cli",
+      },
+      body: JSON.stringify({
+        contract_source: source,
+        chain: "ethereum",
+        contract_name: contractName,
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function cmdScan(args: string[]): Promise<void> {
   const config = loadConfig();
   await checkForUpdates(config);
 
   const fix = args.includes("--fix");
   const wantPatch = args.includes("--patch");
+  const noSync = args.includes("--no-sync");
   const outIdx = args.indexOf("--out");
   const outDir = outIdx !== -1 ? args[outIdx + 1] : undefined;
   const files = args.filter(
@@ -376,6 +405,13 @@ async function cmdScan(args: string[]): Promise<void> {
     if (fix || wantPatch) {
       const written = writeOutputs(outcome, outDir);
       console.log(c.green("  → wrote: " + written.join(", ")));
+    }
+    if (config.api_key && !noSync) {
+      const synced = await syncScan(config, source, outcome.contractName);
+      if (synced) console.log(c.green("  ✓ synced to your Securithm dashboard"));
+      else console.log(c.yellow("  ! sync failed (offline?) — scan kept local"));
+    } else if (!config.api_key) {
+      console.log(c.dim("  tip: `securithm login` syncs scans to your dashboard"));
     }
     bumpUsage();
     if (outcome.findings.some((f) => f.severity === "critical")) failures = 1;

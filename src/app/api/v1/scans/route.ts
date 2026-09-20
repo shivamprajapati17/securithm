@@ -50,11 +50,10 @@ export async function POST(request: NextRequest) {
     const bearer = auth.startsWith("Bearer ") ? auth.slice(7) : null;
     const apiKeyHeader = request.headers.get("x-api-key") ?? (bearer?.startsWith("sk_live_") ? bearer : null);
 
-    let apiKeyValid = false;
+    let apiKeyRecord: Awaited<ReturnType<typeof validateApiKey>> = null;
     if (apiKeyHeader) {
-      const record = await validateApiKey(apiKeyHeader);
-      apiKeyValid = Boolean(record);
-      if (apiKeyHeader && !apiKeyValid) {
+      apiKeyRecord = await validateApiKey(apiKeyHeader);
+      if (apiKeyHeader && !apiKeyRecord) {
         return NextResponse.json(
           { detail: "Invalid or inactive API key. Create one at /dashboard → API Keys." },
           { status: 401 }
@@ -89,6 +88,13 @@ export async function POST(request: NextRequest) {
     const { findings, risk_score, contract_name: inferredName, fixed_code, fixes_applied, fixes_manual, full_patch } =
       analyzeContract(contract_source, chain);
 
+    // Owner: session token wins, then the API key's owner (CLI/SDK syncs).
+    const ownerId = user?.id ?? apiKeyRecord?.user_id ?? null;
+    // Origin: CLI syncs tag themselves; SDK keys default to sdk.
+    const origin =
+      request.headers.get("x-securithm-client") ||
+      (apiKeyRecord ? "sdk" : "web");
+
     const now = new Date().toISOString();
     const scanId = crypto.randomUUID();
     const scanFindings: Finding[] = findings.map((f) => ({
@@ -105,7 +111,8 @@ export async function POST(request: NextRequest) {
     const newScan: Scan = {
       id: scanId,
       org_id: null,
-      user_id: user?.id ?? null,
+      user_id: ownerId,
+      origin,
       contract_source,
       chain,
       status: "completed",

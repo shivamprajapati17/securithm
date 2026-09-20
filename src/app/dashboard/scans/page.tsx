@@ -104,7 +104,7 @@ function ScanList({
   scans,
   onSelect,
 }: {
-  scans: { id: string; contract_name: string | null; status: string; risk_score_overall: string | null; created_at: string; chain: string | null; findings?: { severity: string }[] }[];
+  scans: { id: string; contract_name: string | null; status: string; risk_score_overall: string | null; created_at: string; chain: string | null; origin?: string | null; findings?: { severity: string }[] }[];
   onSelect: (id: string) => void;
 }) {
   return (
@@ -124,6 +124,7 @@ function ScanList({
               <div className="text-[9px] text-[var(--color-term-muted)] font-mono">
                 {scan.created_at ? formatRelativeTime(scan.created_at) : "just now"}
                 {scan.chain && ` · ${scan.chain}`}
+                {scan.origin === "cli" && " · CLI"}
               </div>
             </div>
           </div>
